@@ -36,7 +36,8 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static study notes PDFs
 app.use('/public', express.static(path.join(__dirname, '../public')));
 
-// Mount API routes
+// Mount API routes (both /api/v1 and /api for backward compatibility)
+app.use('/api/v1', routes);
 app.use('/api', routes);
 
 // 404 Not Found handler

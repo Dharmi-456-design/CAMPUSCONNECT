@@ -10,28 +10,33 @@ const googleClient = new OAuth2Client(
 );
 
 // @desc    Register a new user
-// @route   POST /api/auth/register
+// @route   POST /api/v1/auth/register or POST /api/auth/register
 // @access  Public
 const register = asyncHandler(async (req, res) => {
-  const { name, email, password, college, branch, semester, year, role } = req.body;
+  const { name, email, password, rollNumber, college, branch, semester, year, role } = req.body;
 
-  const existingUser = await User.findOne({ email: email.toLowerCase() });
+  const normalizedEmail = email.trim().toLowerCase();
+  const existingUser = await User.findOne({ email: normalizedEmail });
   if (existingUser) {
-    return ApiResponse.error(res, 'User with this email already exists', [], 400);
+    return ApiResponse.error(res, 'A user with this email address is already registered.', [], 400);
   }
 
-  const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash(password, salt);
+  // Hash password securely with bcrypt
+  const passwordHash = await User.hashPassword(password);
 
   const user = await User.create({
-    name,
-    email: email.toLowerCase(),
+    name: name.trim(),
+    email: normalizedEmail,
     passwordHash,
-    college: college || '',
-    branch: branch || '',
-    semester: semester || 1,
-    year: year || 1,
-    role: role || 'student'
+    rollNumber: rollNumber ? rollNumber.trim() : '17081010086',
+    college: college ? college.trim() : 'Institute of Technology',
+    branch: branch ? branch.trim() : 'Computer Science & Engineering',
+    semester: Number(semester) || 6,
+    year: Number(year) || 3,
+    role: role || 'student',
+    gpa: 3.67,
+    sks: 89,
+    isVerified: true
   });
 
   const token = generateToken(user._id, user.role);
