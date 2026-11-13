@@ -13,7 +13,7 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { useAuthStore } from '../store/authStore';
 import Icon from '../components/common/Icon';
-import { updateProfileApi } from '../api/auth.api';
+import { updateProfileApi, changePasswordApi } from '../api/auth.api';
 
 const SETTINGS_GROUPS = [
   {
@@ -161,6 +161,45 @@ export default function ProfileScreen() {
   const [bio, setBio] = useState(user?.bio || '');
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
+
+  // Password Change State
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [pwdLoading, setPwdLoading] = useState(false);
+  const [showPwdForm, setShowPwdForm] = useState(false);
+
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword) {
+      const msg = 'Please enter both current and new password.';
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Required Fields', msg);
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      const msg = 'New password must be at least 6 characters long.';
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Invalid Password', msg);
+      return;
+    }
+
+    try {
+      setPwdLoading(true);
+      const res = await changePasswordApi(currentPassword, newPassword);
+      setCurrentPassword('');
+      setNewPassword('');
+      setShowPwdForm(false);
+      const msg = res.message || 'Password changed successfully!';
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Success', msg);
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Could not change password.';
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Error', msg);
+    } finally {
+      setPwdLoading(false);
+    }
+  };
 
   const handleUpdate = async () => {
     try {
@@ -322,6 +361,68 @@ export default function ProfileScreen() {
                   </>
                 )}
               </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Change Password Card */}
+          <View style={[styles.sectionCard, { backgroundColor: bgCard, borderColor: borderCard, marginTop: 14 }]}>
+            <View style={styles.sectionHeaderRow}>
+              <View style={styles.sectionTitleRow}>
+                <Icon name="lock" size={15} color="#16A36A" style={{ marginRight: 8 }} />
+                <Text style={[styles.sectionTitle, { color: textTitle }]}>Security & Password</Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.editToggleBtn, { backgroundColor: isDark ? '#141D2D' : '#F1F5F9', borderColor: borderCard }]}
+                onPress={() => setShowPwdForm(!showPwdForm)}
+              >
+                <Icon name={showPwdForm ? 'x' : 'key'} size={12} color="#16A36A" style={{ marginRight: 4 }} />
+                <Text style={{ fontSize: 11.5, fontWeight: '700', color: '#16A36A' }}>
+                  {showPwdForm ? 'Cancel' : 'Change'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {showPwdForm ? (
+              <View style={{ marginTop: 12 }}>
+                <Text style={[styles.fieldLabel, { color: textSub }]}>Current Password</Text>
+                <TextInput
+                  style={[styles.fieldInput, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: borderCard, color: textTitle, marginBottom: 10 }]}
+                  placeholder="Enter current password"
+                  placeholderTextColor={textSub}
+                  secureTextEntry
+                  value={currentPassword}
+                  onChangeText={setCurrentPassword}
+                />
+
+                <Text style={[styles.fieldLabel, { color: textSub }]}>New Password (min 6 chars)</Text>
+                <TextInput
+                  style={[styles.fieldInput, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: borderCard, color: textTitle, marginBottom: 12 }]}
+                  placeholder="Enter new password"
+                  placeholderTextColor={textSub}
+                  secureTextEntry
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                />
+
+                <TouchableOpacity
+                  style={[styles.saveBtn, pwdLoading && { opacity: 0.7 }]}
+                  onPress={handleChangePassword}
+                  disabled={pwdLoading}
+                >
+                  {pwdLoading ? (
+                    <ActivityIndicator size="small" color="#FFF" />
+                  ) : (
+                    <>
+                      <Icon name="check" size={14} color="#FFF" style={{ marginRight: 6 }} />
+                      <Text style={styles.saveBtnText}>Update Password</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <Text style={[styles.settingsSub, { color: textSub }]}>
+                Manage password security and update authentication credentials.
+              </Text>
             )}
           </View>
 

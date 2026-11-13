@@ -111,21 +111,19 @@ export default function SplitAuthScreen({ initialMode = 'welcome' }) {
   const [mode, setMode] = useState(initialMode === 'signup' ? 'signup' : initialMode === 'login' ? 'login' : 'welcome');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState('');
 
-  // Form Fields
-  const [name, setName] = useState('');
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // Switch mode and clear error
+  const switchMode = (newMode) => {
+    setAuthError('');
+    setMode(newMode);
+  };
 
   // Handle Login
   const handleLogin = async () => {
+    setAuthError('');
     if (!email || !password) {
-      if (Platform.OS === 'web') {
-        window.alert('Please fill in both Email and Password.');
-      } else {
-        Alert.alert('Required Fields', 'Please enter both Email and Password.');
-      }
+      setAuthError('Please enter both Email and Password.');
       return;
     }
 
@@ -141,11 +139,7 @@ export default function SplitAuthScreen({ initialMode = 'welcome' }) {
       }
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Invalid email or password';
-      if (Platform.OS === 'web') {
-        window.alert(msg);
-      } else {
-        Alert.alert('Login Failed', msg);
-      }
+      setAuthError(msg);
     } finally {
       setLoading(false);
     }
@@ -153,12 +147,14 @@ export default function SplitAuthScreen({ initialMode = 'welcome' }) {
 
   // Handle Signup
   const handleSignup = async () => {
+    setAuthError('');
     if (!name || !email || !password) {
-      if (Platform.OS === 'web') {
-        window.alert('Please fill in Name, Email and Password.');
-      } else {
-        Alert.alert('Required Fields', 'Please complete all required fields.');
-      }
+      setAuthError('Please complete Name, Email and Password.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setAuthError('Password must be at least 6 characters long.');
       return;
     }
 
@@ -183,11 +179,7 @@ export default function SplitAuthScreen({ initialMode = 'welcome' }) {
       }
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Unable to create account';
-      if (Platform.OS === 'web') {
-        window.alert(msg);
-      } else {
-        Alert.alert('Registration Failed', msg);
-      }
+      setAuthError(msg);
     } finally {
       setLoading(false);
     }
@@ -232,7 +224,7 @@ export default function SplitAuthScreen({ initialMode = 'welcome' }) {
               <View style={styles.buttonStack}>
                 <TouchableOpacity
                   style={styles.whiteBtn}
-                  onPress={() => setMode('login')}
+                  onPress={() => switchMode('login')}
                   activeOpacity={0.85}
                 >
                   <Text style={styles.whiteBtnText}>Login</Text>
@@ -240,7 +232,7 @@ export default function SplitAuthScreen({ initialMode = 'welcome' }) {
 
                 <TouchableOpacity
                   style={styles.greenBtn}
-                  onPress={() => setMode('signup')}
+                  onPress={() => switchMode('signup')}
                   activeOpacity={0.85}
                 >
                   <Text style={styles.greenBtnText}>Signup</Text>
@@ -265,13 +257,20 @@ export default function SplitAuthScreen({ initialMode = 'welcome' }) {
               {/* Back Arrow */}
               <TouchableOpacity
                 style={styles.backButton}
-                onPress={() => setMode('welcome')}
+                onPress={() => switchMode('welcome')}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Icon name="arrow-left" size={20} color="#172B4D" />
               </TouchableOpacity>
 
               <CampusOneLogo size={64} />
+
+              {authError ? (
+                <View style={styles.errorBanner}>
+                  <Icon name="alert-circle" size={16} color="#DC2626" style={{ marginRight: 8 }} />
+                  <Text style={styles.errorBannerText}>{authError}</Text>
+                </View>
+              ) : null}
 
               <View style={styles.formContainer}>
                 {/* Email Input */}
@@ -353,7 +352,7 @@ export default function SplitAuthScreen({ initialMode = 'welcome' }) {
                 {/* Switch to Signup */}
                 <View style={styles.switchModeRow}>
                   <Text style={styles.switchModeText}>Don't have an account? </Text>
-                  <TouchableOpacity onPress={() => setMode('signup')}>
+                  <TouchableOpacity onPress={() => switchMode('signup')}>
                     <Text style={styles.switchModeLink}>Sign up</Text>
                   </TouchableOpacity>
                 </View>
@@ -369,13 +368,20 @@ export default function SplitAuthScreen({ initialMode = 'welcome' }) {
               {/* Back Arrow */}
               <TouchableOpacity
                 style={styles.backButton}
-                onPress={() => setMode('welcome')}
+                onPress={() => switchMode('welcome')}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Icon name="arrow-left" size={20} color="#172B4D" />
               </TouchableOpacity>
 
               <CampusOneLogo size={64} />
+
+              {authError ? (
+                <View style={styles.errorBanner}>
+                  <Icon name="alert-circle" size={16} color="#DC2626" style={{ marginRight: 8 }} />
+                  <Text style={styles.errorBannerText}>{authError}</Text>
+                </View>
+              ) : null}
 
               <View style={styles.formContainer}>
                 {/* Name Input */}
@@ -467,7 +473,7 @@ export default function SplitAuthScreen({ initialMode = 'welcome' }) {
                 {/* Switch to Login */}
                 <View style={styles.switchModeRow}>
                   <Text style={styles.switchModeText}>Already have an account? </Text>
-                  <TouchableOpacity onPress={() => setMode('login')}>
+                  <TouchableOpacity onPress={() => switchMode('login')}>
                     <Text style={styles.switchModeLink}>Log in</Text>
                   </TouchableOpacity>
                 </View>
@@ -549,6 +555,24 @@ const styles = StyleSheet.create({
     color: '#64748B',
     letterSpacing: 1.2,
     marginTop: 2,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEE2E2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    width: '100%',
+    marginBottom: 12,
+  },
+  errorBannerText: {
+    color: '#DC2626',
+    fontSize: 12.5,
+    fontWeight: '600',
+    flex: 1,
   },
   illustrationWrapper: {
     marginVertical: 12,
