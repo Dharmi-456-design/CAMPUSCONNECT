@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CampusConnect Admin — Moderation & Analytics Dashboard">
+  <title>CampusConnect Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- ═══════════════ LOGIN SCREEN ═══════════════ -->
+  <div id="loginSection" class="login-page">
+    <div class="login-sidebar">
+      <div class="login-sidebar-content">
+        <div class="brand">
+          <span class="brand-icon">🎓</span>
+          <span class="brand-name">CampusConnect</span>
+        </div>
+        <h1 class="login-tagline">Admin Portal</h1>
+        <p class="login-desc">Manage users, moderate content, and view analytics from one place.</p>
+
+        <div class="login-features">
+          <div class="login-feature">
+            <span class="feature-dot orange"></span>
+            <span>Moderation Queue</span>
+          </div>
+          <div class="login-feature">
+            <span class="feature-dot green"></span>
+            <span>Real-time Analytics</span>
+          </div>
+          <div class="login-feature">
+            <span class="feature-dot blue"></span>
+            <span>User Management</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="login-form-area">
+      <div class="login-form-box">
+        <h2>Sign in</h2>
+        <p class="form-subtitle">Enter your admin credentials to continue</p>
+
+        <div id="loginError" class="error-banner hidden"></div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="adminEmail">Email address</label>
+            <input type="email" id="adminEmail" placeholder="admin@campusconnect.edu" required />
+          </div>
+          <div class="form-group">
+            <label for="adminPassword">Password</label>
+            <input type="password" id="adminPassword" placeholder="Enter your password" required />
+          </div>
+          <button type="submit" id="btnLogin" class="btn btn-primary">Sign in to Dashboard</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ DASHBOARD ═══════════════ -->
+  <div id="dashboardSection" class="dashboard-layout hidden">
+
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-icon">🎓</span>
+        <span class="brand-name">CampusConnect</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <span class="nav-section-label">Main</span>
+        <a href="#" class="nav-item active" id="navOverview">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Overview
+        </a>
+        <a href="#" class="nav-item" id="navReports">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Reports
+        </a>
+        <a href="#" class="nav-item" id="navAnalytics">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Analytics
+        </a>
+
+        <span class="nav-section-label" style="margin-top:16px;">Platform</span>
+        <a href="#" class="nav-item">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Users
+        </a>
+        <a href="#" class="nav-item">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Notes
+        </a>
+        <a href="#" class="nav-item">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          Marketplace
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar">A</div>
+          <div class="user-details">
+            <span class="user-name" id="adminNameDisplay">Admin</span>
+            <span class="user-role">Administrator</span>
+          </div>
+        </div>
+        <button id="btnLogout" class="btn-logout" title="Logout">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <h1 class="page-title">Overview</h1>
+          <span class="page-subtitle">Dashboard summary &amp; moderation</span>
+        </div>
+        <div class="top-bar-right">
+          <button id="btnRefreshReports" class="btn btn-outline btn-sm">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Refresh
+          </button>
+        </div>
+      </header>
+
+      <div class="content-body">
+
+        <!-- KPI Grid -->
+        <section class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap gold">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Registered Users</span>
+              <h3 id="statTotalUsers">—</h3>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap green">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Study Notes</span>
+              <h3 id="statTotalNotes">—</h3>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap blue">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Doubts &amp; Questions</span>
+              <h3 id="statTotalDoubts">—</h3>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap purple">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Marketplace Items</span>
+              <h3 id="statTotalListings">—</h3>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap red">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Pending Reports</span>
+              <h3 id="statPendingReports">—</h3>
+            </div>
+          </div>
+        </section>
+
+        <!-- Two Columns -->
+        <div class="content-columns">
+
+          <!-- Moderation Queue -->
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">Moderation Queue</h2>
+                <p class="panel-desc">Pending reports awaiting review</p>
+              </div>
+            </div>
+            <div id="reportsList" class="reports-list">
+              <div class="loading-state">Loading reports…</div>
+            </div>
+          </div>
+
+          <!-- Analytics -->
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">Analytics</h2>
+                <p class="panel-desc">Live data from MongoDB</p>
+              </div>
+            </div>
+
+            <div class="analytics-section">
+              <p class="analytics-label">Top Downloaded Notes</p>
+              <div id="topNotesList"></div>
+            </div>
+
+            <div class="analytics-section">
+              <p class="analytics-label">Popular Subjects</p>
+              <div id="popularSubjectsList"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

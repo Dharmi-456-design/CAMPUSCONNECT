@@ -1,0 +1,712 @@
+/* ════════════════════════════════════════════════════
+   CampusConnect Admin — EXACT LexIndia Theme
+   Gold #c9a84c | Purple #7c4dff
+   Light BG: #f5f3ef | Dark BG: #0c0f10
+   Font: Inter
+   ════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ─── EXACT LexIndia Design Tokens ────────────────── */
+:root {
+  /* === PRIMARY: LexIndia Light Gold === */
+  --gold:           #f0d074;   /* LexIndia bright light gold */
+  --gold-dark:      #c9a84c;   /* medium gold for hover */
+  --gold-deeper:    #b8943e;
+  --gold-light:     #f7e9a3;   /* very light gold tint */
+  --gold-soft:      #fdf8e8;   /* near-white gold bg */
+  --gold-border:    #e8d5a0;
+  --gold-glow:      rgba(240, 208, 116, 0.22);
+
+  /* === SECONDARY: LexIndia Purple === */
+  --purple:         #7c4dff;
+  --purple-light:   #cdbdff;
+  --purple-soft:    rgba(124, 77, 255, 0.12);
+
+  /* === BACKGROUNDS (LexIndia exact) === */
+  --bg-light:       #f5f3ef;   /* LexIndia warm off-white */
+  --bg-dark:        #0c0f10;   /* LexIndia near-black */
+  --card-light:     #ffffff;
+  --card-dark:      #131718;
+
+  /* === SIDEBAR === */
+  --sb-bg:          #0c0f10;   /* LexIndia dark BG as sidebar */
+  --sb-border:      #1a1f22;
+  --sb-text:        #8b9095;
+  --sb-hover:       #1a1f22;
+  --sb-width:       240px;
+
+  /* === MAIN CONTENT === */
+  --main-bg:        #f5f3ef;   /* LexIndia warm off-white */
+  --card-bg:        #ffffff;
+  --card-border:    #ddd8ce;
+  --card-shadow:    0 1px 3px rgba(17,24,39,0.06), 0 1px 2px rgba(17,24,39,0.04);
+
+  /* === TEXT (LexIndia exact) === */
+  --text:           #111827;   /* LexIndia light mode text */
+  --text-muted:     #6b7280;
+  --text-subtle:    #9ca3af;
+
+  /* === SEMANTIC === */
+  --green:          #16a34a;
+  --green-soft:     #f0fdf4;
+  --red:            #dc2626;
+  --red-soft:       #fef2f2;
+  --blue:           #0891b2;
+  --blue-soft:      #e0f2fe;
+
+  /* === BADGES === */
+  --badge-pending-bg:    #fef9e7;
+  --badge-pending-txt:   #78540a;
+  --badge-reviewed-bg:   #dcfce7;
+  --badge-reviewed-txt:  #166534;
+
+  --radius:    8px;
+  --radius-sm: 6px;
+}
+
+/* ─── Reset ───────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--main-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { text-decoration: none; color: inherit; }
+.hidden { display: none !important; }
+
+/* ════════════════════════════════════════════════════
+   LOGIN PAGE — split screen
+   ════════════════════════════════════════════════════ */
+
+.login-page {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Left dark panel */
+.login-sidebar {
+  width: 440px;
+  flex-shrink: 0;
+  background: var(--sb-bg);
+  display: flex;
+  align-items: center;
+  padding: 64px 52px;
+}
+
+.login-sidebar-content { width: 100%; }
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 44px;
+}
+
+.brand-icon {
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  background: rgba(240, 208, 116, 0.15);
+  border: 1px solid rgba(240, 208, 116, 0.4);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f0d074;        /* gold text for brand */
+  letter-spacing: -0.2px;
+}
+
+.login-tagline {
+  font-size: 28px;
+  font-weight: 700;
+  color: #e1e3e4;
+  letter-spacing: -0.5px;
+  line-height: 1.25;
+  margin-bottom: 12px;
+}
+
+/* Gold underline bar */
+.login-tagline::after {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 3px;
+  background: var(--gold);
+  border-radius: 2px;
+  margin-top: 10px;
+}
+
+.login-desc {
+  font-size: 14px;
+  color: #8b9095;
+  line-height: 1.65;
+  margin-bottom: 40px;
+}
+
+.login-features { display: flex; flex-direction: column; gap: 12px; }
+
+.login-feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #c4c7ca;
+}
+
+.feature-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.feature-dot.gold   { background: var(--gold); }
+.feature-dot.purple { background: var(--purple-light); }
+.feature-dot.green  { background: #4ade80; }
+
+/* Right white form */
+.login-form-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 40px;
+  background: var(--card-bg);
+}
+
+.login-form-box {
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-form-box h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.4px;
+  margin-bottom: 4px;
+}
+
+.form-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+.form-group { margin-bottom: 16px; }
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 13px;
+  background: #fff;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-group input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-glow);
+}
+
+.form-group input::placeholder { color: var(--text-subtle); }
+
+/* ─── Buttons ─────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+/* Primary = LexIndia Gold */
+.btn-primary {
+  background: var(--gold);
+  color: #1a1000;         /* dark text on gold */
+  border-color: var(--gold);
+  width: 100%;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: 10px;
+  letter-spacing: 0.01em;
+}
+
+.btn-primary:hover {
+  background: var(--gold-dark);
+  border-color: var(--gold-dark);
+}
+
+.btn-outline {
+  background: #fff;
+  border-color: var(--card-border);
+  color: var(--text);
+}
+
+.btn-outline:hover { background: var(--main-bg); }
+
+.btn-success {
+  background: var(--green-soft);
+  border-color: #bbf7d0;
+  color: #166534;
+}
+.btn-success:hover { background: #dcfce7; }
+
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* ─── Error Banner ────────────────────────────────── */
+
+.error-banner {
+  background: var(--red-soft);
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 700px) {
+  .login-page { flex-direction: column; }
+  .login-sidebar { width: 100%; padding: 40px 28px; }
+  .login-form-area { padding: 40px 24px; }
+}
+
+/* ════════════════════════════════════════════════════
+   DASHBOARD
+   ════════════════════════════════════════════════════ */
+
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ─── Sidebar ─────────────────────────────────────── */
+
+.sidebar {
+  width: var(--sb-width);
+  flex-shrink: 0;
+  background: var(--sb-bg);
+  border-right: 1px solid var(--sb-border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 14px;
+  border-bottom: 1px solid var(--sb-border);
+  flex-shrink: 0;
+}
+
+.sidebar-brand .brand-icon {
+  font-size: 16px;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+}
+
+.sidebar-brand .brand-name {
+  font-size: 14px;
+  color: #f0d074;
+}
+
+/* Nav */
+.sidebar-nav {
+  flex: 1;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nav-section-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #3a3f44;
+  padding: 10px 8px 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sb-text);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.nav-item:hover {
+  background: var(--sb-hover);
+  color: #c4c7ca;
+}
+
+/* Active = LexIndia Light Gold */
+.nav-item.active {
+  background: rgba(240, 208, 116, 0.14);
+  color: var(--gold);        /* bright light gold */
+  border: 1px solid rgba(240, 208, 116, 0.28);
+}
+
+.nav-item svg { flex-shrink: 0; opacity: 0.6; }
+.nav-item.active svg { opacity: 1; color: var(--gold-light); }
+.nav-item:hover svg { opacity: 0.85; }
+
+/* Footer */
+.sidebar-footer {
+  padding: 12px 14px;
+  border-top: 1px solid var(--sb-border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Light Gold avatar ring */
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(240, 208, 116, 0.18);
+  color: var(--gold);        /* bright gold text */
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(240, 208, 116, 0.35);
+}
+
+.user-details { display: flex; flex-direction: column; min-width: 0; }
+
+.user-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #c4c7ca;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-role { font-size: 10px; color: #3a3f44; }
+
+.btn-logout {
+  background: transparent;
+  border: none;
+  color: #3a3f44;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  transition: color 0.12s, background 0.12s;
+  flex-shrink: 0;
+}
+
+.btn-logout:hover {
+  color: var(--red);
+  background: rgba(220, 38, 38, 0.08);
+}
+
+/* ─── Main Content ────────────────────────────────── */
+
+.main-content {
+  flex: 1;
+  margin-left: var(--sb-width);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top bar — white with warm bg */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--card-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.page-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+
+.page-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.top-bar-right { display: flex; align-items: center; gap: 8px; }
+
+/* Content body */
+.content-body { padding: 22px 28px 48px; flex: 1; }
+
+/* ─── KPI Grid ────────────────────────────────────── */
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+@media (max-width: 1200px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 800px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.kpi-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: var(--card-shadow);
+}
+
+.kpi-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Gold as primary KPI icon — matching LexIndia */
+.kpi-icon-wrap.gold   { background: var(--gold-soft);   color: var(--gold-dark); border: 1px solid var(--gold-border); }
+.kpi-icon-wrap.purple { background: var(--purple-soft); color: var(--purple); }
+.kpi-icon-wrap.green  { background: var(--green-soft);  color: var(--green); }
+.kpi-icon-wrap.red    { background: var(--red-soft);    color: var(--red); }
+.kpi-icon-wrap.blue   { background: var(--blue-soft);   color: var(--blue); }
+
+.kpi-info { min-width: 0; }
+
+.kpi-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kpi-info h3 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  margin-top: 2px;
+}
+
+/* ─── Content Columns ─────────────────────────────── */
+
+.content-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) { .content-columns { grid-template-columns: 1fr; } }
+
+/* ─── Panel ───────────────────────────────────────── */
+
+.panel {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+/* Gold left border — LexIndia accent */
+.panel-header {
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--card-border);
+  border-left: 3px solid var(--gold);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.1px;
+}
+
+.panel-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ─── Reports ─────────────────────────────────────── */
+
+.reports-list { display: flex; flex-direction: column; }
+
+.report-card {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--card-border);
+}
+.report-card:last-child { border-bottom: none; }
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.report-header strong { color: var(--text); font-weight: 600; }
+
+.report-reason {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.report-reason strong { color: var(--text); font-weight: 600; }
+
+.report-actions { display: flex; gap: 8px; }
+
+/* ─── Badges ──────────────────────────────────────── */
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.badge-pending  { background: var(--badge-pending-bg);  color: var(--badge-pending-txt); }
+.badge-reviewed { background: var(--badge-reviewed-bg); color: var(--badge-reviewed-txt); }
+
+/* ─── Analytics ───────────────────────────────────── */
+
+.analytics-section {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--card-border);
+}
+.analytics-section:last-child { border-bottom: none; }
+
+.analytics-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-subtle);
+  margin-bottom: 10px;
+}
+
+.analytics-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f3ef;
+  font-size: 13px;
+  color: var(--text-muted);
+  gap: 8px;
+}
+.analytics-item:last-child { border-bottom: none; padding-bottom: 0; }
+.analytics-item span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.analytics-item strong { color: var(--text); font-weight: 500; }
+
+/* Gold stat highlight */
+.stat-green {
+  color: var(--gold-dark);
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+/* ─── States ──────────────────────────────────────── */
+
+.loading-state {
+  padding: 24px 18px;
+  font-size: 13px;
+  color: var(--text-subtle);
+}
+
+.empty-state {
+  padding: 28px 18px;
+  font-size: 13px;
+  color: var(--text-subtle);
+  text-align: center;
+}
