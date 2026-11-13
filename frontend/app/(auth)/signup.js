@@ -8,18 +8,36 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 
+/**
+ * Signup Screen (Inspired by Image 2 - Educonnect/CampusOne Signup Flow)
+ * Fields: Name, Username, Email, Password, rounded emerald green `#16A36A` Signup button.
+ */
 export default function SignupScreen() {
   const [name, setName] = useState('');
-  const [studentId, setStudentId] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSignup = () => {
-    // Navigates to main app dashboard (full registration wired in Day 1)
-    router.replace('/(tabs)/home');
+    if (!name.trim() || !username.trim() || !email.trim() || !password.trim()) {
+      Alert.alert('Incomplete Form', 'Please fill in all the required fields to create your account.');
+      return;
+    }
+
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      Alert.alert(
+        'Account Created! 🎉',
+        'Welcome to CampusOne. You are now logged in as a student.',
+        [{ text: 'Continue to App', onPress: () => router.replace('/(tabs)/home') }]
+      );
+    }, 400);
   };
 
   return (
@@ -28,16 +46,30 @@ export default function SignupScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
+        {/* Top Back Navigation */}
+        <View style={styles.topNav}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.backArrow}>←</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Brand Header */}
-        <View style={styles.brandHeader}>
-          <Text style={styles.heading}>Create Account 🚀</Text>
-          <Text style={styles.subheading}>Join CampusOne to access your college super app</Text>
+        <View style={styles.brandBox}>
+          <View style={styles.logoBadge}>
+            <Text style={styles.logoIcon}>🎓</Text>
+          </View>
+          <Text style={styles.brandTitle}>Campus<Text style={{ color: '#16A36A' }}>One</Text></Text>
+          <Text style={styles.brandSubtitle}>Create your student life super app account</Text>
         </View>
 
         {/* Card Form */}
         <View style={styles.formCard}>
           <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Full Name</Text>
+            <Text style={styles.label}>Name</Text>
             <TextInput
               style={styles.input}
               placeholder="e.g. Michael Aguero"
@@ -48,21 +80,21 @@ export default function SignupScreen() {
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Student ID / Roll No</Text>
+            <Text style={styles.label}>Username / Roll No</Text>
             <TextInput
               style={styles.input}
               placeholder="e.g. 17081010086"
               placeholderTextColor="#94A3B8"
-              value={studentId}
-              onChangeText={setStudentId}
+              value={username}
+              onChangeText={setUsername}
             />
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.label}>College Email</Text>
+            <Text style={styles.label}>Email</Text>
             <TextInput
               style={styles.input}
-              placeholder="student@university.edu"
+              placeholder="e.g. michael@university.edu"
               placeholderTextColor="#94A3B8"
               keyboardType="email-address"
               autoCapitalize="none"
@@ -83,16 +115,22 @@ export default function SignupScreen() {
             />
           </View>
 
-          <TouchableOpacity style={styles.submitBtn} onPress={handleSignup} activeOpacity={0.85}>
-            <Text style={styles.submitBtnText}>Create Account</Text>
+          <TouchableOpacity
+            style={styles.submitBtn}
+            onPress={handleSignup}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.submitBtnText}>
+              {loading ? 'Creating Account...' : 'Signup'}
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Footer */}
+        {/* Bottom Link to Login */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.footerLink}>Sign In</Text>
+          <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
+            <Text style={styles.footerLink}>Login</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -107,31 +145,66 @@ const styles = StyleSheet.create({
   },
   inner: {
     flexGrow: 1,
-    padding: 24,
+    paddingHorizontal: 24,
+    paddingTop: 48,
+    paddingBottom: 36,
+    justifyContent: 'space-between',
+  },
+  topNav: {
+    marginBottom: 8,
+  },
+  backBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  brandHeader: {
-    alignItems: 'center',
-    marginBottom: 24,
+  backArrow: {
+    fontSize: 20,
+    color: '#172B4D',
   },
-  heading: {
+  brandBox: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  logoBadge: {
+    width: 68,
+    height: 68,
+    borderRadius: 22,
+    backgroundColor: '#16A36A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#16A36A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 12,
+    elevation: 5,
+    marginBottom: 10,
+  },
+  logoIcon: {
+    fontSize: 34,
+  },
+  brandTitle: {
     fontSize: 26,
     fontWeight: '800',
     color: '#172B4D',
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
-  subheading: {
-    fontSize: 14,
+  brandSubtitle: {
+    fontSize: 13,
     color: '#64748B',
-    marginTop: 6,
-    textAlign: 'center',
+    marginTop: 4,
   },
   formCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 22,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    padding: 22,
     shadowColor: '#172B4D',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
@@ -143,29 +216,29 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#172B4D',
     marginBottom: 8,
   },
   input: {
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
     borderRadius: 14,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 13,
     fontSize: 15,
     color: '#172B4D',
-    backgroundColor: '#F8FAFC',
   },
   submitBtn: {
     backgroundColor: '#16A36A',
-    paddingVertical: 16,
+    paddingVertical: 15,
     borderRadius: 14,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 8,
     shadowColor: '#16A36A',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.22,
     shadowRadius: 8,
     elevation: 3,
   },
@@ -177,7 +250,7 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: 20,
   },
   footerText: {
     color: '#64748B',
