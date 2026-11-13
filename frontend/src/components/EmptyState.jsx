@@ -1,34 +1,95 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useTheme } from '../context/ThemeContext';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-export default function EmptyState({ title, message, onRefresh }) {
-  const { theme } = useTheme();
+/**
+ * Reusable Empty State Component
+ * Features illustration icon, title, subtitle, and optional CTA button.
+ */
+export default function EmptyState({
+  icon = '📭',
+  title = 'No items found',
+  subtitle = 'There are no records to display at this moment.',
+  actionLabel,
+  onAction,
+  style,
+}) {
   return (
-    <View style={[styles.container, { backgroundColor: theme.bg }]}>
-      <Text style={styles.emoji}>📭</Text>
-      <Text style={[styles.title, { color: theme.textPrimary }]}>{title || 'Nothing here yet'}</Text>
-      {message ? (
-        <Text style={[styles.message, { color: theme.textMuted }]}>{message}</Text>
-      ) : null}
-      {onRefresh ? (
-        <TouchableOpacity
-          style={[styles.btn, { borderColor: theme.primary }]}
-          onPress={onRefresh}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.btnText, { color: theme.primary }]}>Refresh</Text>
-        </TouchableOpacity>
-      ) : null}
+    <View style={[styles.container, style]}>
+      <View style={styles.card}>
+        <View style={styles.iconCircle}>
+          <Text style={styles.icon}>{icon}</Text>
+        </View>
+
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.subtitle}>{subtitle}</Text>
+
+        {actionLabel && onAction ? (
+          <TouchableOpacity style={styles.actionBtn} onPress={onAction} activeOpacity={0.85}>
+            <Text style={styles.actionText}>{actionLabel}</Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
-  emoji: { fontSize: 40, marginBottom: 16 },
-  title: { fontSize: 17, fontWeight: '600', marginBottom: 8, textAlign: 'center' },
-  message: { fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 20, maxWidth: 280 },
-  btn: { marginTop: 20, paddingVertical: 9, paddingHorizontal: 24, borderRadius: 10, borderWidth: 1.5 },
-  btnText: { fontSize: 13, fontWeight: '600' },
+  container: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 26,
+    alignItems: 'center',
+    width: '100%',
+    shadowColor: '#172B4D',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  iconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 22,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  icon: {
+    fontSize: 30,
+  },
+  title: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#172B4D',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 16,
+  },
+  actionBtn: {
+    backgroundColor: '#16A36A',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  actionText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
 });

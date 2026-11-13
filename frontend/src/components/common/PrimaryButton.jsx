@@ -1,25 +1,36 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { COLORS } from '../../constants/colors';
 
-export default function PrimaryButton({ title, onPress, loading, disabled, style, icon }) {
+/**
+ * Reusable Primary Button Component
+ * Uses emerald green #16A36A, rounded 14px corners, and white text.
+ */
+export default function PrimaryButton({
+  title,
+  onPress,
+  disabled = false,
+  loading = false,
+  style,
+  textStyle,
+  icon,
+}) {
   return (
     <TouchableOpacity
-      onPress={onPress}
-      disabled={loading || disabled}
-      activeOpacity={0.85}
       style={[
-        styles.button,
-        (loading || disabled) && styles.disabledBtn,
-        style
+        styles.btn,
+        disabled && styles.btnDisabled,
+        style,
       ]}
+      onPress={onPress}
+      disabled={disabled || loading}
+      activeOpacity={0.85}
     >
       {loading ? (
-        <ActivityIndicator color={COLORS.white} />
+        <ActivityIndicator size="small" color="#FFFFFF" />
       ) : (
         <>
-          {icon ? <Text style={styles.icon}>{icon}</Text> : null}
-          <Text style={styles.text}>{title}</Text>
+          {icon ? icon : null}
+          <Text style={[styles.text, textStyle]}>{title}</Text>
         </>
       )}
     </TouchableOpacity>
@@ -27,32 +38,29 @@ export default function PrimaryButton({ title, onPress, loading, disabled, style
 }
 
 const styles = StyleSheet.create({
-  button: {
-    backgroundColor: COLORS.primary,
-    flexDirection: 'row',
+  btn: {
+    backgroundColor: '#16A36A',
+    paddingVertical: 15,
+    paddingHorizontal: 22,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 14,
-    shadowColor: COLORS.primary,
+    flexDirection: 'row',
+    gap: 8,
+    shadowColor: '#16A36A',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 5
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  disabledBtn: {
-    backgroundColor: COLORS.textMuted,
+  btnDisabled: {
+    backgroundColor: '#94A3B8',
     shadowOpacity: 0,
-    elevation: 0
-  },
-  icon: {
-    marginRight: 8,
-    fontSize: 16
+    elevation: 0,
   },
   text: {
-    color: COLORS.white,
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '700'
-  }
+    fontWeight: '700',
+  },
 });
