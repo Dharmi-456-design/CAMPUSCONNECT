@@ -1,341 +1,281 @@
 /**
- * CampusOne — Day 2 Authentication Test Suite
- * Tests all authentication, authorization, and protected profile endpoints
- * Uses Express in-process dispatcher so it runs cleanly and deterministically in any environment
+ * testAuth.js — Integration tests for authentication and protected routes
+ * Uses supertest to fire real HTTP requests through the Express app.
+ * MongoDB is mocked in-memory so no network connection is needed.
+ *
+ * Run: node src/scripts/testAuth.js
  */
 
-const { EventEmitter } = require('events');
+'use strict';
+
+// ─── 1. Prevent real MongoDB connection before anything is required ───────────
+process.env.MONGODB_URI = '';
+process.env.JWT_SECRET = 'test_jwt_secret_campusconnect_2026';
+process.env.NODE_ENV = 'test';
+
+// ─── 2. Mock mongoose BEFORE requiring app/models ─────────────────────────────
 const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
+
+// Stub connect so it resolves immediately without hitting Atlas
+mongoose.connect = () => Promise.resolve();
+
+// ─── 3. Build in-memory user store & mock User model ─────────────────────────
 const bcrypt = require('bcryptjs');
-const app = require('../app');
-const User = require('../models/User');
 
-// Lightweight in-process HTTP dispatcher for Express
-function dispatch(app, { method, path, body, headers = {} }) {
-  return new Promise((resolve) => {
-    const req = new EventEmitter();
-    req.method = method.toUpperCase();
-    req.url = path;
-    req.originalUrl = path;
-    req.path = path.split('?')[0];
-    req.headers = {
-      'content-type': 'application/json',
-      ...headers
-    };
-    req.body = body || {};
-    req.query = {};
-    req.params = {};
+let _users = [];
+let _idCounter = 1;
 
-    const res = new EventEmitter();
-    let statusCode = 200;
-    let resHeaders = {};
-    let responseData = '';
-
-    res.status = function (code) {
-      statusCode = code;
-      return res;
-    };
-
-    res.statusCode = statusCode;
-
-    res.setHeader = function (k, v) {
-      resHeaders[k.toLowerCase()] = v;
-      return res;
-    };
-
-    res.getHeader = function (k) {
-      return resHeaders[k.toLowerCase()];
-    };
-
-    res.set = res.setHeader;
-
-    res.json = function (obj) {
-      responseData = JSON.stringify(obj);
-      res.setHeader('content-type', 'application/json');
-      resolve({
-        status: statusCode,
-        body: obj,
-        headers: resHeaders
-      });
-    };
-
-    res.send = function (data) {
-      if (typeof data === 'object') {
-        return res.json(data);
-      }
-      responseData = data;
-      resolve({
-        status: statusCode,
-        body: data,
-        headers: resHeaders
-      });
-    };
-
-    res.end = function (data) {
-      if (data) responseData = data;
-      try {
-        resolve({
-          status: statusCode,
-          body: JSON.parse(responseData),
-          headers: resHeaders
-        });
-      } catch (e) {
-        resolve({
-          status: statusCode,
-          body: responseData,
-          headers: resHeaders
-        });
-      }
-    };
-
-    app.handle(req, res);
-  });
+function makeId() {
+  return String(_idCounter++).padStart(24, '0');
 }
 
-async function runAuthTests() {
-  console.log('\n🚀 Starting CampusOne Day 2 Authentication Verification Suite...\n');
-
-  let passed = 0;
-  let failed = 0;
-
-  function assert(condition, message) {
-    if (condition) {
-      console.log(`  ✅ PASS: ${message}`);
-      passed++;
-    } else {
-      console.error(`  ❌ FAIL: ${message}`);
-      failed++;
-    }
+// Minimal mongoose ObjectId-like wrapper
+class FakeUser {
+  constructor(data) {
+    Object.assign(this, data);
+    if (!this._id) this._id = makeId();
   }
 
-  // Setup In-Memory Mock Store for User Model
-  const inMemoryUsers = [];
+  async matchPassword(plain) {
+    if (!this.passwordHash) return false;
+    return bcrypt.compare(plain, this.passwordHash);
+  }
 
-  User.findOne = function (query) {
-    return {
-      select: function () {
-        return new Promise((resolve) => {
-          const found = inMemoryUsers.find((u) => u.email === query.email?.toLowerCase());
-          resolve(found || null);
-        });
-      },
-      then: function (resolve) {
-        const found = inMemoryUsers.find((u) => u.email === query.email?.toLowerCase());
-        resolve(found || null);
-      }
-    };
+  async save() {
+    const idx = _users.findIndex(u => String(u._id) === String(this._id));
+    if (idx !== -1) _users[idx] = this;
+    else _users.push(this);
+    return this;
+  }
+
+  toJSON() {
+    const obj = { ...this };
+    delete obj.passwordHash;
+    delete obj.__v;
+    return obj;
+  }
+}
+
+// Chainable query helper
+function makeQuery(user) {
+  const q = { _user: user };
+  q.select = function (fields) {
+    if (typeof fields === 'string' && fields.includes('-passwordHash')) {
+      if (this._user) delete this._user.passwordHash;
+    }
+    return Promise.resolve(this._user ? new FakeUser(this._user) : null);
   };
+  return q;
+}
 
-  User.create = async function (data) {
-    const newUser = {
-      _id: new mongoose.Types.ObjectId(),
-      ...data,
-      matchPassword: async function (entered) {
-        return await bcrypt.compare(entered, this.passwordHash);
-      },
-      toJSON: function () {
-        const copy = { ...this };
-        delete copy.passwordHash;
-        return copy;
-      }
-    };
-    inMemoryUsers.push(newUser);
-    return newUser;
+// Patch the User model that will be loaded by controllers
+const UserModule = require('../models/User');
+
+// Override static & instance methods on the already-compiled model
+UserModule.findOne = async (query) => {
+  const key = Object.keys(query)[0];
+  const val = Object.values(query)[0];
+  const found = _users.find(u => u[key] === val);
+  if (!found) return null;
+  const u = new FakeUser({ ...found });
+  // Return a chainable query that also has .select()
+  const q = { _user: found };
+  q.select = function (fields) {
+    // If +passwordHash is requested keep it, else strip
+    if (typeof fields === 'string' && fields.startsWith('+')) {
+      return Promise.resolve(new FakeUser({ ...found })); // keep hash
+    }
+    const copy = { ...found };
+    delete copy.passwordHash;
+    return Promise.resolve(new FakeUser(copy));
   };
-
-  User.findById = function (id) {
-    return {
-      select: function () {
-        return new Promise((resolve) => {
-          const found = inMemoryUsers.find((u) => u._id.toString() === id.toString());
-          resolve(found || null);
-        });
-      },
-      then: function (resolve) {
-        const found = inMemoryUsers.find((u) => u._id.toString() === id.toString());
-        resolve(found || null);
-      }
-    };
+  // Also works as a thenable (for await without .select())
+  q.then = function (resolve, reject) {
+    return Promise.resolve(new FakeUser({ ...found })).then(resolve, reject);
   };
+  return q;
+};
 
-  User.findByIdAndUpdate = function (id, update) {
-    return {
-      select: function () {
-        return new Promise((resolve) => {
-          const found = inMemoryUsers.find((u) => u._id.toString() === id.toString());
-          if (found && update.$set) {
-            Object.assign(found, update.$set);
-          }
-          resolve(found || null);
-        });
-      },
-      then: function (resolve) {
-        const found = inMemoryUsers.find((u) => u._id.toString() === id.toString());
-        if (found && update.$set) {
-          Object.assign(found, update.$set);
-        }
-        resolve(found || null);
-      }
-    };
-  };
+UserModule.create = async (data) => {
+  const user = new FakeUser({ ...data, _id: makeId(), __v: 0 });
+  _users.push({ ...user });
+  return user;
+};
 
-  try {
-    const testEmail = `test.student.${Date.now()}@campus.edu`;
-    const initialPassword = 'SecurePassword123!';
-    const updatedPassword = 'NewSecurePassword456!';
-    let token = '';
+UserModule.findById = (id) => {
+  const found = _users.find(u => String(u._id) === String(id));
+  return makeQuery(found ? { ...found } : null);
+};
 
-    // Test 1: Register New Student
-    console.log('[Test 1] POST /api/v1/auth/register');
-    const regRes = await dispatch(app, {
-      method: 'POST',
-      path: '/api/v1/auth/register',
-      body: {
-        name: 'Michael Aguero',
-        email: testEmail,
-        password: initialPassword,
-        rollNumber: '17081010086',
-        branch: 'Computer Science',
-        semester: 6
-      }
-    });
-    assert(regRes.status === 201, `Registration returns HTTP 201 (got ${regRes.status})`);
-    assert(regRes.body.success === true, 'Response contains success=true');
-    assert(!!regRes.body.data?.token, 'Response contains valid JWT token');
-    assert(regRes.body.data?.user?.email === testEmail.toLowerCase(), 'User profile returned with matching email');
-    assert(!regRes.body.data?.user?.passwordHash, 'Security: passwordHash is NEVER returned in response');
-    token = regRes.body.data?.token;
+UserModule.findByIdAndUpdate = async (id, update, opts) => {
+  const idx = _users.findIndex(u => String(u._id) === String(id));
+  if (idx === -1) return null;
+  const set = update.$set || {};
+  _users[idx] = { ..._users[idx], ...set };
+  return new FakeUser({ ..._users[idx] });
+};
 
-    // Test 2: Reject Duplicate Email Registration
-    console.log('\n[Test 2] Duplicate Email Registration Prevention');
-    const dupRes = await dispatch(app, {
-      method: 'POST',
-      path: '/api/v1/auth/register',
-      body: {
-        name: 'Duplicate Student',
-        email: testEmail,
-        password: 'AnotherPassword123!'
-      }
-    });
-    assert(dupRes.status === 400, `Duplicate registration rejected with HTTP 400 (got ${dupRes.status})`);
+UserModule.hashPassword = async (plain) => {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(plain, salt);
+};
 
-    // Test 3: Login with Correct Credentials
-    console.log('\n[Test 3] POST /api/v1/auth/login (Valid credentials)');
-    const loginRes = await dispatch(app, {
-      method: 'POST',
-      path: '/api/v1/auth/login',
-      body: {
-        email: testEmail,
-        password: initialPassword
-      }
-    });
-    assert(loginRes.status === 200, `Login returns HTTP 200 (got ${loginRes.status})`);
-    assert(!!loginRes.body.data?.token, 'Login returns JWT token');
-    assert(!loginRes.body.data?.user?.passwordHash, 'Security: passwordHash is omitted on login');
-    token = loginRes.body.data?.token;
+// ─── 4. Load app AFTER mocks are in place ─────────────────────────────────────
+const request = require('supertest');
+const app = require('../app');
 
-    // Test 4: Reject Login with Invalid Password
-    console.log('\n[Test 4] POST /api/v1/auth/login (Invalid password)');
-    const badLoginRes = await dispatch(app, {
-      method: 'POST',
-      path: '/api/v1/auth/login',
-      body: {
-        email: testEmail,
-        password: 'WrongPassword999!'
-      }
-    });
-    assert(badLoginRes.status === 401, `Invalid password rejected with HTTP 401 (got ${badLoginRes.status})`);
+// ─── 5. Test runner helpers ───────────────────────────────────────────────────
+let passed = 0;
+let failed = 0;
 
-    // Test 5: Reject Protected Route without Token
-    console.log('\n[Test 5] GET /api/v1/auth/me (Unauthorized / No token)');
-    const noTokenRes = await dispatch(app, {
-      method: 'GET',
-      path: '/api/v1/auth/me'
-    });
-    assert(noTokenRes.status === 401, `Access without token returns HTTP 401 (got ${noTokenRes.status})`);
-
-    // Test 6: Access Protected Profile with Token
-    console.log('\n[Test 6] GET /api/v1/auth/me (Authorized with JWT)');
-    const meRes = await dispatch(app, {
-      method: 'GET',
-      path: '/api/v1/auth/me',
-      headers: { authorization: `Bearer ${token}` }
-    });
-    assert(meRes.status === 200, `Protected profile returns HTTP 200 (got ${meRes.status})`);
-    assert(meRes.body.data?.user?.name === 'Michael Aguero', 'Returns authentic user data');
-    assert(!meRes.body.data?.user?.passwordHash, 'Security: passwordHash is omitted in protected profile');
-
-    // Test 7: Update Profile
-    console.log('\n[Test 7] PUT /api/v1/users/profile (Update bio & skills)');
-    const updateRes = await dispatch(app, {
-      method: 'PUT',
-      path: '/api/v1/users/profile',
-      headers: { authorization: `Bearer ${token}` },
-      body: {
-        bio: 'Full-Stack Mobile Engineer & Campus Lead.',
-        skills: ['React Native', 'Node.js', 'MongoDB', 'Expo']
-      }
-    });
-    assert(updateRes.status === 200, `Update profile returns HTTP 200 (got ${updateRes.status})`);
-    assert(updateRes.body.data?.user?.bio === 'Full-Stack Mobile Engineer & Campus Lead.', 'Bio field updated');
-
-    // Test 8: Change Password — Incorrect Current Password
-    console.log('\n[Test 8] PUT /api/v1/users/change-password (Wrong current password)');
-    const badChangeRes = await dispatch(app, {
-      method: 'PUT',
-      path: '/api/v1/users/change-password',
-      headers: { authorization: `Bearer ${token}` },
-      body: {
-        currentPassword: 'IncorrectOldPassword',
-        newPassword: updatedPassword
-      }
-    });
-    assert(badChangeRes.status === 400, `Wrong current password returns HTTP 400 (got ${badChangeRes.status})`);
-
-    // Test 9: Change Password — Success
-    console.log('\n[Test 9] PUT /api/v1/users/change-password (Valid)');
-    // Set matchPassword for user instance
-    const userObj = inMemoryUsers.find((u) => u.email === testEmail.toLowerCase());
-    userObj.save = async function () { return this; };
-    const goodChangeRes = await dispatch(app, {
-      method: 'PUT',
-      path: '/api/v1/users/change-password',
-      headers: { authorization: `Bearer ${token}` },
-      body: {
-        currentPassword: initialPassword,
-        newPassword: updatedPassword
-      }
-    });
-    assert(goodChangeRes.status === 200, `Change password returns HTTP 200 (got ${goodChangeRes.status})`);
-
-    // Test 10: Login with New Password
-    console.log('\n[Test 10] POST /api/v1/auth/login (Verify with updated password)');
-    userObj.passwordHash = await User.hashPassword(updatedPassword);
-    const newLoginRes = await dispatch(app, {
-      method: 'POST',
-      path: '/api/v1/auth/login',
-      body: {
-        email: testEmail,
-        password: updatedPassword
-      }
-    });
-    assert(newLoginRes.status === 200, `Login with new password returns HTTP 200 (got ${newLoginRes.status})`);
-
-  } catch (err) {
-    console.error('Test execution error:', err);
+function assert(condition, label, detail) {
+  if (condition) {
+    console.log(`  ✅  PASS — ${label}`);
+    passed++;
+  } else {
+    console.error(`  ❌  FAIL — ${label}${detail ? ': ' + detail : ''}`);
     failed++;
   }
+}
 
-  console.log('\n=======================================');
-  console.log(`Results: ${passed} Passed, ${failed} Failed`);
-  console.log('=======================================\n');
+// ─── 6. Test suite ────────────────────────────────────────────────────────────
+async function runTests() {
+  console.log('\n════════════════════════════════════════════════════════');
+  console.log(' CampusConnect — Authentication & Protected Routes Tests');
+  console.log('════════════════════════════════════════════════════════\n');
+
+  let token = '';
+  const TEST_USER = {
+    name:     'Test Student',
+    email:    'teststudent@campusconnect.test',
+    password: 'SecurePass123'
+  };
+
+  // ── Test 1: Register a new user ───────────────────────────────────────────
+  console.log('Test 1: Register a new user');
+  {
+    const res = await request(app)
+      .post('/api/v1/auth/register')
+      .send(TEST_USER);
+    assert(res.status === 201, 'POST /api/v1/auth/register returns 201', `got ${res.status}`);
+    assert(res.body.success === true, 'Response has success:true');
+    assert(res.body.data && res.body.data.token, 'Response contains JWT token');
+    assert(!JSON.stringify(res.body).includes('passwordHash'), 'passwordHash NOT in response body');
+    if (res.body.data && res.body.data.token) token = res.body.data.token;
+  }
+
+  // ── Test 2: Duplicate email is rejected ───────────────────────────────────
+  console.log('\nTest 2: Duplicate email is rejected');
+  {
+    const res = await request(app)
+      .post('/api/v1/auth/register')
+      .send(TEST_USER);
+    assert(res.status === 400, 'Duplicate email returns 400', `got ${res.status}`);
+    assert(res.body.success === false, 'Response has success:false');
+  }
+
+  // ── Test 3: Login with valid credentials ──────────────────────────────────
+  console.log('\nTest 3: Login with valid credentials');
+  {
+    const res = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: TEST_USER.email, password: TEST_USER.password });
+    assert(res.status === 200, 'POST /api/v1/auth/login returns 200', `got ${res.status}`);
+    assert(res.body.success === true, 'Login success:true');
+    assert(res.body.data && res.body.data.token, 'Login returns JWT token');
+    assert(!JSON.stringify(res.body).includes('passwordHash'), 'passwordHash NOT in login response');
+    if (res.body.data && res.body.data.token) token = res.body.data.token;
+  }
+
+  // ── Test 4: Login with wrong password is rejected ─────────────────────────
+  console.log('\nTest 4: Wrong password is rejected');
+  {
+    const res = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: TEST_USER.email, password: 'wrongpassword' });
+    assert(res.status === 401, 'Wrong password returns 401', `got ${res.status}`);
+    assert(res.body.success === false, 'Response has success:false');
+  }
+
+  // ── Test 5: Protected route without token returns 401 ─────────────────────
+  console.log('\nTest 5: Protected route without token returns 401');
+  {
+    const res = await request(app).get('/api/v1/auth/me');
+    assert(res.status === 401, 'GET /api/v1/auth/me without token returns 401', `got ${res.status}`);
+    assert(res.body.success === false, 'Response has success:false');
+  }
+
+  // ── Test 6: Fetch profile with valid token ────────────────────────────────
+  console.log('\nTest 6: GET /api/v1/auth/me with valid token');
+  {
+    const res = await request(app)
+      .get('/api/v1/auth/me')
+      .set('Authorization', `Bearer ${token}`);
+    assert(res.status === 200, 'GET /api/v1/auth/me returns 200', `got ${res.status}`);
+    assert(res.body.success === true, 'Response has success:true');
+    assert(res.body.data && res.body.data.user, 'Response contains user object');
+    assert(!JSON.stringify(res.body).includes('passwordHash'), 'passwordHash NOT in profile response');
+  }
+
+  // ── Test 7: Update profile ────────────────────────────────────────────────
+  console.log('\nTest 7: PUT /api/v1/users/profile updates profile');
+  {
+    const res = await request(app)
+      .put('/api/v1/users/profile')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ bio: 'CS student, 3rd year', college: 'Tech University' });
+    assert(res.status === 200, 'PUT /api/v1/users/profile returns 200', `got ${res.status}`);
+    assert(res.body.success === true, 'Response has success:true');
+    assert(!JSON.stringify(res.body).includes('passwordHash'), 'passwordHash NOT in update response');
+  }
+
+  // ── Test 8: Change password — wrong current password ─────────────────────
+  console.log('\nTest 8: Change password with wrong current password');
+  {
+    const res = await request(app)
+      .put('/api/v1/users/change-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ currentPassword: 'wrongOldPassword', newPassword: 'NewPass456' });
+    assert(res.status === 400, 'Wrong current password returns 400', `got ${res.status}`);
+    assert(res.body.success === false, 'Response has success:false');
+  }
+
+  // ── Test 9: Change password with correct current password ─────────────────
+  console.log('\nTest 9: Change password with correct current password');
+  {
+    const res = await request(app)
+      .put('/api/v1/users/change-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ currentPassword: TEST_USER.password, newPassword: 'NewSecurePass789' });
+    assert(res.status === 200, 'PUT /api/v1/users/change-password returns 200', `got ${res.status}`);
+    assert(res.body.success === true, 'Response has success:true');
+  }
+
+  // ── Test 10: Login with new password ──────────────────────────────────────
+  console.log('\nTest 10: Login with new password after password change');
+  {
+    const res = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: TEST_USER.email, password: 'NewSecurePass789' });
+    assert(res.status === 200, 'Login with new password returns 200', `got ${res.status}`);
+    assert(res.body.success === true, 'Login success:true');
+    assert(!JSON.stringify(res.body).includes('passwordHash'), 'passwordHash NOT in response');
+  }
+
+  // ── Summary ───────────────────────────────────────────────────────────────
+  console.log('\n════════════════════════════════════════════════════════');
+  console.log(` Results: ${passed} passed, ${failed} failed out of ${passed + failed} tests`);
+  console.log('════════════════════════════════════════════════════════\n');
 
   if (failed > 0) {
     process.exit(1);
   } else {
+    console.log('✅  All authentication and protected route tests passed!');
     process.exit(0);
   }
 }
 
-runAuthTests();
+runTests().catch(err => {
+  console.error('Fatal error during test run:', err);
+  process.exit(1);
+});
