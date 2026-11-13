@@ -21,6 +21,11 @@ const userSchema = new mongoose.Schema(
       required: false,
       select: false
     },
+    rollNumber: {
+      type: String,
+      trim: true,
+      default: ''
+    },
     googleId: {
       type: String,
       sparse: true,
@@ -33,19 +38,27 @@ const userSchema = new mongoose.Schema(
     },
     college: {
       type: String,
-      default: ''
+      default: 'College of Engineering'
     },
     branch: {
       type: String,
-      default: ''
+      default: 'Computer Science & Engineering'
     },
     semester: {
       type: Number,
-      default: 1
+      default: 6
     },
     year: {
       type: Number,
-      default: 1
+      default: 3
+    },
+    gpa: {
+      type: Number,
+      default: 3.67
+    },
+    sks: {
+      type: Number,
+      default: 89
     },
     skills: {
       type: [String],
@@ -61,7 +74,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['student', 'admin'],
+      enum: ['student', 'admin', 'faculty'],
       default: 'student'
     },
     isVerified: {
@@ -96,7 +109,14 @@ userSchema.set('toJSON', {
 
 // Instance method to compare password
 userSchema.methods.matchPassword = async function (enteredPassword) {
+  if (!this.passwordHash) return false;
   return await bcrypt.compare(enteredPassword, this.passwordHash);
+};
+
+// Static helper to hash passwords
+userSchema.statics.hashPassword = async function (plainPassword) {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(plainPassword, salt);
 };
 
 module.exports = mongoose.model('User', userSchema);

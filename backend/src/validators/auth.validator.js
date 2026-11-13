@@ -12,11 +12,12 @@ const registerSchema = Joi.object({
     'string.min': 'Password must be at least 6 characters long',
     'string.empty': 'Password is required'
   }),
-  college: Joi.string().trim().allow(''),
-  branch: Joi.string().trim().allow(''),
+  rollNumber: Joi.string().trim().allow('').optional(),
+  college: Joi.string().trim().allow('').optional(),
+  branch: Joi.string().trim().allow('').optional(),
   semester: Joi.number().integer().min(1).max(10).optional(),
   year: Joi.number().integer().min(1).max(6).optional(),
-  role: Joi.string().valid('student', 'admin').optional()
+  role: Joi.string().valid('student', 'admin', 'faculty').optional()
 });
 
 const loginSchema = Joi.object({
@@ -31,17 +32,31 @@ const loginSchema = Joi.object({
 
 const updateProfileSchema = Joi.object({
   name: Joi.string().trim().optional(),
+  rollNumber: Joi.string().trim().allow('').optional(),
   college: Joi.string().trim().optional(),
   branch: Joi.string().trim().optional(),
   semester: Joi.number().integer().min(1).max(10).optional(),
   year: Joi.number().integer().min(1).max(6).optional(),
+  gpa: Joi.number().min(0).max(4).optional(),
+  sks: Joi.number().integer().min(0).optional(),
   skills: Joi.array().items(Joi.string().trim()).optional(),
   bio: Joi.string().allow('').optional(),
-  photoUrl: Joi.string().uri().allow('').optional()
+  photoUrl: Joi.string().allow('').optional()
+});
+
+const changePasswordSchema = Joi.object({
+  currentPassword: Joi.string().required().messages({
+    'string.empty': 'Current password is required'
+  }),
+  newPassword: Joi.string().min(6).required().messages({
+    'string.min': 'New password must be at least 6 characters long',
+    'string.empty': 'New password is required'
+  })
 });
 
 module.exports = {
   registerSchema,
   loginSchema,
-  updateProfileSchema
+  updateProfileSchema,
+  changePasswordSchema
 };
