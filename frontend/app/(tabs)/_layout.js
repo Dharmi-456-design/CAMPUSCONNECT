@@ -1,13 +1,8 @@
+import React from 'react';
 import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
 
-type TabIconProps = {
-  focused: boolean;
-  label: string;
-  emoji: string;
-};
-
-function TabIcon({ focused, label, emoji }: TabIconProps) {
+function TabIcon({ focused, label, emoji }) {
   return (
     <View style={styles.iconWrap}>
       <View style={[styles.emojiContainer, focused && styles.emojiContainerActive]}>
@@ -30,31 +25,31 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          tabBarIcon: ({ focused }: { focused: boolean }) => <TabIcon focused={focused} label="Home" emoji="🏠" />,
+          tabBarIcon: ({ focused }) => <TabIcon focused={focused} label="Home" emoji="🏠" />,
         }}
       />
       <Tabs.Screen
         name="academics"
         options={{
-          tabBarIcon: ({ focused }: { focused: boolean }) => <TabIcon focused={focused} label="Academics" emoji="📚" />,
+          tabBarIcon: ({ focused }) => <TabIcon focused={focused} label="Academics" emoji="📚" />,
         }}
       />
       <Tabs.Screen
         name="events"
         options={{
-          tabBarIcon: ({ focused }: { focused: boolean }) => <TabIcon focused={focused} label="Events" emoji="📅" />,
+          tabBarIcon: ({ focused }) => <TabIcon focused={focused} label="Events" emoji="📅" />,
         }}
       />
       <Tabs.Screen
         name="community"
         options={{
-          tabBarIcon: ({ focused }: { focused: boolean }) => <TabIcon focused={focused} label="Community" emoji="🤝" />,
+          tabBarIcon: ({ focused }) => <TabIcon focused={focused} label="Community" emoji="🤝" />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarIcon: ({ focused }: { focused: boolean }) => <TabIcon focused={focused} label="Profile" emoji="👤" />,
+          tabBarIcon: ({ focused }) => <TabIcon focused={focused} label="Profile" emoji="👤" />,
         }}
       />
     </Tabs>
