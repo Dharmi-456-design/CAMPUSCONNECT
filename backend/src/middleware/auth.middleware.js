@@ -3,6 +3,10 @@ const env = require('../config/env');
 const ApiResponse = require('../utils/apiResponse');
 const User = require('../models/User');
 
+/**
+ * Protect routes: verifies JWT in Authorization Bearer header
+ * Attaches authenticated user object to req.user
+ */
 const protect = async (req, res, next) => {
   let token;
 
@@ -10,32 +14,52 @@ const protect = async (req, res, next) => {
     token = req.headers.authorization.split(' ')[1];
   }
 
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, env.JWT_SECRET);
-      const user = await User.findById(decoded.id);
-      if (user) {
-        req.user = user;
-        return next();
-      }
-    } catch (error) {
-      // If token verification fails, proceed to primary fallback
-    }
+  if (!token) {
+    return ApiResponse.error(res, 'Not authorized, no token provided', [], 401);
   }
 
-  // Graceful Session Fallback:
-  // If no token or token is from previous session, automatically connect to the primary verified student
   try {
-    const defaultUser = (await User.findOne({ email: 'dharmi@swaminarayan.edu' })) || (await User.findOne({ role: 'student' })) || (await User.findOne({}));
-    if (defaultUser) {
-      req.user = defaultUser;
-      return next();
-    }
-  } catch (dbErr) {
-    console.error('Auth fallback error:', dbErr);
-  }
+    const decoded = jwt.verify(token, env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-passwordHash');
 
-  return ApiResponse.error(res, 'Not authorized, no token provided', [], 401);
+    if (!user) {
+      return ApiResponse.error(res, 'Not authorized, user not found', [], 401);
+    }
+
+    req.user = user;
+    return next();
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return ApiResponse.error(res, 'Token expired, please login again', [], 401);
+    }
+    return ApiResponse.error(res, 'Not authorized, token invalid', [], 401);
+  }
 };
 
-module.exports = { protect };
+/**
+ * Role-based authorization middleware: restricts endpoint access by role
+ * e.g. authorize('admin'), authorize('admin', 'faculty')
+ */
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return ApiResponse.error(res, 'Not authorized, please authenticate first', [], 401);
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return ApiResponse.error(
+        res,
+        `User role '${req.user.role}' is not authorized to access this resource`,
+        [],
+        403
+      );
+    }
+
+    next();
+  };
+};
+
+module.exports = {
+  protect,
+  authorize
+};

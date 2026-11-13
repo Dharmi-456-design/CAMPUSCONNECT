@@ -52,20 +52,25 @@ const register = asyncHandler(async (req, res) => {
   );
 });
 
-// @desc    Login user & return token
-// @route   POST /api/auth/login
+// @desc    Login user & return JWT token
+// @route   POST /api/v1/auth/login or POST /api/auth/login
 // @access  Public
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email: email.toLowerCase() }).select('+passwordHash');
+  if (!email || !password) {
+    return ApiResponse.error(res, 'Please provide both email and password', [], 400);
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const user = await User.findOne({ email: normalizedEmail }).select('+passwordHash');
   if (!user) {
-    return ApiResponse.error(res, 'Invalid credentials', [], 401);
+    return ApiResponse.error(res, 'Invalid email or password', [], 401);
   }
 
   const isMatch = await user.matchPassword(password);
   if (!isMatch) {
-    return ApiResponse.error(res, 'Invalid credentials', [], 401);
+    return ApiResponse.error(res, 'Invalid email or password', [], 401);
   }
 
   const token = generateToken(user._id, user.role);
