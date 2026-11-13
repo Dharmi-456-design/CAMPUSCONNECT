@@ -21,6 +21,7 @@ import axiosClient from '../api/axiosClient';
 // Screens
 import SplitAuthScreen from '../screens/auth/SplitAuthScreen';
 import HomeScreen from '../screens/HomeScreen';
+import AcademicsScreen from '../screens/AcademicsScreen';
 import ExploreScreen from '../screens/explore/ExploreScreen';
 import NotesScreen from '../screens/NotesScreen';
 import DoubtsScreen from '../screens/DoubtsScreen';
@@ -38,22 +39,20 @@ import ContactsScreen from '../screens/hardware/ContactsScreen';
 
 const SIDEBAR_ITEMS = [
   { key: 'home', label: 'Dashboard', icon: 'grid' },
-  { key: 'events', label: 'My Schedule', icon: 'calendar' },
-  { key: 'notes', label: 'Notes', icon: 'file-text' },
-  { key: 'doubts', label: 'Doubts', icon: 'help-circle' },
-  { key: 'team', label: 'Teams', icon: 'users' },
+  { key: 'academics', label: 'Academics & KHS', icon: 'book-open' },
+  { key: 'events', label: 'Events & Notices', icon: 'calendar' },
+  { key: 'community', label: 'Community & Doubts', icon: 'users' },
+  { key: 'notes', label: 'Lecture Notes', icon: 'file-text' },
+  { key: 'marketplace', label: 'Campus Market', icon: 'shopping-bag' },
   { key: 'explore', label: 'Campus Services', icon: 'briefcase' },
-  { key: 'marketplace', label: 'Marketplace', icon: 'shopping-bag' },
-  { key: 'chat', label: 'Study Rooms', icon: 'message-square' },
-  { key: 'leaderboard', label: 'Leaderboard', icon: 'award' },
-  { key: 'profile', label: 'Settings', icon: 'settings' },
+  { key: 'profile', label: 'Settings & Profile', icon: 'settings' },
 ];
 
 const MOBILE_TABS = [
-  { key: 'home', label: 'Dashboard', icon: 'grid' },
-  { key: 'notes', label: 'Notes', icon: 'book-open' },
-  { key: 'doubts', label: 'Doubts', icon: 'help-circle' },
-  { key: 'marketplace', label: 'Market', icon: 'shopping-bag' },
+  { key: 'home', label: 'Home', icon: 'grid' },
+  { key: 'academics', label: 'Academics', icon: 'book-open' },
+  { key: 'events', label: 'Events', icon: 'calendar' },
+  { key: 'community', label: 'Community', icon: 'users' },
   { key: 'profile', label: 'Profile', icon: 'user' },
 ];
 
@@ -211,8 +210,12 @@ export default function AppNavigator() {
     switch (activeTab) {
       case 'home':
         return <HomeScreen onNavigateTab={setActiveTab} />;
+      case 'academics':
+        return <AcademicsScreen onNavigateTab={setActiveTab} />;
       case 'events':
         return <EventsNoticesScreen onBack={() => setActiveTab('home')} />;
+      case 'community':
+        return <DoubtsScreen onNavigateTab={setActiveTab} />;
       case 'explore':
         return <ExploreScreen onNavigateTab={setActiveTab} />;
       case 'leaderboard':
@@ -269,7 +272,7 @@ export default function AppNavigator() {
               <Icon name="zap" size={16} color="#FFF" />
             </View>
             <Text style={[styles.logoText, { color: theme.textPrimary }]}>
-              Campus<Text style={{ color: isDark ? '#f0d074' : '#b8943e' }}>One</Text>
+              Campus<Text style={{ color: '#16A36A' }}>One</Text>
             </Text>
           </TouchableOpacity>
 
@@ -283,14 +286,14 @@ export default function AppNavigator() {
                   style={[
                     styles.navItem,
                     isActive && {
-                      backgroundColor: isDark ? 'rgba(201, 168, 76, 0.18)' : '#fdf8e8',
-                      borderColor: '#c9a84c',
+                      backgroundColor: isDark ? 'rgba(22, 163, 106, 0.18)' : '#E8F5EE',
+                      borderColor: '#16A36A',
                       borderWidth: 1,
-                      shadowColor: '#c9a84c',
+                      shadowColor: '#16A36A',
                       shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.25,
+                      shadowOpacity: 0.2,
                       shadowRadius: 6,
-                      elevation: 3,
+                      elevation: 2,
                     },
                   ]}
                   onPress={() => setActiveTab(item.key)}
@@ -299,12 +302,12 @@ export default function AppNavigator() {
                   <Icon
                     name={item.icon}
                     size={17}
-                    color={isActive ? (isDark ? '#f0d074' : '#b8943e') : isDark ? '#94A3B8' : '#64748B'}
+                    color={isActive ? '#16A36A' : isDark ? '#94A3B8' : '#64748B'}
                   />
                   <Text
                     style={[
                       styles.navItemLabel,
-                      { color: isActive ? (isDark ? '#f0d074' : '#b8943e') : isDark ? '#94A3B8' : '#64748B' },
+                      { color: isActive ? '#16A36A' : isDark ? '#94A3B8' : '#64748B' },
                       isActive && { fontWeight: '700' },
                     ]}
                   >
@@ -320,15 +323,15 @@ export default function AppNavigator() {
             style={[
               styles.sidebarPromoCard,
               {
-                backgroundColor: isDark ? 'rgba(201, 168, 76, 0.12)' : '#fdf8e8',
-                borderColor: isDark ? 'rgba(201, 168, 76, 0.25)' : '#e4dfd4',
+                backgroundColor: isDark ? 'rgba(22, 163, 106, 0.12)' : '#E8F5EE',
+                borderColor: isDark ? 'rgba(22, 163, 106, 0.25)' : '#DCFCE7',
               },
             ]}
           >
             <View
               style={[
                 styles.promoIcon,
-                { backgroundColor: isDark ? 'rgba(201, 168, 76, 0.25)' : '#f5edd6' },
+                { backgroundColor: isDark ? 'rgba(22, 163, 106, 0.25)' : '#DCFCE7' },
               ]}
             >
               <Text style={{ fontSize: 18 }}>🚀</Text>
@@ -465,7 +468,7 @@ export default function AppNavigator() {
                     <Icon name="zap" size={13} color="#FFF" />
                   </View>
                   <Text style={[styles.logoTextMobile, { color: theme.textPrimary }]}>
-                    Campus<Text style={{ color: isDark ? '#f0d074' : '#b8943e' }}>One</Text>
+                    Campus<Text style={{ color: '#16A36A' }}>One</Text>
                   </Text>
                 </TouchableOpacity>
 
@@ -569,7 +572,7 @@ export default function AppNavigator() {
                     style={[
                       styles.mobileTabItem,
                       isActive && {
-                        backgroundColor: isDark ? 'rgba(201, 168, 76, 0.18)' : '#fdf8e8',
+                        backgroundColor: isDark ? 'rgba(22, 163, 106, 0.18)' : '#E8F5EE',
                       },
                     ]}
                     onPress={() => setActiveTab(tab.key)}
@@ -578,12 +581,12 @@ export default function AppNavigator() {
                     <Icon
                       name={tab.icon}
                       size={isMobile ? 18 : 17}
-                      color={isActive ? (isDark ? '#f0d074' : '#b8943e') : isDark ? '#64748B' : '#94A3B8'}
+                      color={isActive ? '#16A36A' : isDark ? '#64748B' : '#94A3B8'}
                     />
                     <Text
                       style={[
                         styles.mobileTabLabel,
-                        { color: isActive ? (isDark ? '#f0d074' : '#b8943e') : isDark ? '#64748B' : '#94A3B8' },
+                        { color: isActive ? '#16A36A' : isDark ? '#64748B' : '#94A3B8' },
                         isActive && { fontWeight: '700' },
                       ]}
                       numberOfLines={1}
@@ -616,7 +619,7 @@ export default function AppNavigator() {
         >
           <View style={styles.notifHeader}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Icon name="bell" size={16} color="#c9a84c" style={{ marginRight: 6 }} />
+              <Icon name="bell" size={16} color="#16A36A" style={{ marginRight: 6 }} />
               <Text style={[styles.notifTitle, { color: theme.textPrimary }]}>
                 Campus Notifications
               </Text>
@@ -644,7 +647,7 @@ export default function AppNavigator() {
                   style={[
                     styles.notifItem,
                     { borderBottomColor: isDark ? 'rgba(255,255,255,0.06)' : '#F1F5F9' },
-                    item.unread && { backgroundColor: isDark ? 'rgba(201, 168, 76, 0.08)' : '#fdf8e8' },
+                    item.unread && { backgroundColor: isDark ? 'rgba(201, 168, 76, 0.08)' : '#E8F5EE' },
                   ]}
                   onPress={() => handleNotifClick(item.tab, item.rawId)}
                   activeOpacity={0.75}
@@ -710,11 +713,11 @@ export default function AppNavigator() {
                 style={[
                   styles.botMsgBubble,
                   m.sender === 'user'
-                    ? { backgroundColor: '#c9a84c', alignSelf: 'flex-end' }
+                    ? { backgroundColor: '#16A36A', alignSelf: 'flex-end' }
                     : { backgroundColor: isDark ? '#141D2D' : '#F1F5F9', alignSelf: 'flex-start' },
                 ]}
               >
-                <Text style={{ color: m.sender === 'user' ? '#0c0f10' : theme.textPrimary, fontSize: 12.5, lineHeight: 18, fontWeight: m.sender === 'user' ? '600' : '400' }}>
+                <Text style={{ color: m.sender === 'user' ? '#FFFFFF' : theme.textPrimary, fontSize: 12.5, lineHeight: 18, fontWeight: m.sender === 'user' ? '600' : '400' }}>
                   {m.text}
                 </Text>
               </View>
@@ -729,7 +732,7 @@ export default function AppNavigator() {
                 style={[styles.promptPill, { backgroundColor: isDark ? '#141D2D' : '#F1F5F9', borderColor: theme.border }]}
                 onPress={() => handleSendBotQuery(p)}
               >
-                <Text style={{ color: isDark ? '#f0d074' : '#b8943e', fontSize: 10.5, fontWeight: '600' }}>{p}</Text>
+                <Text style={{ color: '#16A36A', fontSize: 10.5, fontWeight: '600' }}>{p}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -783,15 +786,15 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 9,
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
-    shadowColor: '#c9a84c',
+    shadowColor: '#16A36A',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 4,
+    elevation: 3,
   },
   logoText: {
     fontSize: 18,
@@ -836,7 +839,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   promoBtn: {
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
@@ -844,7 +847,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   promoBtnText: {
-    color: '#0c0f10',
+    color: '#FFFFFF',
     fontSize: 11,
     fontWeight: '700',
   },
@@ -923,7 +926,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 6,
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 6,
@@ -974,7 +977,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 4,
     right: 4,
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#EF4444',
     width: 14,
     height: 14,
     borderRadius: 7,
@@ -982,7 +985,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bellBadgeText: {
-    color: '#0c0f10',
+    color: '#FFFFFF',
     fontSize: 9,
     fontWeight: '800',
   },
@@ -998,13 +1001,13 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   avatarImg: { width: '100%', height: '100%' },
-  avatarInitial: { color: '#0c0f10', fontSize: 13, fontWeight: '800' },
+  avatarInitial: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
   userInfoCol: { marginLeft: 8 },
   userName: { fontSize: 12, fontWeight: '700' },
   userSub: { fontSize: 10 },
@@ -1072,7 +1075,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   notifTitle: { fontSize: 13.5, fontWeight: '800' },
-  markReadText: { color: '#c9a84c', fontSize: 11, fontWeight: '600' },
+  markReadText: { color: '#16A36A', fontSize: 11, fontWeight: '600' },
   notifItem: {
     flexDirection: 'row',
     paddingVertical: 9,
@@ -1098,20 +1101,20 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 24,
     right: 24,
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 11,
     borderRadius: 30,
-    shadowColor: '#c9a84c',
+    shadowColor: '#16A36A',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.45,
+    shadowOpacity: 0.35,
     shadowRadius: 10,
     elevation: 6,
     zIndex: 90,
   },
-  floatingBotText: { color: '#0c0f10', fontSize: 13, fontWeight: '800' },
+  floatingBotText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
 
   /* Bot Chat Window */
   botWindow: {
@@ -1142,7 +1145,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1160,12 +1163,12 @@ const styles = StyleSheet.create({
   promptPill: { paddingHorizontal: 10, paddingVertical: 4.5, borderRadius: 12, borderWidth: 1 },
   botInputRow: { flexDirection: 'row', gap: 6, paddingTop: 6 },
   botInput: { flex: 1, borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, fontSize: 12 },
-  botSendBtn: { backgroundColor: '#c9a84c', width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  botSendBtn: { backgroundColor: '#16A36A', width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   notifUnreadDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     marginLeft: 6,
     alignSelf: 'center',
   },
@@ -1220,14 +1223,14 @@ function typeToIcon(type) {
 function typeToColor(type) {
   switch (type) {
     case 'doubt_answer':
-    case 'new_doubt': return '#22D3EE';
+    case 'new_doubt': return '#06B6D4';
     case 'note_approval':
-    case 'note_upload': return '#c9a84c';
+    case 'note_upload': return '#16A36A';
     case 'team_request':
-    case 'new_team': return '#34D399';
+    case 'new_team': return '#10B981';
     case 'chat_message': return '#8B5CF6';
     case 'new_event': return '#F59E0B';
-    default: return '#FBBF24';
+    default: return '#16A36A';
   }
 }
 

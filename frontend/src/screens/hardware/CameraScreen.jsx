@@ -90,7 +90,7 @@ export default function CameraScreen({ onBack, onSavePhoto }) {
             Please allow camera access in your browser settings and reload the page.
           </Text>
           <TouchableOpacity
-            style={[styles.btn, { backgroundColor: "#c9a84c" }]}
+            style={[styles.btn, { backgroundColor: "#16A36A" }]}
             onPress={startCamera}
           >
             <Text style={styles.btnText}>Retry</Text>
@@ -183,7 +183,7 @@ export default function CameraScreen({ onBack, onSavePhoto }) {
               <Text style={[styles.actionText, { color: C.textPrimary }]}>Retake</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.actionBtn, { backgroundColor: "#c9a84c" }]}
+              style={[styles.actionBtn, { backgroundColor: "#16A36A" }]}
               onPress={handleSave}
             >
               <Icon name="download" size={16} color="#FFF" />
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 8,
-    backgroundColor: "#c9a84c",
+    backgroundColor: "#16A36A",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     height: 68,
     borderRadius: 34,
     borderWidth: 4,
-    borderColor: "#c9a84c",
+    borderColor: "#16A36A",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "transparent",
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: "#c9a84c",
+    backgroundColor: "#16A36A",
   },
   sideBtn: {
     width: 48,

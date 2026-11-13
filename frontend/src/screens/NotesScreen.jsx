@@ -19,7 +19,7 @@ import Icon from '../components/common/Icon';
 import { getNotesApi, uploadNoteApi, toggleBookmarkApi } from '../api/notes.api';
 
 const STATS = [
-  { label: 'Verified Notes', value: '42+', sub: 'Handwritten & PYQs', icon: 'book-open', color: '#f0d074', bg: 'rgba(201,168,76,0.15)', glow: 'rgba(201,168,76,0.12)' },
+  { label: 'Verified Notes', value: '42+', sub: 'Handwritten & PYQs', icon: 'book-open', color: '#16A36A', bg: 'rgba(201,168,76,0.15)', glow: 'rgba(201,168,76,0.12)' },
   { label: 'Total Downloads', value: '737+', sub: 'Campus students', icon: 'download', color: '#34D399', bg: 'rgba(16,185,129,0.15)', glow: 'rgba(16,185,129,0.12)' },
   { label: 'Avg Rating', value: '4.9 ★', sub: 'Peer reviewed', icon: 'star', color: '#FBBF24', bg: 'rgba(245,158,11,0.15)', glow: 'rgba(245,158,11,0.12)' },
   { label: 'Contributors', value: '18+', sub: 'Top campus scholars', icon: 'users', color: '#22D3EE', bg: 'rgba(6,182,212,0.15)', glow: 'rgba(6,182,212,0.12)' },
@@ -290,8 +290,8 @@ export default function NotesScreen() {
                 style={[
                   styles.pill,
                   {
-                    backgroundColor: isSel ? '#c9a84c' : isDark ? '#141D2D' : '#F1F5F9',
-                    borderColor: isSel ? '#c9a84c' : border,
+                    backgroundColor: isSel ? '#16A36A' : isDark ? '#141D2D' : '#F1F5F9',
+                    borderColor: isSel ? '#16A36A' : border,
                   },
                 ]}
                 onPress={() => setSelectedBranch(b)}
@@ -315,14 +315,14 @@ export default function NotesScreen() {
                 style={[
                   styles.semPill,
                   {
-                    backgroundColor: isSel ? (isDark ? 'rgba(201,168,76,0.2)' : '#fdf8e8') : isDark ? '#141D2D' : '#F1F5F9',
-                    borderColor: isSel ? '#c9a84c' : border,
+                    backgroundColor: isSel ? (isDark ? 'rgba(201,168,76,0.2)' : '#E8F5EE') : isDark ? '#141D2D' : '#F1F5F9',
+                    borderColor: isSel ? '#16A36A' : border,
                   },
                 ]}
                 onPress={() => setSelectedSem(s)}
                 activeOpacity={0.8}
               >
-                <Text style={[styles.semPillText, { color: isSel ? (isDark ? '#f0d074' : '#b8943e') : textSub }]}>{s}</Text>
+                <Text style={[styles.semPillText, { color: isSel ? (isDark ? '#16A36A' : '#16A36A') : textSub }]}>{s}</Text>
               </TouchableOpacity>
             );
           })}
@@ -340,16 +340,16 @@ export default function NotesScreen() {
             return (
               <View key={item._id} style={[styles.noteCard, { backgroundColor: bgCard, borderColor: border }]}>
                 {/* Document Icon Box */}
-                <View style={[styles.docIconBox, { backgroundColor: isDark ? 'rgba(201,168,76,0.16)' : '#fdf8e8' }]}>
-                  <Icon name="file-text" size={22} color={isDark ? '#f0d074' : '#b8943e'} />
-                  <Text style={[styles.docTypeText, { color: isDark ? '#f0d074' : '#b8943e' }]}>PDF</Text>
+                <View style={[styles.docIconBox, { backgroundColor: isDark ? 'rgba(201,168,76,0.16)' : '#E8F5EE' }]}>
+                  <Icon name="file-text" size={22} color={isDark ? '#16A36A' : '#16A36A'} />
+                  <Text style={[styles.docTypeText, { color: isDark ? '#16A36A' : '#16A36A' }]}>PDF</Text>
                 </View>
 
                 {/* Right Details */}
                 <View style={styles.noteDetailsCol}>
                   <View style={styles.badgesRow}>
-                    <View style={[styles.badgePill, { backgroundColor: isDark ? 'rgba(201,168,76,0.15)' : '#fdf8e8' }]}>
-                      <Text style={{ color: isDark ? '#f0d074' : '#b8943e', fontSize: 10.5, fontWeight: '700' }}>
+                    <View style={[styles.badgePill, { backgroundColor: isDark ? 'rgba(201,168,76,0.15)' : '#E8F5EE' }]}>
+                      <Text style={{ color: isDark ? '#16A36A' : '#16A36A', fontSize: 10.5, fontWeight: '700' }}>
                         {item.branch ? item.branch.replace('Faculty of ', '') : 'Engineering'}
                       </Text>
                     </View>
@@ -357,12 +357,12 @@ export default function NotesScreen() {
                       <Text style={{ color: '#22D3EE', fontSize: 10.5, fontWeight: '700' }}>Sem {item.semester}</Text>
                     </View>
                     <TouchableOpacity onPress={() => toggleBookmark(item._id)} style={{ marginLeft: 'auto' }}>
-                      <Icon name="bookmark" size={16} color={isSaved ? '#c9a84c' : isDark ? '#64748B' : '#94A3B8'} />
+                      <Icon name="bookmark" size={16} color={isSaved ? '#16A36A' : isDark ? '#64748B' : '#94A3B8'} />
                     </TouchableOpacity>
                   </View>
 
                   <Text style={[styles.noteTitle, { color: textTitle }]}>{item.title}</Text>
-                  <Text style={[styles.noteSubject, { color: isDark ? '#f0d074' : '#b8943e' }]}>📖 {item.subject}</Text>
+                  <Text style={[styles.noteSubject, { color: isDark ? '#16A36A' : '#16A36A' }]}>📖 {item.subject}</Text>
                   <Text style={[styles.noteDesc, { color: textSub }]}>{item.description}</Text>
 
                   <View style={styles.tagsRow}>
@@ -406,7 +406,7 @@ export default function NotesScreen() {
               {POPULAR_SUBJECTS.map((s, idx) => (
                 <View key={idx} style={[styles.widgetRow, { borderBottomColor: border }]}>
                   <Text style={[styles.widgetName, { color: textTitle }]}>{s.name}</Text>
-                  <Text style={[styles.widgetCount, { color: isDark ? '#f0d074' : '#b8943e' }]}>{s.count}</Text>
+                  <Text style={[styles.widgetCount, { color: isDark ? '#16A36A' : '#16A36A' }]}>{s.count}</Text>
                 </View>
               ))}
             </View>
@@ -532,7 +532,7 @@ export default function NotesScreen() {
                 onPress={handleBrowseFile}
                 activeOpacity={0.8}
               >
-                <Icon name={selectedFileName ? 'check-circle' : 'folder-plus'} size={18} color={selectedFileName ? '#10B981' : '#c9a84c'} style={{ marginRight: 10 }} />
+                <Icon name={selectedFileName ? 'check-circle' : 'folder-plus'} size={18} color={selectedFileName ? '#10B981' : '#16A36A'} style={{ marginRight: 10 }} />
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.fileBrowseTitle, { color: selectedFileName ? '#10B981' : textTitle }]}>
                     {selectedFileName || '📁 Browse File to Upload'}
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
   pageTitle: { fontSize: 24, fontWeight: '800', letterSpacing: -0.4 },
   pageSub: { fontSize: 12.5, marginTop: 2 },
   uploadBtn: {
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: { boxShadow: '0px 3px 12px rgba(201,168,76,0.4)' },
       default: {
-        shadowColor: '#c9a84c',
+        shadowColor: '#16A36A',
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.35,
         shadowRadius: 6,
@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
   uploaderText: { fontSize: 11.5, fontWeight: '700' },
   statsInlineText: { fontSize: 10.5 },
 
-  viewPdfBtn: { backgroundColor: '#c9a84c', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8 },
+  viewPdfBtn: { backgroundColor: '#16A36A', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8 },
   viewPdfBtnText: { color: '#0c0f10', fontSize: 12, fontWeight: '700' },
 
   /* Widgets */
@@ -649,7 +649,7 @@ const styles = StyleSheet.create({
   uploadPromoCard: { backgroundColor: '#16140d', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(201,168,76,0.35)', padding: 18, alignItems: 'center' },
   uploadPromoTitle: { color: '#FFF', fontSize: 13.5, fontWeight: '800', textAlign: 'center', marginBottom: 4 },
   uploadPromoSub: { color: '#d9d2c3', fontSize: 11.5, textAlign: 'center', lineHeight: 16, marginBottom: 12 },
-  uploadPromoBtn: { backgroundColor: '#c9a84c', paddingHorizontal: 14, paddingVertical: 7.5, borderRadius: 8 },
+  uploadPromoBtn: { backgroundColor: '#16A36A', paddingHorizontal: 14, paddingVertical: 7.5, borderRadius: 8 },
   uploadPromoBtnText: { color: '#0c0f10', fontSize: 12, fontWeight: '700' },
 
   /* Modals */
@@ -673,6 +673,6 @@ const styles = StyleSheet.create({
   fileBrowseSub: { fontSize: 10.5, marginTop: 2 },
   modalActions: { flexDirection: 'row', gap: 10, marginTop: 18 },
   cancelBtn: { flex: 1, paddingVertical: 10, borderRadius: 9, borderWidth: 1, alignItems: 'center' },
-  confirmBtn: { flex: 2, backgroundColor: '#c9a84c', paddingVertical: 10, borderRadius: 9, alignItems: 'center' },
+  confirmBtn: { flex: 2, backgroundColor: '#16A36A', paddingVertical: 10, borderRadius: 9, alignItems: 'center' },
   confirmBtnText: { color: '#0c0f10', fontSize: 13, fontWeight: '700' },
 });

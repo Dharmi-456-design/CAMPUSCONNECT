@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   inputFocused: {
-    shadowColor: '#c9a84c',
+    shadowColor: '#16A36A',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.18,
     shadowRadius: 6,

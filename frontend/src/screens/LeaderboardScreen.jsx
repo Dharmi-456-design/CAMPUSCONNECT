@@ -67,7 +67,7 @@ const LEADERBOARD_LIST = [
 const BADGES_COLLECTION = [
   { id: 'b1', title: 'Champion Scholar', desc: 'Top 1 Rank on Swaminarayan Campus', icon: 'crown', color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', unlocked: true },
   { id: 'b2', title: 'Streak Master', desc: 'Maintained 10+ consecutive study days', icon: 'zap', color: '#10B981', bg: 'rgba(16,185,129,0.15)', unlocked: true },
-  { id: 'b3', title: 'Knowledge Donor', desc: 'Uploaded 10+ verified study notes', icon: 'book-open', color: '#f0d074', bg: 'rgba(201,168,76,0.15)', unlocked: true },
+  { id: 'b3', title: 'Knowledge Donor', desc: 'Uploaded 10+ verified study notes', icon: 'book-open', color: '#16A36A', bg: 'rgba(201,168,76,0.15)', unlocked: true },
   { id: 'b4', title: 'Doubt Buster', desc: 'Solved 5+ student questions in Q&A', icon: 'help-circle', color: '#06B6D4', bg: 'rgba(6,182,212,0.15)', unlocked: true },
   { id: 'b5', title: 'Hackathon Lead', desc: 'Created an SIH 2026 project squad', icon: 'award', color: '#EC4899', bg: 'rgba(236,72,153,0.15)', unlocked: true },
 ];
@@ -119,8 +119,8 @@ export default function LeaderboardScreen() {
                 style={[
                   styles.tabBtn,
                   {
-                    backgroundColor: isSel ? '#c9a84c' : bgCard,
-                    borderColor: isSel ? '#c9a84c' : border,
+                    backgroundColor: isSel ? '#16A36A' : bgCard,
+                    borderColor: isSel ? '#16A36A' : border,
                   },
                 ]}
                 onPress={() => setActiveTab(t)}
@@ -172,9 +172,9 @@ export default function LeaderboardScreen() {
               <Text style={{ color: '#FBBF24', fontSize: 11, fontWeight: '800' }}>{PODIUM[1].badge}</Text>
             </View>
 
-            <View style={[styles.podiumStand, { height: 145, backgroundColor: isDark ? 'rgba(201, 168, 76, 0.25)' : '#fdf8e8', borderColor: '#c9a84c' }]}>
+            <View style={[styles.podiumStand, { height: 145, backgroundColor: isDark ? 'rgba(201, 168, 76, 0.25)' : '#E8F5EE', borderColor: '#16A36A' }]}>
               <Text style={[styles.podiumRankText, { color: '#F59E0B' }]}>1</Text>
-              <Text style={[styles.podiumCreditsText, { color: isDark ? '#f0d074' : '#b8943e', fontWeight: '900' }]}>{PODIUM[1].credits} pts</Text>
+              <Text style={[styles.podiumCreditsText, { color: isDark ? '#16A36A' : '#16A36A', fontWeight: '900' }]}>{PODIUM[1].credits} pts</Text>
             </View>
           </View>
 
@@ -241,7 +241,7 @@ export default function LeaderboardScreen() {
                   </View>
 
                   <View style={styles.rankStatsCol}>
-                    <Text style={[styles.rankCredits, { color: isDark ? '#f0d074' : '#b8943e' }]}>{item.credits} pts</Text>
+                    <Text style={[styles.rankCredits, { color: isDark ? '#16A36A' : '#16A36A' }]}>{item.credits} pts</Text>
                     <Text style={[styles.rankDetails, { color: textSub }]}>
                       {item.notes} Notes • {item.streak} 🔥
                     </Text>
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#16140d',
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: '#c9a84c',
+    borderColor: '#16A36A',
     padding: 18,
     marginBottom: 20,
     flexDirection: 'row',
@@ -388,15 +388,15 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     alignItems: 'center',
     justifyContent: 'center',
   },
   userRankNum: { color: '#0c0f10', fontSize: 18, fontWeight: '900' },
   userRankTitle: { color: '#FFF', fontSize: 14, fontWeight: '800' },
   userRankSub: { color: '#e6ded0', fontSize: 11.5, marginTop: 2 },
-  tierPill: { backgroundColor: 'rgba(201,168,76,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: '#c9a84c' },
-  tierPillText: { color: '#f0d074', fontSize: 11, fontWeight: '800' },
+  tierPill: { backgroundColor: 'rgba(201,168,76,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: '#16A36A' },
+  tierPillText: { color: '#16A36A', fontSize: 11, fontWeight: '800' },
 
   /* Two Column Split */
   splitGrid: { flexDirection: 'column', gap: 20 },

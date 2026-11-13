@@ -3,8 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
 const VARIANTS = {
-  primary:   { bg: '#FDF8E8', text: '#B8943E' },
-  indigo:    { bg: '#FDF8E8', text: '#C9A84C' },
+  primary:   { bg: '#E8F5EE', text: '#16A36A' },
+  indigo:    { bg: '#E8F5EE', text: '#16A36A' },
   gold:      { bg: '#FEF3C7', text: '#B45309' },
   amber:     { bg: '#FEF3C7', text: '#B45309' },
   cyan:      { bg: '#ECFEFF', text: '#0E7490' },
@@ -16,10 +16,10 @@ const VARIANTS = {
 };
 
 const DARK_VARIANTS = {
-  primary:   { bg: 'rgba(201, 168, 76, 0.15)', text: '#F0D074' },
-  indigo:    { bg: 'rgba(201, 168, 76, 0.15)', text: '#F0D074' },
-  gold:      { bg: 'rgba(201, 168, 76, 0.2)', text: '#F0D074' },
-  amber:     { bg: 'rgba(201, 168, 76, 0.2)', text: '#F0D074' },
+  primary:   { bg: 'rgba(201, 168, 76, 0.15)', text: '#16A36A' },
+  indigo:    { bg: 'rgba(201, 168, 76, 0.15)', text: '#16A36A' },
+  gold:      { bg: 'rgba(201, 168, 76, 0.2)', text: '#16A36A' },
+  amber:     { bg: 'rgba(201, 168, 76, 0.2)', text: '#16A36A' },
   cyan:      { bg: '#0A1F22', text: '#22D3EE' },
   success:   { bg: '#062019', text: '#34D399' },
   danger:    { bg: '#200A10', text: '#FB7185' },

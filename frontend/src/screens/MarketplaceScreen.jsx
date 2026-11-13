@@ -17,7 +17,7 @@ import { useAuthStore } from '../store/authStore';
 import Icon from '../components/common/Icon';
 
 const STATS = [
-  { label: 'Active Listings', value: '48+', sub: 'Verified peer items', icon: 'shopping-bag', color: '#f0d074', bg: 'rgba(201,168,76,0.15)' },
+  { label: 'Active Listings', value: '48+', sub: 'Verified peer items', icon: 'shopping-bag', color: '#16A36A', bg: 'rgba(201,168,76,0.15)' },
   { label: 'Campus Buyers', value: '120+', sub: 'Active students', icon: 'users', color: '#22D3EE', bg: 'rgba(6,182,212,0.15)' },
   { label: 'Verified Sellers', value: '100%', sub: 'University ID check', icon: 'shield', color: '#34D399', bg: 'rgba(16,185,129,0.15)' },
   { label: 'Satisfaction', value: '4.9 ★', sub: 'Peer rating', icon: 'star', color: '#FBBF24', bg: 'rgba(245,158,11,0.15)' },
@@ -58,7 +58,7 @@ const INITIAL_ITEMS = [
       branch: 'SSIT Computer Engg. • Sem 5',
       rating: '4.9 ★ (12 reviews)',
       initial: 'H',
-      avatarBg: '#c9a84c',
+      avatarBg: '#16A36A',
     },
   },
   {
@@ -150,7 +150,7 @@ export default function MarketplaceScreen() {
           branch: `${user?.branch || 'Computer Engg.'} • Sem ${user?.semester || 3}`,
           rating: '5.0 ★ (New)',
           initial: (user?.name || 'D').charAt(0).toUpperCase(),
-          avatarBg: '#c9a84c',
+          avatarBg: '#16A36A',
         },
       };
 
@@ -256,8 +256,8 @@ export default function MarketplaceScreen() {
                 style={[
                   styles.catPill,
                   {
-                    backgroundColor: isSel ? '#c9a84c' : isDark ? '#121927' : '#F1F5F9',
-                    borderColor: isSel ? '#c9a84c' : border,
+                    backgroundColor: isSel ? '#16A36A' : isDark ? '#121927' : '#F1F5F9',
+                    borderColor: isSel ? '#16A36A' : border,
                   },
                 ]}
                 onPress={() => setSelectedCat(c.id)}
@@ -281,13 +281,13 @@ export default function MarketplaceScreen() {
               {/* Card Header: Category Icon + Badges + Price */}
               <View style={styles.cardHeaderRow}>
                 <View style={styles.cardHeaderLeft}>
-                  <View style={[styles.categoryIconBox, { backgroundColor: isDark ? 'rgba(201,168,76,0.16)' : '#fdf8e8' }]}>
-                    <Icon name={item.icon || 'tag'} size={18} color={isDark ? '#f0d074' : '#b8943e'} />
+                  <View style={[styles.categoryIconBox, { backgroundColor: isDark ? 'rgba(201,168,76,0.16)' : '#E8F5EE' }]}>
+                    <Icon name={item.icon || 'tag'} size={18} color={isDark ? '#16A36A' : '#16A36A'} />
                   </View>
                   <View>
                     <View style={styles.badgesRow}>
-                      <View style={[styles.badgePill, { backgroundColor: isDark ? 'rgba(201,168,76,0.15)' : '#fdf8e8' }]}>
-                        <Text style={{ color: isDark ? '#f0d074' : '#b8943e', fontSize: 10.5, fontWeight: '700' }}>
+                      <View style={[styles.badgePill, { backgroundColor: isDark ? 'rgba(201,168,76,0.15)' : '#E8F5EE' }]}>
+                        <Text style={{ color: isDark ? '#16A36A' : '#16A36A', fontSize: 10.5, fontWeight: '700' }}>
                           {item.category.toUpperCase()}
                         </Text>
                       </View>
@@ -301,7 +301,7 @@ export default function MarketplaceScreen() {
 
                 {/* Price Display */}
                 <View style={styles.priceCol}>
-                  <Text style={[styles.priceValue, { color: isDark ? '#f0d074' : '#b8943e' }]}>₹{item.price}</Text>
+                  <Text style={[styles.priceValue, { color: isDark ? '#16A36A' : '#16A36A' }]}>₹{item.price}</Text>
                   {item.originalPrice && (
                     <Text style={[styles.originalPriceText, { color: textSub }]}>MRP ₹{item.originalPrice}</Text>
                   )}
@@ -342,7 +342,7 @@ export default function MarketplaceScreen() {
               {POPULAR_CATS.map((cat, idx) => (
                 <TouchableOpacity key={idx} style={[styles.catRow, { borderBottomColor: border }]}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Icon name={cat.icon} size={15} color="#c9a84c" style={{ marginRight: 8 }} />
+                    <Icon name={cat.icon} size={15} color="#16A36A" style={{ marginRight: 8 }} />
                     <Text style={[styles.catName, { color: textTitle }]}>{cat.name}</Text>
                   </View>
                   <Text style={[styles.catCount, { color: textSub }]}>{cat.count}</Text>
@@ -363,7 +363,7 @@ export default function MarketplaceScreen() {
                 </View>
               </View>
               <View style={styles.bulletRow}>
-                <Icon name="check-circle" size={16} color="#c9a84c" style={{ marginRight: 10, marginTop: 2 }} />
+                <Icon name="check-circle" size={16} color="#16A36A" style={{ marginRight: 10, marginTop: 2 }} />
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.bulletTitle, { color: textTitle }]}>Zero Commission</Text>
                   <Text style={[styles.bulletSub, { color: textSub }]}>Keep 100% of your earnings with no middleman fees.</Text>
@@ -373,7 +373,7 @@ export default function MarketplaceScreen() {
           </View>
 
           {/* Sell Prompt */}
-          <View style={[styles.sellPromptCard, { backgroundColor: isDark ? 'rgba(201,168,76,0.12)' : '#fdf8e8', borderColor: '#c9a84c' }]}>
+          <View style={[styles.sellPromptCard, { backgroundColor: isDark ? 'rgba(201,168,76,0.12)' : '#E8F5EE', borderColor: '#16A36A' }]}>
             <Text style={[styles.sellPromptTitle, { color: textTitle }]}>Have books or gear to sell?</Text>
             <Text style={[styles.sellPromptSub, { color: textSub }]}>
               Help junior students save money while clearing out your old semester essentials.
@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   postSellBtn: {
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 13,
@@ -717,7 +717,7 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
   },
   contactBtn: {
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
@@ -791,7 +791,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sellPromptBtn: {
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     paddingVertical: 8,
     borderRadius: 8,
     alignItems: 'center',
@@ -863,7 +863,7 @@ const styles = StyleSheet.create({
   },
   confirmBtn: {
     flex: 2,
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     paddingVertical: 9,
     borderRadius: 8,
     alignItems: 'center',

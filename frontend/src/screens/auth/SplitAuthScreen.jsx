@@ -1,1098 +1,686 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  Animated,
-  useWindowDimensions,
+  ScrollView,
   Platform,
   Alert,
-  Modal,
   ActivityIndicator,
-  ScrollView,
+  useWindowDimensions,
 } from 'react-native';
-import { makeShadow } from '../../utils/shadow';
-import Svg, { Path } from 'react-native-svg';
-import { loginApi, registerApi, googleLoginApi } from '../../api/auth.api';
+import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import { loginApi, registerApi } from '../../api/auth.api';
 import { useAuthStore } from '../../store/authStore';
 import { useTheme } from '../../context/ThemeContext';
 import Icon from '../../components/common/Icon';
 
-function GoogleSvgIcon({ size = 18 }) {
+// CampusOne Graduation Cap Logo Icon (matches Screenshot 3 Educonnect style)
+function CampusOneLogo({ size = 56 }) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" style={{ marginRight: 10 }}>
-      <Path
-        fill="#EA4335"
-        d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"
-      />
-      <Path
-        fill="#4285F4"
-        d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"
-      />
-      <Path
-        fill="#FBBC05"
-        d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 10.8 0 12s.7 2.3 1.9 4.7l3.7-2.9z"
-      />
-      <Path
-        fill="#34A853"
-        d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z"
-      />
-    </Svg>
+    <View style={styles.logoContainer}>
+      <Svg width={size} height={size} viewBox="0 0 64 64" fill="none">
+        {/* Glow / Star Accents */}
+        <Path d="M22 14L23.2 17.8L27 19L23.2 20.2L22 24L20.8 20.2L17 19L20.8 17.8L22 14Z" fill="#16A36A" />
+        <Path d="M38 10L39 12.8L42 13.8L39 14.8L38 17.6L37 14.8L34 13.8L37 12.8L38 10Z" fill="#16A36A" />
+        <Path d="M48 16L48.8 18.2L51 19L48.8 19.8L48 22L47.2 19.8L45 19L47.2 18.2L48 16Z" fill="#16A36A" />
+
+        {/* Graduation Cap Top */}
+        <Path
+          d="M32 20L12 28L32 36L52 28L32 20Z"
+          fill="#16A36A"
+        />
+        {/* Cap Bottom Skullcap */}
+        <Path
+          d="M20 31.5V38.5C20 44 25.5 47 32 47C38.5 47 44 44 44 38.5V31.5L32 36.5L20 31.5Z"
+          fill="#128253"
+        />
+        {/* Tassel */}
+        <Path
+          d="M50 29V42C50 43.1 49.1 44 48 44C46.9 44 46 43.1 46 42V30.5"
+          stroke="#16A36A"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+        <Circle cx="48" cy="45" r="2.5" fill="#16A36A" />
+      </Svg>
+      <Text style={styles.brandTitle}>
+        Campus<Text style={{ color: '#16A36A' }}>One</Text>
+      </Text>
+      <Text style={styles.brandTagline}>STUDENT LIFE SUPER APP</Text>
+    </View>
   );
 }
 
-export default function SplitAuthScreen({ initialMode = 'login' }) {
+// Student Collaboration Illustration for Welcome screen (matches Screenshot 3)
+function CollaborationIllustration() {
+  return (
+    <View style={styles.illustrationWrapper}>
+      <Svg width={240} height={170} viewBox="0 0 240 170" fill="none">
+        {/* Whiteboard / Flip chart */}
+        <Rect x="140" y="30" width="80" height="90" rx="6" fill="#F1F5F9" stroke="#E2E8F0" strokeWidth="2" />
+        <Rect x="150" y="42" width="60" height="6" rx="3" fill="#16A36A" />
+        <Rect x="150" y="56" width="40" height="4" rx="2" fill="#94A3B8" />
+        <Rect x="150" y="66" width="48" height="4" rx="2" fill="#94A3B8" />
+        <Rect x="150" y="76" width="32" height="4" rx="2" fill="#94A3B8" />
+        {/* Whiteboard stand legs */}
+        <Path d="M155 120L145 155M205 120L215 155" stroke="#94A3B8" strokeWidth="2.5" strokeLinecap="round" />
+
+        {/* Clock on wall */}
+        <Circle cx="120" cy="24" r="10" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="1.5" />
+        <Path d="M120 18V24H124" stroke="#F59E0B" strokeWidth="1.5" strokeLinecap="round" />
+
+        {/* Student 1 (standing, presenting) */}
+        <Circle cx="130" cy="70" r="10" fill="#FBBF24" />
+        <Path d="M122 84C122 81 125 79 130 79C135 79 138 81 138 84V115H122V84Z" fill="#16A36A" />
+        {/* Arm pointing */}
+        <Path d="M136 86L152 75" stroke="#16A36A" strokeWidth="3" strokeLinecap="round" />
+        <Path d="M125 115L124 150M135 115L136 150" stroke="#172B4D" strokeWidth="3" strokeLinecap="round" />
+
+        {/* Student 2 (seated with laptop) */}
+        <Circle cx="70" cy="74" r="9" fill="#F472B6" />
+        <Path d="M63 86C63 83 66 82 70 82C74 82 77 83 77 86V112H63V86Z" fill="#6366F1" />
+        {/* Chair */}
+        <Path d="M60 98H80V125H60Z" fill="#E2E8F0" />
+        <Path d="M62 125V150M78 125V150" stroke="#64748B" strokeWidth="2" strokeLinecap="round" />
+        {/* Laptop on lap */}
+        <Path d="M68 96L78 92" stroke="#172B4D" strokeWidth="3" strokeLinecap="round" />
+
+        {/* Student 3 (seated left) */}
+        <Circle cx="40" cy="80" r="8" fill="#FBBF24" />
+        <Path d="M34 90C34 88 36 87 40 87C44 87 46 88 46 90V116H34V90Z" fill="#F59E0B" />
+        <Path d="M34 116V150M44 116V150" stroke="#64748B" strokeWidth="2" strokeLinecap="round" />
+
+        {/* Plant on floor */}
+        <Circle cx="20" cy="142" r="6" fill="#16A36A" />
+        <Path d="M18 140Q20 128 22 140" stroke="#128253" strokeWidth="2" />
+        <Rect x="16" y="142" width="8" height="10" rx="2" fill="#D97706" />
+      </Svg>
+    </View>
+  );
+}
+
+export default function SplitAuthScreen({ initialMode = 'welcome' }) {
   const setAuth = useAuthStore((state) => state.setAuth);
-  const { theme, isDark, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 960;
+  const isDesktop = width >= 768;
 
-  const [mode, setMode] = useState(initialMode);
+  const [mode, setMode] = useState(initialMode === 'signup' ? 'signup' : initialMode === 'login' ? 'login' : 'welcome');
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-
-  // Google Modal State
-  const [googleModalVisible, setGoogleModalVisible] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Form Fields
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [college, setCollege] = useState('');
-  const [branch, setBranch] = useState('');
 
-  // Animation for Sliding Split Container
-  const slideAnim = useRef(new Animated.Value(initialMode === 'login' ? 0 : 1)).current;
-
-  const toggleMode = (targetMode) => {
-    setMode(targetMode);
-    Animated.spring(slideAnim, {
-      toValue: targetMode === 'login' ? 0 : 1,
-      tension: 40,
-      friction: 8,
-      useNativeDriver: Platform.OS !== 'web',
-    }).start();
-  };
-
-  // Google Identity Services Setup for Web
-  useEffect(() => {
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      const clientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '402286075226-a65ogtb4kjl5ee62v71l8cvnemfeqp7q.apps.googleusercontent.com';
-
-      const handleCredentialResponse = async (response) => {
-        try {
-          setGoogleLoading(true);
-          const res = await googleLoginApi({ credential: response.credential, idToken: response.credential });
-          if (res.success && res.data?.token) {
-            setAuth(res.data.user, res.data.token);
-          } else if (res.token) {
-            setAuth(res.user, res.token);
-          } else {
-            window.alert('Google Sign-In failed. Please try again.');
-          }
-        } catch (err) {
-          console.error('Google Sign-In Error:', err);
-          window.alert(err.response?.data?.message || 'Google Auth Error');
-        } finally {
-          setGoogleLoading(false);
-          setGoogleModalVisible(false);
-        }
-      };
-
-      if (window.google?.accounts?.id) {
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: handleCredentialResponse,
-        });
+  // Handle Login
+  const handleLogin = async () => {
+    if (!email || !password) {
+      if (Platform.OS === 'web') {
+        window.alert('Please fill in both Email and Password.');
       } else {
-        const script = document.createElement('script');
-        script.src = 'https://accounts.google.com/gsi/client';
-        script.async = true;
-        script.onload = () => {
-          if (window.google?.accounts?.id) {
-            window.google.accounts.id.initialize({
-              client_id: clientId,
-              callback: handleCredentialResponse,
-            });
-          }
-        };
-        document.body.appendChild(script);
+        Alert.alert('Required Fields', 'Please enter both Email and Password.');
       }
-    }
-  }, []);
-
-  const handleGoogleClick = () => {
-    setGoogleModalVisible(true);
-    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.google?.accounts?.id) {
-      window.google.accounts.id.prompt();
-    }
-  };
-
-  const confirmGoogleSignIn = async () => {
-    try {
-      setGoogleLoading(true);
-      const fakeToken = 'mock_google_id_token_dharmi_patel';
-      const res = await googleLoginApi({
-        userInfo: {
-          email: 'dharmi.patel@gmail.com',
-          name: 'Dharmi Patel',
-          googleId: '402286075226-a65ogtb4kjl5ee62v71l8cvnemfeqp7q',
-        },
-        idToken: fakeToken,
-      });
-
-      if (res.success && res.data?.token) {
-        setAuth(res.data.user, res.data.token);
-      } else if (res.token) {
-        setAuth(res.user, res.token);
-      } else {
-        setAuth(
-          {
-            _id: 'g-user-dharmi',
-            name: 'Dharmi Patel',
-            email: 'dharmi.patel@gmail.com',
-            role: 'student',
-            branch: 'Computer Engineering',
-            college: 'Shree Swaminarayan Institute of Technology (SSIT)',
-            semester: 3,
-            authProvider: ['google'],
-          },
-          'mock_google_jwt_token_dharmi'
-        );
-      }
-    } catch (err) {
-      setAuth(
-        {
-          _id: 'g-user-dharmi',
-          name: 'Dharmi Patel',
-          email: 'dharmi.patel@gmail.com',
-          role: 'student',
-          branch: 'Computer Engineering',
-          college: 'Shree Swaminarayan Institute of Technology (SSIT)',
-          semester: 3,
-          authProvider: ['google'],
-        },
-        'mock_google_jwt_token_dharmi'
-      );
-    } finally {
-      setGoogleLoading(false);
-      setGoogleModalVisible(false);
-    }
-  };
-
-  const handleAuthSubmit = async () => {
-    if (!email.trim() || !password) {
-      const msg = 'Please enter your email and password.';
-      if (Platform.OS === 'web') window.alert(msg);
-      else Alert.alert('Incomplete', msg);
       return;
     }
 
     try {
       setLoading(true);
-      if (mode === 'login') {
-        const res = await loginApi(email, password);
-        if (res.success && res.data?.token) {
-          setAuth(res.data.user, res.data.token);
-        } else if (res.token) {
-          setAuth(res.user, res.token);
-        } else {
-          const errMsg = res.message || 'Invalid credentials.';
-          if (Platform.OS === 'web') window.alert(errMsg);
-          else Alert.alert('Login Failed', errMsg);
-        }
+      const res = await loginApi({ email: email.trim(), password });
+      if (res.success && res.data?.token) {
+        setAuth(res.data.user, res.data.token);
+      } else if (res.token) {
+        setAuth(res.user, res.token);
       } else {
-        if (!name.trim()) {
-          const msg = 'Please enter your full name.';
-          if (Platform.OS === 'web') window.alert(msg);
-          else Alert.alert('Incomplete', msg);
-          return;
-        }
-        const res = await registerApi({
-          name,
-          email,
-          password,
-          college,
-          branch,
-        });
-        if (res.success && res.data?.token) {
-          setAuth(res.data.user, res.data.token);
-        } else if (res.token) {
-          setAuth(res.user, res.token);
-        } else {
-          const errMsg = res.message || 'Registration failed.';
-          if (Platform.OS === 'web') window.alert(errMsg);
-          else Alert.alert('Signup Failed', errMsg);
-        }
+        throw new Error(res.message || 'Login failed');
       }
     } catch (err) {
-      if (err.message?.includes('Network Error') || !err.response) {
-        const handleOfflineLogin = () => {
-          setAuth(
-            {
-              _id: 'demo-student-dharmi',
-              name: name.trim() || 'Dharmi Patel',
-              email: email.trim() || 'dharmi.patel@ssit.edu.in',
-              role: 'student',
-              branch: branch || 'Computer Engineering',
-              college: college || 'Shree Swaminarayan Institute of Technology (SSIT)',
-              semester: 3,
-              authProvider: ['local'],
-            },
-            'mock_demo_jwt_token'
-          );
-        };
-
-        if (Platform.OS === 'web') {
-          if (window.confirm('Server is offline (cannot reach backend API). Continue with Demo Session?')) {
-            handleOfflineLogin();
-          }
-        } else {
-          Alert.alert(
-            'Server Offline',
-            'Cannot reach backend API. Logging in with Demo Student account so you can preview all features on your phone!',
-            [{ text: 'Continue', onPress: handleOfflineLogin }]
-          );
-        }
-        return;
+      const msg = err.response?.data?.message || err.message || 'Invalid email or password';
+      if (Platform.OS === 'web') {
+        window.alert(msg);
+      } else {
+        Alert.alert('Login Failed', msg);
       }
-      const errMsg = err.response?.data?.message || err.message || 'Authentication error occurred.';
-      if (Platform.OS === 'web') window.alert(errMsg);
-      else Alert.alert('Auth Error', errMsg);
     } finally {
       setLoading(false);
     }
   };
 
-  const isLogin = mode === 'login';
+  // Handle Signup
+  const handleSignup = async () => {
+    if (!name || !email || !password) {
+      if (Platform.OS === 'web') {
+        window.alert('Please fill in Name, Email and Password.');
+      } else {
+        Alert.alert('Required Fields', 'Please complete all required fields.');
+      }
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const payload = {
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+        rollNumber: username.trim() || '17081010086',
+        branch: 'Computer Science & Engineering',
+        semester: 6,
+      };
+
+      const res = await registerApi(payload);
+      if (res.success && res.data?.token) {
+        setAuth(res.data.user, res.data.token);
+      } else if (res.token) {
+        setAuth(res.user, res.token);
+      } else {
+        throw new Error(res.message || 'Signup failed');
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Unable to create account';
+      if (Platform.OS === 'web') {
+        window.alert(msg);
+      } else {
+        Alert.alert('Registration Failed', msg);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Quick Demo Login for instant testing
+  const handleQuickDemo = () => {
+    const demoUser = {
+      _id: 'demo-student-id-101',
+      name: 'Michael Aguero',
+      email: 'michael.aguero@campus.edu',
+      rollNumber: '17081010086',
+      branch: 'Computer Science & Engineering',
+      semester: 6,
+      gpa: 3.67,
+      sks: 89,
+      role: 'student',
+    };
+    setAuth(demoUser, 'demo_jwt_token_campusone_2026');
+  };
 
   return (
-    <View style={[styles.root, { backgroundColor: isDark ? '#080C14' : '#F8FAFC' }]}>
-      {/* Background Decorative Ambient Orbs */}
-      <View style={styles.orbGlow1} />
-      <View style={styles.orbGlow2} />
+    <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, isDesktop && styles.desktopContainer]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.card, isDesktop && styles.desktopCard]}>
+          {/* =================================================== */}
+          {/* SCREEN 1: WELCOME SCREEN (Screenshot 3 Left)        */}
+          {/* =================================================== */}
+          {mode === 'welcome' && (
+            <View style={styles.contentColumn}>
+              <CampusOneLogo size={68} />
+              <CollaborationIllustration />
 
-      {/* Main Split Layout Container */}
-      <View style={[styles.splitWrapper, isDesktop && styles.splitWrapperDesktop]}>
-        {/* ======================================================== */}
-        {/* LEFT / RIGHT 50/50 HERO GLASS PANEL                      */}
-        {/* ======================================================== */}
-        {isDesktop && (
-          <View
-            style={[
-              styles.heroPanel,
-              {
-                backgroundColor: isDark ? 'rgba(16, 23, 38, 0.9)' : 'rgba(255, 255, 255, 0.9)',
-                borderColor: isDark ? 'rgba(99, 102, 241, 0.3)' : '#E2E8F0',
-              },
-            ]}
-          >
-            {/* Top Brand Tag */}
-            <View style={styles.heroBrandRow}>
-              <View style={styles.heroLogoBadge}>
-                <Icon name="zap" size={18} color="#0c0f10" />
-              </View>
-
-              <Text style={[styles.heroLogoText, { color: theme.textPrimary }]}>
-                Campus<Text style={{ color: '#c9a84c' }}>One</Text>
-              </Text>
-            </View>
-
-            <View style={styles.heroCenterContent}>
-              <Text style={styles.heroBadgeTag}>
-                {isLogin ? '✨ WELCOME BACK SCHOLAR' : '🚀 JOIN SWAMINARAYAN UNIVERSITY PORTAL'}
+              <Text style={styles.welcomeHeading}>Welcome</Text>
+              <Text style={styles.welcomeSubtitle}>
+                Collaborate with classmates, manage schedules, track academic records & access verified lecture notes.
               </Text>
 
-              <Text style={[styles.heroTitle, { color: theme.textPrimary }]}>
-                {isLogin
-                  ? 'Elevate Your Campus\nAcademic Life.'
-                  : 'Start Your Journey with\nCampusOne Today.'}
-              </Text>
+              <View style={styles.buttonStack}>
+                <TouchableOpacity
+                  style={styles.whiteBtn}
+                  onPress={() => setMode('login')}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.whiteBtnText}>Login</Text>
+                </TouchableOpacity>
 
-              <Text style={[styles.heroSub, { color: theme.textMuted }]}>
-                {isLogin
-                  ? 'Access syllabus notes, Q&A doubts forum, hackathon squads, and campus marketplace in one unified portal.'
-                  : 'Connect with verified peers, share lecture PYQs, find SIH project teammates, and unlock campus credits.'}
-              </Text>
+                <TouchableOpacity
+                  style={styles.greenBtn}
+                  onPress={() => setMode('signup')}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.greenBtnText}>Signup</Text>
+                </TouchableOpacity>
 
-              {/* Feature Pills */}
-              <View style={styles.heroPillsRow}>
-                <View style={styles.heroPillItem}>
-                  <Icon name="check-circle" size={14} color="#34D399" style={{ marginRight: 6 }} />
-                  <Text style={[styles.heroPillText, { color: theme.textPrimary }]}>100% University Verified</Text>
-                </View>
-
-                <View style={styles.heroPillItem}>
-                  <Icon name="check-circle" size={14} color="#c9a84c" style={{ marginRight: 6 }} />
-                  <Text style={[styles.heroPillText, { color: theme.textPrimary }]}>Google OAuth Integrated</Text>
-                </View>
-
-                <View style={styles.heroPillItem}>
-                  <Icon name="check-circle" size={14} color="#FBBF24" style={{ marginRight: 6 }} />
-                  <Text style={[styles.heroPillText, { color: theme.textPrimary }]}>SIH Hackathon Squads</Text>
-                </View>
+                <TouchableOpacity
+                  style={styles.demoLinkBtn}
+                  onPress={handleQuickDemo}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.demoLinkText}>⚡ Quick Demo Sign In</Text>
+                </TouchableOpacity>
               </View>
             </View>
-
-            {/* Bottom Quote Box */}
-            <View style={styles.heroQuoteBox}>
-              <Text style={styles.heroQuoteText}>
-                “CampusOne transformed how our CSE batch collaborates on notes and hackathon projects.”
-              </Text>
-              <Text style={styles.heroQuoteAuthor}>— Dharmi Patel, Computer Engg. Sem 3</Text>
-            </View>
-          </View>
-        )}
-
-        {/* ======================================================== */}
-        {/* FORM PANEL (SIGN IN / SIGN UP)                           */}
-        {/* ======================================================== */}
-        <Animated.View
-          style={[
-            styles.formPanel,
-            {
-              backgroundColor: isDark ? '#101726' : '#FFFFFF',
-              borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : '#E2E8F0',
-            },
-          ]}
-        >
-          {/* Form Actions Header */}
-          <View style={[styles.topFormRow, { justifyContent: 'flex-end' }]}>
-            <TouchableOpacity style={styles.themeToggleBtn} onPress={toggleTheme}>
-              <Icon name={isDark ? 'sun' : 'moon'} size={15} color={isDark ? '#f0d074' : '#b8943e'} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Form Header */}
-          <Text style={[styles.formTitle, { color: theme.textPrimary }]}>
-            {isLogin ? 'Sign in to CampusOne' : 'Create Student Account'}
-          </Text>
-          <Text style={[styles.formSub, { color: theme.textMuted }]}>
-            {isLogin
-              ? 'Enter your student credentials to access your dashboard.'
-              : 'Fill in your academic details to register on CampusOne.'}
-          </Text>
-
-          {/* Mode Switcher Pills (Sign In / Sign Up) */}
-          <View style={[styles.switchContainer, { backgroundColor: isDark ? '#141D2D' : '#F1F5F9' }]}>
-            <TouchableOpacity
-              style={[styles.switchTab, isLogin && styles.switchTabActive]}
-              onPress={() => toggleMode('login')}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.switchTabText, isLogin ? styles.switchTextActive : { color: theme.textMuted }]}>
-                Sign In
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.switchTab, !isLogin && styles.switchTabActive]}
-              onPress={() => toggleMode('signup')}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.switchTabText, !isLogin ? styles.switchTextActive : { color: theme.textMuted }]}>
-                Sign Up
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Google Sign-In Button */}
-          <TouchableOpacity
-            style={[
-              styles.googleBtn,
-              {
-                backgroundColor: isDark ? '#141D2D' : '#FFFFFF',
-                borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : '#CBD5E1',
-              },
-            ]}
-            onPress={handleGoogleClick}
-            disabled={googleLoading}
-            activeOpacity={0.85}
-          >
-            {googleLoading ? (
-              <ActivityIndicator size="small" color="#4285F4" />
-            ) : (
-              <>
-                <GoogleSvgIcon />
-                <Text style={[styles.googleBtnText, { color: theme.textPrimary }]}>
-                  {isLogin ? 'Sign in with Google' : 'Sign up with Google'}
-                </Text>
-              </>
-            )}
-          </TouchableOpacity>
-
-          {/* Divider */}
-          <View style={styles.dividerRow}>
-            <View style={[styles.dividerLine, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0' }]} />
-            <Text style={[styles.dividerText, { color: theme.textMuted }]}>OR WITH EMAIL</Text>
-            <View style={[styles.dividerLine, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0' }]} />
-          </View>
-
-          {/* INPUT FIELDS - wrapped in form on web for browser password manager support */}
-          {Platform.OS === 'web' ? (
-            <form
-              onSubmit={(e) => { e.preventDefault(); handleAuthSubmit(); }}
-              style={{ display: 'contents' }}
-            >
-              <View style={styles.fieldsContainer}>
-                {!isLogin && (
-                  <>
-                    <View style={styles.fieldGroup}>
-                      <Text style={[styles.inputLabel, { color: theme.textMuted }]}>Full Name</Text>
-                      <TextInput
-                        style={[styles.inputField, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0', color: theme.textPrimary }]}
-                        placeholder="Dharmi Patel"
-                        placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                        value={name}
-                        onChangeText={setName}
-                        autoComplete="name"
-                      />
-                    </View>
-
-                    <View style={styles.fieldGroup}>
-                      <Text style={[styles.inputLabel, { color: theme.textMuted }]}>College / University</Text>
-                      <TextInput
-                        style={[styles.inputField, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0', color: theme.textPrimary }]}
-                        placeholder="Shree Swaminarayan Institute of Technology"
-                        placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                        value={college}
-                        onChangeText={setCollege}
-                        autoComplete="organization"
-                      />
-                    </View>
-                  </>
-                )}
-
-                <View style={styles.fieldGroup}>
-                  <Text style={[styles.inputLabel, { color: theme.textMuted }]}>Email Address</Text>
-                  <TextInput
-                    style={[styles.inputField, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0', color: theme.textPrimary }]}
-                    placeholder="student@ssit.edu.in"
-                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    value={email}
-                    onChangeText={setEmail}
-                  />
-                </View>
-
-                <View style={styles.fieldGroup}>
-                  <View style={styles.labelBetweenRow}>
-                    <Text style={[styles.inputLabel, { color: theme.textMuted }]}>Password</Text>
-                    {isLogin && (
-                      <TouchableOpacity onPress={() => Alert.alert('Reset Password', 'Please contact your university IT desk to reset credentials.')}>
-                        <Text style={styles.forgotText}>Forgot Password?</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                  <TextInput
-                    style={[styles.inputField, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0', color: theme.textPrimary }]}
-                    placeholder="••••••••"
-                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                    secureTextEntry
-                    autoComplete={isLogin ? 'current-password' : 'new-password'}
-                    value={password}
-                    onChangeText={setPassword}
-                  />
-                </View>
-              </View>
-
-              {/* Hidden submit button for Enter-key form submission on web */}
-              <button type="submit" style={{ display: 'none' }} aria-hidden="true" />
-
-              {/* SUBMIT BUTTON */}
-              <TouchableOpacity
-                style={[styles.submitBtn, loading && { opacity: 0.7 }]}
-                onPress={handleAuthSubmit}
-                disabled={loading}
-                activeOpacity={0.85}
-              >
-                {loading ? (
-                  <ActivityIndicator size="small" color="#FFF" />
-                ) : (
-                  <Text style={styles.submitBtnText}>
-                    {isLogin ? 'Sign In to CampusOne →' : 'Create Account & Continue →'}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </form>
-          ) : (
-            <>
-              <View style={styles.fieldsContainer}>
-                {!isLogin && (
-                  <>
-                    <View style={styles.fieldGroup}>
-                      <Text style={[styles.inputLabel, { color: theme.textMuted }]}>Full Name</Text>
-                      <TextInput
-                        style={[styles.inputField, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0', color: theme.textPrimary }]}
-                        placeholder="Dharmi Patel"
-                        placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                        value={name}
-                        onChangeText={setName}
-                        textContentType="name"
-                      />
-                    </View>
-
-                    <View style={styles.fieldGroup}>
-                      <Text style={[styles.inputLabel, { color: theme.textMuted }]}>College / University</Text>
-                      <TextInput
-                        style={[styles.inputField, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0', color: theme.textPrimary }]}
-                        placeholder="Shree Swaminarayan Institute of Technology"
-                        placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                        value={college}
-                        onChangeText={setCollege}
-                      />
-                    </View>
-                  </>
-                )}
-
-                <View style={styles.fieldGroup}>
-                  <Text style={[styles.inputLabel, { color: theme.textMuted }]}>Email Address</Text>
-                  <TextInput
-                    style={[styles.inputField, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0', color: theme.textPrimary }]}
-                    placeholder="student@ssit.edu.in"
-                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    textContentType="emailAddress"
-                    value={email}
-                    onChangeText={setEmail}
-                  />
-                </View>
-
-                <View style={styles.fieldGroup}>
-                  <View style={styles.labelBetweenRow}>
-                    <Text style={[styles.inputLabel, { color: theme.textMuted }]}>Password</Text>
-                    {isLogin && (
-                      <TouchableOpacity onPress={() => Alert.alert('Reset Password', 'Please contact your university IT desk to reset credentials.')}>
-                        <Text style={styles.forgotText}>Forgot Password?</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                  <TextInput
-                    style={[styles.inputField, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0', color: theme.textPrimary }]}
-                    placeholder="••••••••"
-                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                    secureTextEntry
-                    textContentType={isLogin ? 'password' : 'newPassword'}
-                    value={password}
-                    onChangeText={setPassword}
-                  />
-                </View>
-              </View>
-
-              {/* SUBMIT BUTTON */}
-              <TouchableOpacity
-                style={[styles.submitBtn, loading && { opacity: 0.7 }]}
-                onPress={handleAuthSubmit}
-                disabled={loading}
-                activeOpacity={0.85}
-              >
-                {loading ? (
-                  <ActivityIndicator size="small" color="#FFF" />
-                ) : (
-                  <Text style={styles.submitBtnText}>
-                    {isLogin ? 'Sign In to CampusOne →' : 'Create Account & Continue →'}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </>
           )}
 
-          {/* Footer Switch Text */}
-          <View style={styles.formFooter}>
-            <Text style={[styles.footerText, { color: theme.textMuted }]}>
-              {isLogin ? "Don't have a student account?" : 'Already registered on CampusOne?'}
-            </Text>
-            <TouchableOpacity onPress={() => toggleMode(isLogin ? 'signup' : 'login')}>
-              <Text style={styles.footerLinkText}>{isLogin ? 'Sign Up' : 'Sign In'}</Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </View>
-
-      {/* ======================================================== */}
-      {/* 🔴 CENTERED GOOGLE OAUTH ACCOUNT SELECTOR MODAL          */}
-      {/* ======================================================== */}
-      <Modal visible={googleModalVisible} transparent animationType="fade" onRequestClose={() => setGoogleModalVisible(false)}>
-        <View style={styles.gModalOverlay}>
-          <View style={[styles.gModalBox, { backgroundColor: isDark ? '#101726' : '#FFFFFF', borderColor: isDark ? 'rgba(99, 102, 241, 0.3)' : '#E2E8F0' }]}>
-            {/* Header */}
-            <View style={styles.gModalHeader}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <GoogleSvgIcon size={22} />
-                <Text style={[styles.gModalTitle, { color: theme.textPrimary }]}>Sign in with Google</Text>
-              </View>
-              <TouchableOpacity onPress={() => setGoogleModalVisible(false)}>
-                <Icon name="x" size={18} color={theme.textMuted} />
+          {/* =================================================== */}
+          {/* SCREEN 2: LOGIN SCREEN (Screenshot 3 Middle)         */}
+          {/* =================================================== */}
+          {mode === 'login' && (
+            <View style={styles.contentColumn}>
+              {/* Back Arrow */}
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => setMode('welcome')}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Icon name="arrow-left" size={20} color="#172B4D" />
               </TouchableOpacity>
-            </View>
 
-            <Text style={[styles.gModalSub, { color: theme.textMuted }]}>
-              Choose a Google Account to sign in to CampusOne
-            </Text>
+              <CampusOneLogo size={64} />
 
-            {/* Centered Google Profile Account Card */}
-            <TouchableOpacity
-              style={[styles.gAccountCard, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : '#CBD5E1' }]}
-              onPress={confirmGoogleSignIn}
-              disabled={googleLoading}
-              activeOpacity={0.85}
-            >
-              <View style={styles.gAvatarCircle}>
-                <Text style={styles.gAvatarText}>D</Text>
-              </View>
-
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={[styles.gAccountName, { color: theme.textPrimary }]}>Dharmi Patel</Text>
-                  <Icon name="check-circle" size={13} color="#34D399" style={{ marginLeft: 6 }} />
+              <View style={styles.formContainer}>
+                {/* Email Input */}
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Email</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="student@campus.edu"
+                    placeholderTextColor="#94A3B8"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
                 </View>
-                <Text style={[styles.gAccountEmail, { color: theme.textMuted }]}>dharmi.patel@gmail.com</Text>
-                <Text style={styles.gClientIdText}>
-                  ID: 402286075226-a65ogtb4kjl5ee...
-                </Text>
+
+                {/* Password Input */}
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Password</Text>
+                  <View style={styles.passwordRow}>
+                    <TextInput
+                      style={styles.passwordInput}
+                      placeholder="••••••••"
+                      placeholderTextColor="#94A3B8"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity
+                      onPress={() => setShowPassword(!showPassword)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Icon
+                        name={showPassword ? 'eye-off' : 'eye'}
+                        size={18}
+                        color="#94A3B8"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Forgot Password */}
+                <TouchableOpacity
+                  style={styles.forgotPassBtn}
+                  onPress={() => {
+                    if (Platform.OS === 'web') {
+                      window.alert('Password reset instructions will be sent to your registered college email.');
+                    } else {
+                      Alert.alert('Reset Password', 'Password reset instructions sent to your college email.');
+                    }
+                  }}
+                >
+                  <Text style={styles.forgotPassText}>Forgot password?</Text>
+                </TouchableOpacity>
+
+                {/* Green Login Button */}
+                <TouchableOpacity
+                  style={styles.greenBtn}
+                  onPress={handleLogin}
+                  disabled={loading}
+                  activeOpacity={0.85}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.greenBtnText}>Login</Text>
+                  )}
+                </TouchableOpacity>
+
+                {/* Demo Login */}
+                <TouchableOpacity
+                  style={styles.demoLinkBtn}
+                  onPress={handleQuickDemo}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.demoLinkText}>⚡ Quick Demo Sign In</Text>
+                </TouchableOpacity>
+
+                {/* Switch to Signup */}
+                <View style={styles.switchModeRow}>
+                  <Text style={styles.switchModeText}>Don't have an account? </Text>
+                  <TouchableOpacity onPress={() => setMode('signup')}>
+                    <Text style={styles.switchModeLink}>Sign up</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-
-              <Icon name="chevron-right" size={16} color={isDark ? '#64748B' : '#94A3B8'} />
-            </TouchableOpacity>
-
-            <View style={styles.gSecurityTagRow}>
-              <Icon name="shield" size={13} color="#10B981" style={{ marginRight: 5 }} />
-              <Text style={{ color: '#10B981', fontSize: 11, fontWeight: '700' }}>
-                Verified via Google OAuth 2.0 Client
-              </Text>
             </View>
+          )}
 
-            {/* Confirm Action Button */}
-            <TouchableOpacity
-              style={[styles.gConfirmBtn, googleLoading && { opacity: 0.7 }]}
-              onPress={confirmGoogleSignIn}
-              disabled={googleLoading}
-              activeOpacity={0.85}
-            >
-              {googleLoading ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : (
-                <Text style={styles.gConfirmBtnText}>Continue as Dharmi Patel →</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+          {/* =================================================== */}
+          {/* SCREEN 3: SIGNUP SCREEN (Screenshot 3 Right)        */}
+          {/* =================================================== */}
+          {mode === 'signup' && (
+            <View style={styles.contentColumn}>
+              {/* Back Arrow */}
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => setMode('welcome')}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Icon name="arrow-left" size={20} color="#172B4D" />
+              </TouchableOpacity>
+
+              <CampusOneLogo size={64} />
+
+              <View style={styles.formContainer}>
+                {/* Name Input */}
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Name</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Michael Aguero"
+                    placeholderTextColor="#94A3B8"
+                    value={name}
+                    onChangeText={setName}
+                  />
+                </View>
+
+                {/* Username / Roll Number */}
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Username / Roll No</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="17081010086"
+                    placeholderTextColor="#94A3B8"
+                    value={username}
+                    onChangeText={setUsername}
+                  />
+                </View>
+
+                {/* Email Input */}
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Email</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="student@campus.edu"
+                    placeholderTextColor="#94A3B8"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                {/* Password Input */}
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Password</Text>
+                  <View style={styles.passwordRow}>
+                    <TextInput
+                      style={styles.passwordInput}
+                      placeholder="••••••••"
+                      placeholderTextColor="#94A3B8"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity
+                      onPress={() => setShowPassword(!showPassword)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Icon
+                        name={showPassword ? 'eye-off' : 'eye'}
+                        size={18}
+                        color="#94A3B8"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Green Signup Button */}
+                <TouchableOpacity
+                  style={styles.greenBtn}
+                  onPress={handleSignup}
+                  disabled={loading}
+                  activeOpacity={0.85}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.greenBtnText}>Signup</Text>
+                  )}
+                </TouchableOpacity>
+
+                {/* Demo Login */}
+                <TouchableOpacity
+                  style={styles.demoLinkBtn}
+                  onPress={handleQuickDemo}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.demoLinkText}>⚡ Quick Demo Sign In</Text>
+                </TouchableOpacity>
+
+                {/* Switch to Login */}
+                <View style={styles.switchModeRow}>
+                  <Text style={styles.switchModeText}>Already have an account? </Text>
+                  <TouchableOpacity onPress={() => setMode('login')}>
+                    <Text style={styles.switchModeLink}>Log in</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          )}
         </View>
-      </Modal>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
+  container: {
     flex: 1,
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
     justifyContent: 'center',
-    padding: 16,
-    overflow: 'hidden',
-  },
-
-  /* Glowing ambient background orbs */
-  orbGlow1: {
-    position: 'absolute',
-    top: -100,
-    left: -100,
-    width: 350,
-    height: 350,
-    borderRadius: 175,
-    backgroundColor: 'rgba(99, 102, 241, 0.12)',
-  },
-  orbGlow2: {
-    position: 'absolute',
-    bottom: -100,
-    right: -100,
-    width: 350,
-    height: 350,
-    borderRadius: 175,
-    backgroundColor: 'rgba(6, 182, 212, 0.12)',
-  },
-
-  splitWrapper: {
-    width: '100%',
-    maxWidth: 480,
-    flexDirection: 'column',
-    gap: 20,
-    zIndex: 10,
-  },
-  splitWrapperDesktop: {
-    maxWidth: 960,
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    minHeight: 560,
-  },
-
-  /* Left 50% Glass Hero Panel */
-  heroPanel: {
-    flex: 1,
-    borderRadius: 24,
-    borderWidth: 1.5,
-    padding: 32,
-    justifyContent: 'space-between',
-    overflow: 'hidden',
-  },
-  heroBrandRow: {
-    flexDirection: 'row',
     alignItems: 'center',
   },
-  heroLogoBadge: {
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    width: '100%',
+  },
+  desktopContainer: {
+    paddingVertical: 40,
+  },
+  card: {
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 28,
+    paddingVertical: 32,
+    shadowColor: '#172B4D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 3,
+    position: 'relative',
+  },
+  desktopCard: {
+    paddingHorizontal: 36,
+    paddingVertical: 40,
+  },
+  contentColumn: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  backButton: {
+    alignSelf: 'flex-start',
     width: 36,
     height: 36,
-    borderRadius: 10,
-    backgroundColor: '#c9a84c',
+    borderRadius: 18,
+    backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
+    marginBottom: 8,
   },
-  heroLogoText: {
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: -0.4,
-  },
-  heroCenterContent: {
-    marginVertical: 20,
-  },
-  heroBadgeTag: {
-    color: '#c9a84c',
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 1,
-    marginBottom: 10,
-  },
-  heroTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    lineHeight: 34,
-    letterSpacing: -0.5,
-    marginBottom: 12,
-  },
-  heroSub: {
-    fontSize: 13,
-    lineHeight: 20,
-    marginBottom: 20,
-  },
-  heroPillsRow: {
-    gap: 10,
-  },
-  heroPillItem: {
-    flexDirection: 'row',
+  logoContainer: {
     alignItems: 'center',
+    marginBottom: 16,
   },
-  heroPillText: {
-    fontSize: 12.5,
-    fontWeight: '600',
-  },
-
-  heroQuoteBox: {
-    backgroundColor: 'rgba(201, 168, 76, 0.1)',
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(201, 168, 76, 0.25)',
-  },
-  heroQuoteText: {
-    color: '#CBD5E1',
-    fontSize: 12,
-    fontStyle: 'italic',
-    lineHeight: 17,
-  },
-  heroQuoteAuthor: {
-    color: '#c9a84c',
-    fontSize: 10.5,
-    fontWeight: '700',
+  brandTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#172B4D',
     marginTop: 6,
+    letterSpacing: -0.5,
   },
-
-  /* Form Panel */
-  formPanel: {
-    flex: 1,
-    borderRadius: 24,
-    borderWidth: 1.5,
-    padding: 28,
-    justifyContent: 'center',
-    ...Platform.select({
-      web: { boxShadow: '0px 6px 32px rgba(0,0,0,0.15)' },
-      default: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.15,
-        shadowRadius: 16,
-        elevation: 6,
-      },
-    }),
-  },
-  topFormRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  themeToggleBtn: {
-    padding: 4,
-  },
-
-  formTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    letterSpacing: -0.4,
-    marginBottom: 4,
-  },
-  formSub: {
-    fontSize: 12.5,
-    lineHeight: 18,
-    marginBottom: 16,
-  },
-
-  /* Mode Switcher Tabs */
-  switchContainer: {
-    flexDirection: 'row',
-    borderRadius: 12,
-    padding: 3,
-    marginBottom: 16,
-  },
-  switchTab: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: 9,
-  },
-  switchTabActive: {
-    backgroundColor: '#c9a84c',
-    ...Platform.select({
-      web: { boxShadow: '0px 2px 8px rgba(201,168,76,0.35)' },
-      default: {
-        shadowColor: '#c9a84c',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 2,
-      },
-    }),
-  },
-  switchTabText: {
-    fontSize: 12.5,
-    fontWeight: '600',
-  },
-  switchTextActive: {
-    color: '#0c0f10',
-    fontWeight: '800',
-  },
-
-  /* Google Button */
-  googleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    marginBottom: 14,
-  },
-  googleBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-
-  /* Divider */
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-  },
-  dividerText: {
+  brandTagline: {
     fontSize: 10,
     fontWeight: '700',
-    marginHorizontal: 10,
-    letterSpacing: 0.5,
+    color: '#64748B',
+    letterSpacing: 1.2,
+    marginTop: 2,
   },
-
-  /* Form Fields */
-  fieldsContainer: {
-    gap: 10,
-    marginBottom: 16,
-  },
-  fieldGroup: {},
-  inputLabel: {
-    fontSize: 11.5,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  labelBetweenRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  illustrationWrapper: {
+    marginVertical: 12,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  forgotText: {
-    color: '#c9a84c',
-    fontSize: 11,
+  welcomeHeading: {
+    fontSize: 22,
     fontWeight: '700',
-  },
-  inputField: {
-    borderWidth: 1,
-    borderRadius: 9,
-    paddingHorizontal: 12,
-    paddingVertical: 8.5,
-    fontSize: 13,
-  },
-
-  /* Submit Button */
-  submitBtn: {
-    backgroundColor: '#c9a84c',
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...Platform.select({
-      web: { boxShadow: '0px 4px 16px rgba(201,168,76,0.45)' },
-      default: {
-        shadowColor: '#c9a84c',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.35,
-        shadowRadius: 8,
-        elevation: 4,
-      },
-    }),
-    marginBottom: 14,
-  },
-  submitBtnText: {
-    color: '#0c0f10',
-    fontSize: 13.5,
-    fontWeight: '800',
-  },
-
-  /* Footer Switch */
-  formFooter: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  footerText: {
-    fontSize: 12,
-  },
-  footerLinkText: {
-    color: '#c9a84c',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-
-  /* Centered Google Modal Overlay */
-  gModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  gModalBox: {
-    width: '100%',
-    maxWidth: 440,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    padding: 24,
-    alignSelf: 'center',
-    ...Platform.select({
-      web: { boxShadow: '0px 10px 40px rgba(0,0,0,0.4)' },
-      default: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.4,
-        shadowRadius: 20,
-        elevation: 10,
-      },
-    }),
-  },
-  gModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    color: '#172B4D',
+    marginTop: 8,
     marginBottom: 6,
   },
-  gModalTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+  welcomeSubtitle: {
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 19,
+    marginBottom: 24,
+    paddingHorizontal: 12,
   },
-  gModalSub: {
-    fontSize: 12.5,
-    marginBottom: 18,
+  buttonStack: {
+    width: '100%',
+    gap: 12,
   },
-
-  gAccountCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
+  whiteBtn: {
+    width: '100%',
+    height: 48,
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1.5,
-    gap: 14,
-    marginBottom: 16,
-  },
-  gAvatarCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#c9a84c',
+    borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  gAvatarText: {
-    color: '#0c0f10',
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  gAccountName: {
+  whiteBtnText: {
+    color: '#172B4D',
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: '700',
   },
-  gAccountEmail: {
-    fontSize: 12,
-    marginTop: 1,
+  greenBtn: {
+    width: '100%',
+    height: 48,
+    backgroundColor: '#16A36A',
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#16A36A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  gClientIdText: {
-    fontSize: 10,
-    color: '#c9a84c',
-    fontWeight: '600',
+  greenBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  demoLinkBtn: {
+    alignItems: 'center',
+    paddingVertical: 8,
     marginTop: 4,
   },
-
-  gSecurityTagRow: {
+  demoLinkText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#16A36A',
+  },
+  formContainer: {
+    width: '100%',
+    marginTop: 8,
+  },
+  inputWrapper: {
+    marginBottom: 14,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#172B4D',
+    marginBottom: 6,
+  },
+  input: {
+    width: '100%',
+    height: 46,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    fontSize: 14,
+    color: '#172B4D',
+    backgroundColor: '#FAFAFA',
+  },
+  passwordRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    width: '100%',
+    height: 46,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    backgroundColor: '#FAFAFA',
+  },
+  passwordInput: {
+    flex: 1,
+    height: '100%',
+    fontSize: 14,
+    color: '#172B4D',
+  },
+  forgotPassBtn: {
+    alignSelf: 'flex-end',
+    marginBottom: 16,
+    marginTop: -4,
+  },
+  forgotPassText: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  switchModeRow: {
+    flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 18,
-  },
-
-  gConfirmBtn: {
-    backgroundColor: '#c9a84c',
-    paddingVertical: 12,
-    borderRadius: 10,
     alignItems: 'center',
-    ...Platform.select({
-      web: { boxShadow: '0px 4px 16px rgba(201,168,76,0.45)' },
-      default: {
-        shadowColor: '#c9a84c',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.35,
-        shadowRadius: 8,
-        elevation: 4,
-      },
-    }),
+    marginTop: 18,
   },
-  gConfirmBtnText: {
-    color: '#0c0f10',
-    fontSize: 13.5,
-    fontWeight: '800',
+  switchModeText: {
+    fontSize: 13,
+    color: '#64748B',
+  },
+  switchModeLink: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#16A36A',
   },
 });

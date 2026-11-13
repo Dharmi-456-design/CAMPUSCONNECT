@@ -10,7 +10,7 @@ import { Platform } from 'react-native';
  * On native (iOS/Android): uses shadowColor, shadowOffset, shadowOpacity, shadowRadius, elevation
  * On web: uses boxShadow (the new API for react-native-web 0.21+)
  *
- * @param {string} color - CSS/hex color string e.g. '#c9a84c' or '#000'
+ * @param {string} color - CSS/hex color string e.g. '#16A36A' or '#000'
  * @param {{ width: number, height: number }} offset - shadow offset
  * @param {number} opacity - shadow opacity 0-1
  * @param {number} radius - shadow blur radius

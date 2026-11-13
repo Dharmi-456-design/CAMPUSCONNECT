@@ -19,7 +19,7 @@ const SETTINGS_GROUPS = [
   {
     title: 'Academic Info',
     icon: 'book-open',
-    color: '#c9a84c',
+    color: '#16A36A',
     items: [
       { label: 'University / Institute', value: 'Shree Swaminarayan Institute of Technology (SSIT), Kalol', icon: 'home' },
       { label: 'Program / Branch', value: 'B.Tech Computer Engineering', icon: 'code' },
@@ -94,9 +94,9 @@ function ProfileHero({ user, isDark, theme, toggleTheme }) {
           <Text style={[styles.heroName, { color: theme.textPrimary }]}>{userName}</Text>
           <Text style={[styles.heroEmail, { color: theme.textMuted }]}>{userEmail}</Text>
           <View style={styles.heroTagsRow}>
-            <View style={[styles.heroTag, { backgroundColor: isDark ? 'rgba(201, 168, 76, 0.15)' : '#fdf8e8' }]}>
-              <Icon name="award" size={11} color="#c9a84c" style={{ marginRight: 4 }} />
-              <Text style={{ color: isDark ? '#f0d074' : '#b8943e', fontSize: 11, fontWeight: '700' }}>Verified Scholar</Text>
+            <View style={[styles.heroTag, { backgroundColor: isDark ? 'rgba(201, 168, 76, 0.15)' : '#E8F5EE' }]}>
+              <Icon name="award" size={11} color="#16A36A" style={{ marginRight: 4 }} />
+              <Text style={{ color: isDark ? '#16A36A' : '#16A36A', fontSize: 11, fontWeight: '700' }}>Verified Scholar</Text>
             </View>
             <View style={[styles.heroTag, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}>
               <Icon name="zap" size={11} color="#FBBF24" style={{ marginRight: 4 }} />
@@ -110,7 +110,7 @@ function ProfileHero({ user, isDark, theme, toggleTheme }) {
 
         {/* Theme Toggle */}
         <TouchableOpacity style={[styles.themeToggleBtn, { backgroundColor: isDark ? '#141D2D' : '#F1F5F9', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0' }]} onPress={toggleTheme} activeOpacity={0.8}>
-          <Icon name={isDark ? 'sun' : 'moon'} size={16} color={isDark ? '#FBBF24' : '#c9a84c'} />
+          <Icon name={isDark ? 'sun' : 'moon'} size={16} color={isDark ? '#FBBF24' : '#16A36A'} />
           <Text style={[styles.themeToggleText, { color: theme.textPrimary }]}>{isDark ? 'Light' : 'Dark'}</Text>
         </TouchableOpacity>
       </View>
@@ -118,7 +118,7 @@ function ProfileHero({ user, isDark, theme, toggleTheme }) {
       {/* Stats Row */}
       <View style={[styles.statsBar, { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#E2E8F0' }]}>
         <View style={styles.statItem}>
-          <Text style={[styles.statNum, { color: isDark ? '#f0d074' : '#b8943e' }]}>14</Text>
+          <Text style={[styles.statNum, { color: isDark ? '#16A36A' : '#16A36A' }]}>14</Text>
           <Text style={[styles.statLabel, { color: theme.textMuted }]}>Notes</Text>
         </View>
         <View style={[styles.statDivider, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0' }]} />
@@ -218,11 +218,11 @@ export default function ProfileScreen() {
           <View style={[styles.sectionCard, { backgroundColor: bgCard, borderColor: borderCard }]}>
             <View style={styles.sectionHeaderRow}>
               <View style={styles.sectionTitleRow}>
-                <Icon name="user" size={15} color="#c9a84c" style={{ marginRight: 8 }} />
+                <Icon name="user" size={15} color="#16A36A" style={{ marginRight: 8 }} />
                 <Text style={[styles.sectionTitle, { color: textTitle }]}>Edit Academic Profile</Text>
               </View>
               <TouchableOpacity
-                style={[styles.editToggleBtn, { backgroundColor: editMode ? '#c9a84c' : isDark ? '#141D2D' : '#F1F5F9', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0' }]}
+                style={[styles.editToggleBtn, { backgroundColor: editMode ? '#16A36A' : isDark ? '#141D2D' : '#F1F5F9', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0' }]}
                 onPress={() => setEditMode(!editMode)}
               >
                 <Icon name={editMode ? 'x' : 'edit-2'} size={13} color={editMode ? '#0c0f10' : textSub} />
@@ -285,7 +285,7 @@ export default function ProfileScreen() {
 
               <View style={styles.fieldRow}>
                 <Text style={[styles.fieldLabel, { color: textSub }]}>Official Enrollment ID</Text>
-                <Text style={[styles.fieldValue, { color: isDark ? '#f0d074' : '#b8943e', fontWeight: '800' }]}>SUK250054CE081</Text>
+                <Text style={[styles.fieldValue, { color: isDark ? '#16A36A' : '#16A36A', fontWeight: '800' }]}>SUK250054CE081</Text>
               </View>
 
               <View style={styles.fieldRow}>
@@ -428,13 +428,13 @@ const styles = StyleSheet.create({
     borderRadius: 37,
     backgroundColor: 'rgba(201, 168, 76, 0.2)',
     borderWidth: 2.5,
-    borderColor: '#c9a84c',
+    borderColor: '#16A36A',
     alignItems: 'center',
     justifyContent: 'center',
     ...Platform.select({
       web: { boxShadow: '0px 4px 20px rgba(201,168,76,0.45)' },
       default: {
-        shadowColor: '#c9a84c',
+        shadowColor: '#16A36A',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.4,
         shadowRadius: 10,
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
     width: 62,
     height: 62,
     borderRadius: 31,
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -557,7 +557,7 @@ const styles = StyleSheet.create({
   },
 
   saveBtn: {
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: { boxShadow: '0px 3px 12px rgba(201,168,76,0.4)' },
       default: {
-        shadowColor: '#c9a84c',
+        shadowColor: '#16A36A',
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.35,
         shadowRadius: 6,

@@ -106,7 +106,7 @@ async function registerForPushNotificationsAsync() {
           name: 'CampusConnect',
           importance: Notifications.AndroidImportance.MAX,
           vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#c9a84c',
+          lightColor: '#16A36A',
           sound: 'default',
           enableVibrate: true,
           showBadge: true,

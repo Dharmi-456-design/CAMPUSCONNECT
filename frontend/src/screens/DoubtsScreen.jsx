@@ -19,7 +19,7 @@ import Icon from '../components/common/Icon';
 const STATS = [
   { label: 'Total Questions', value: '38+', sub: 'Campus doubts asked', icon: 'help-circle', color: '#22D3EE', bg: 'rgba(6,182,212,0.15)', glow: 'rgba(6,182,212,0.12)' },
   { label: 'Solved Answers', value: '112+', sub: 'Peer & faculty answers', icon: 'check-circle', color: '#34D399', bg: 'rgba(16,185,129,0.15)', glow: 'rgba(16,185,129,0.12)' },
-  { label: 'Verified TAs', value: '100%', sub: 'Faculty review team', icon: 'shield', color: '#f0d074', bg: 'rgba(201,168,76,0.15)', glow: 'rgba(201,168,76,0.12)' },
+  { label: 'Verified TAs', value: '100%', sub: 'Faculty review team', icon: 'shield', color: '#16A36A', bg: 'rgba(201,168,76,0.15)', glow: 'rgba(201,168,76,0.12)' },
   { label: 'Avg Solve Time', value: '< 2 hrs', sub: 'Fast community help', icon: 'zap', color: '#FBBF24', bg: 'rgba(245,158,11,0.15)', glow: 'rgba(245,158,11,0.12)' },
 ];
 
@@ -41,7 +41,7 @@ const INITIAL_DOUBTS = [
     title: 'How to calculate Time Complexity for Nested Loops with logarithmic increments?',
     subject: 'Analysis & Design of Algorithms',
     description: 'In my ADA tutorial test, there was a loop where i multiplies by 2 each iteration while j increases by 1. How do we derive the exact Big-O master theorem equation for this?',
-    author: { name: 'Dharmi Patel', branch: 'SSIT Computer Engg. • Sem 3', initial: 'D', avatarBg: '#c9a84c' },
+    author: { name: 'Dharmi Patel', branch: 'SSIT Computer Engg. • Sem 3', initial: 'D', avatarBg: '#16A36A' },
     upvotes: 18,
     isUpvoted: false,
     answers: [
@@ -184,7 +184,7 @@ export default function DoubtsScreen() {
           name: user?.name || 'Dharmi Patel',
           branch: `${user?.branch || 'Computer Engg.'} • Sem ${user?.semester || 3}`,
           initial: (user?.name || 'D').charAt(0).toUpperCase(),
-          avatarBg: '#c9a84c',
+          avatarBg: '#16A36A',
         },
         upvotes: 1,
         isUpvoted: true,
@@ -319,12 +319,12 @@ export default function DoubtsScreen() {
                   </View>
 
                   <TouchableOpacity
-                    style={[styles.upvoteBtn, item.isUpvoted && { backgroundColor: isDark ? 'rgba(201,168,76,0.2)' : '#fdf8e8', borderColor: '#c9a84c' }]}
+                    style={[styles.upvoteBtn, item.isUpvoted && { backgroundColor: isDark ? 'rgba(201,168,76,0.2)' : '#E8F5EE', borderColor: '#16A36A' }]}
                     onPress={() => handleToggleUpvote(item.id)}
                     activeOpacity={0.8}
                   >
-                    <Icon name="thumbs-up" size={13} color={item.isUpvoted ? '#c9a84c' : textSub} style={{ marginRight: 5 }} />
-                    <Text style={{ color: item.isUpvoted ? (isDark ? '#f0d074' : '#b8943e') : textSub, fontSize: 12, fontWeight: '700' }}>
+                    <Icon name="thumbs-up" size={13} color={item.isUpvoted ? '#16A36A' : textSub} style={{ marginRight: 5 }} />
+                    <Text style={{ color: item.isUpvoted ? (isDark ? '#16A36A' : '#16A36A') : textSub, fontSize: 12, fontWeight: '700' }}>
                       {item.upvotes}
                     </Text>
                   </TouchableOpacity>
@@ -337,7 +337,7 @@ export default function DoubtsScreen() {
                 {/* Author & Reply / Answers Toggle Row */}
                 <View style={styles.cardFooter}>
                   <View style={styles.authorRow}>
-                    <View style={[styles.authorAvatarCircle, { backgroundColor: item.author?.avatarBg || '#c9a84c' }]}>
+                    <View style={[styles.authorAvatarCircle, { backgroundColor: item.author?.avatarBg || '#16A36A' }]}>
                       <Text style={[styles.avatarInitial, { color: '#0c0f10' }]}>{item.author?.initial || 'D'}</Text>
                     </View>
                     <View>
@@ -347,12 +347,12 @@ export default function DoubtsScreen() {
                   </View>
 
                   <TouchableOpacity
-                    style={[styles.replyToggleBtn, { backgroundColor: isExpanded ? '#c9a84c' : isDark ? 'rgba(201,168,76,0.15)' : '#fdf8e8' }]}
+                    style={[styles.replyToggleBtn, { backgroundColor: isExpanded ? '#16A36A' : isDark ? 'rgba(201,168,76,0.15)' : '#E8F5EE' }]}
                     onPress={() => setExpandedId(isExpanded ? null : item.id)}
                     activeOpacity={0.8}
                   >
-                    <Icon name="message-square" size={13} color={isExpanded ? '#0c0f10' : isDark ? '#f0d074' : '#b8943e'} style={{ marginRight: 6 }} />
-                    <Text style={[styles.replyToggleText, { color: isExpanded ? '#0c0f10' : isDark ? '#f0d074' : '#b8943e' }]}>
+                    <Icon name="message-square" size={13} color={isExpanded ? '#0c0f10' : isDark ? '#16A36A' : '#16A36A'} style={{ marginRight: 6 }} />
+                    <Text style={[styles.replyToggleText, { color: isExpanded ? '#0c0f10' : isDark ? '#16A36A' : '#16A36A' }]}>
                       {item.answers?.length || 0} Reply{item.answers?.length !== 1 ? 'ies' : ''} {isExpanded ? '▲' : '▼'}
                     </Text>
                   </TouchableOpacity>
@@ -371,7 +371,7 @@ export default function DoubtsScreen() {
                       <View key={ans.id} style={[styles.ansBubble, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: border }]}>
                         <View style={styles.ansHeader}>
                           <Text style={[styles.ansAuthor, { color: textTitle }]}>💡 {ans.author?.name}</Text>
-                          <Text style={[styles.ansRole, { color: isDark ? '#f0d074' : '#b8943e' }]}> • {ans.author?.role}</Text>
+                          <Text style={[styles.ansRole, { color: isDark ? '#16A36A' : '#16A36A' }]}> • {ans.author?.role}</Text>
                           <Text style={[styles.ansTime, { color: textSub }]}>{ans.time}</Text>
                         </View>
                         <Text style={[styles.ansText, { color: isDark ? '#CBD5E1' : '#334155' }]}>{ans.text}</Text>
@@ -572,7 +572,7 @@ const styles = StyleSheet.create({
 
   addAnsRow: { flexDirection: 'row', gap: 8, marginTop: 6 },
   ansInput: { flex: 1, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 12.5 },
-  postAnsBtn: { backgroundColor: '#c9a84c', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8 },
+  postAnsBtn: { backgroundColor: '#16A36A', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8 },
   postAnsBtnText: { color: '#0c0f10', fontSize: 12.5, fontWeight: '700' },
 
   /* Widgets */

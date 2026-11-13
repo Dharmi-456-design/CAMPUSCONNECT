@@ -19,7 +19,7 @@ import { getEventsAndNoticesApi, createEventNoticeApi } from '../../api/events.a
 import { useAuthStore } from '../../store/authStore';
 
 const TYPE_TABS = [
-  { key: 'all',     label: 'All Updates',   icon: 'layers',     color: '#c9a84c' },
+  { key: 'all',     label: 'All Updates',   icon: 'layers',     color: '#16A36A' },
   { key: 'event',   label: 'Events',        icon: 'calendar',   color: '#06B6D4' },
   { key: 'notice',  label: 'Exam Notices',  icon: 'bell',       color: '#F59E0B' },
   { key: 'holiday', label: 'Holidays',      icon: 'sun',        color: '#10B981' },
@@ -93,7 +93,7 @@ function TypeConfig(type) {
     case 'event':   return { color: '#06B6D4', bg: 'rgba(6,182,212,0.15)',   label: 'EVENT',   icon: 'calendar' };
     case 'notice':  return { color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', label: 'NOTICE',  icon: 'bell' };
     case 'holiday': return { color: '#10B981', bg: 'rgba(16,185,129,0.15)', label: 'HOLIDAY', icon: 'sun' };
-    default:        return { color: '#c9a84c', bg: 'rgba(201,168,76,0.15)', label: 'UPDATE',  icon: 'layers' };
+    default:        return { color: '#16A36A', bg: 'rgba(22,163,106,0.15)', label: 'UPDATE',  icon: 'layers' };
   }
 }
 
@@ -263,7 +263,7 @@ export default function EventsNoticesScreen({ onBack }) {
         <View style={[styles.statDivider, { backgroundColor: border }]} />
         <View style={styles.statItem}>
           <View style={[styles.statIcon, { backgroundColor: 'rgba(201,168,76,0.15)' }]}>
-            <Icon name="layers" size={14} color={isDark ? '#f0d074' : '#b8943e'} />
+            <Icon name="layers" size={14} color={isDark ? '#16A36A' : '#16A36A'} />
           </View>
           <Text style={[styles.statNum, { color: textTitle }]}>{items.length}</Text>
           <Text style={[styles.statLabel, { color: textSub }]}>Total Updates</Text>
@@ -288,8 +288,8 @@ export default function EventsNoticesScreen({ onBack }) {
                 style={[
                   styles.typeTab,
                   {
-                    backgroundColor: isActive ? '#c9a84c' : bgCard,
-                    borderColor: isActive ? '#c9a84c' : border,
+                    backgroundColor: isActive ? '#16A36A' : bgCard,
+                    borderColor: isActive ? '#16A36A' : border,
                   },
                 ]}
                 onPress={() => setActiveType(tab.key)}
@@ -298,10 +298,10 @@ export default function EventsNoticesScreen({ onBack }) {
                 <Icon
                   name={tab.icon}
                   size={13}
-                  color={isActive ? '#0c0f10' : tab.color}
+                  color={isActive ? '#FFFFFF' : tab.color}
                   style={{ marginRight: 6 }}
                 />
-                <Text style={[styles.typeTabText, { color: isActive ? '#0c0f10' : textSub, fontWeight: isActive ? '800' : '600' }]}>
+                <Text style={[styles.typeTabText, { color: isActive ? '#FFFFFF' : textSub, fontWeight: isActive ? '800' : '600' }]}>
                   {tab.label}
                 </Text>
               </TouchableOpacity>
@@ -323,14 +323,14 @@ export default function EventsNoticesScreen({ onBack }) {
                 style={[
                   styles.facultyPill,
                   {
-                    backgroundColor: isSel ? (isDark ? 'rgba(201,168,76,0.18)' : '#fdf8e8') : bgCard,
-                    borderColor: isSel ? '#c9a84c' : border,
+                    backgroundColor: isSel ? (isDark ? 'rgba(22,163,106,0.18)' : '#E8F5EE') : bgCard,
+                    borderColor: isSel ? '#16A36A' : border,
                   },
                 ]}
                 onPress={() => setSelectedFaculty(fac)}
                 activeOpacity={0.8}
               >
-                <Text style={[styles.facultyPillText, { color: isSel ? (isDark ? '#f0d074' : '#b8943e') : textSub, fontWeight: isSel ? '700' : '500' }]}>
+                <Text style={[styles.facultyPillText, { color: isSel ? '#16A36A' : textSub, fontWeight: isSel ? '700' : '500' }]}>
                   {fac}
                 </Text>
               </TouchableOpacity>
@@ -369,7 +369,7 @@ export default function EventsNoticesScreen({ onBack }) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => { setRefreshing(true); fetchEvents(); }}
-            tintColor={isDark ? '#f0d074' : '#b8943e'}
+            tintColor={isDark ? '#16A36A' : '#16A36A'}
           />
         }
         ListHeaderComponent={
@@ -430,8 +430,8 @@ export default function EventsNoticesScreen({ onBack }) {
 
                 {/* Department */}
                 <View style={styles.deptRow}>
-                  <Icon name="home" size={12} color={isDark ? '#f0d074' : '#b8943e'} style={{ marginRight: 5 }} />
-                  <Text style={[styles.deptText, { color: isDark ? '#f0d074' : '#b8943e' }]}>{item.department}</Text>
+                  <Icon name="home" size={12} color={isDark ? '#16A36A' : '#16A36A'} style={{ marginRight: 5 }} />
+                  <Text style={[styles.deptText, { color: isDark ? '#16A36A' : '#16A36A' }]}>{item.department}</Text>
                 </View>
 
                 {/* Description */}
@@ -475,14 +475,14 @@ export default function EventsNoticesScreen({ onBack }) {
                       style={[
                         styles.typeSelectBtn,
                         {
-                          backgroundColor: isSel ? '#c9a84c' : isDark ? '#141D2D' : '#F8FAFC',
-                          borderColor: isSel ? '#c9a84c' : border,
+                          backgroundColor: isSel ? '#16A36A' : isDark ? '#141D2D' : '#F8FAFC',
+                          borderColor: isSel ? '#16A36A' : border,
                         },
                       ]}
                       onPress={() => setMType(t)}
                     >
-                      <Icon name={c.icon} size={14} color={isSel ? '#0c0f10' : c.color} style={{ marginBottom: 4 }} />
-                      <Text style={{ color: isSel ? '#0c0f10' : textSub, fontSize: 11.5, fontWeight: isSel ? '800' : '700' }}>
+                      <Icon name={c.icon} size={14} color={isSel ? '#FFFFFF' : c.color} style={{ marginBottom: 4 }} />
+                      <Text style={{ color: isSel ? '#FFFFFF' : textSub, fontSize: 11.5, fontWeight: isSel ? '800' : '700' }}>
                         {t.toUpperCase()}
                       </Text>
                     </TouchableOpacity>
@@ -585,24 +585,24 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 16.5, fontWeight: '800', letterSpacing: -0.2 },
   headerSub: { fontSize: 11.5, marginTop: 2 },
   postBtn: {
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 9,
     ...Platform.select({
-      web: { boxShadow: '0px 3px 12px rgba(201,168,76,0.4)' },
+      web: { boxShadow: '0px 3px 12px rgba(22,163,106,0.3)' },
       default: {
-        shadowColor: '#c9a84c',
+        shadowColor: '#16A36A',
         shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.35,
+        shadowOpacity: 0.3,
         shadowRadius: 6,
         elevation: 3,
       },
     }),
   },
-  postBtnText: { color: '#0c0f10', fontSize: 13, fontWeight: '700' },
+  postBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
 
   /* Stats Row */
   statsRow: {
@@ -790,16 +790,16 @@ const styles = StyleSheet.create({
   },
   broadcastBtn: {
     flex: 2,
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     paddingVertical: 11,
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     ...Platform.select({
-      web: { boxShadow: '0px 3px 12px rgba(201,168,76,0.35)' },
+      web: { boxShadow: '0px 3px 12px rgba(22,163,106,0.3)' },
       default: {
-        shadowColor: '#c9a84c',
+        shadowColor: '#16A36A',
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.3,
         shadowRadius: 6,
@@ -807,5 +807,5 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  broadcastBtnText: { color: '#0c0f10', fontSize: 13.5, fontWeight: '700' },
+  broadcastBtnText: { color: '#FFFFFF', fontSize: 13.5, fontWeight: '700' },
 });

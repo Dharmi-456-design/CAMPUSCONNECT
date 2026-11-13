@@ -223,7 +223,7 @@ export default function TeamScreen() {
       style={[styles.scroll, { backgroundColor: theme.bg }]}
       contentContainerStyle={styles.scrollInner}
       showsVerticalScrollIndicator={false}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchPosts} tintColor="#c9a84c" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchPosts} tintColor="#16A36A" />}
     >
       {/* ======================================================== */}
       {/* 1. HEADER ROW                                             */}
@@ -254,7 +254,7 @@ export default function TeamScreen() {
       <View style={styles.statsRow}>
         <View style={[styles.statBox, { backgroundColor: bgCard, borderColor: borderCard }]}>
           <View style={[styles.statIconCircle, { backgroundColor: 'rgba(201, 168, 76, 0.15)' }]}>
-            <Icon name="users" size={17} color="#c9a84c" />
+            <Icon name="users" size={17} color="#16A36A" />
           </View>
           <View>
             <Text style={[styles.statNum, { color: textTitle }]}>{filteredPosts.length || 2}</Text>
@@ -317,8 +317,8 @@ export default function TeamScreen() {
                 style={[
                   styles.filterPillBtn,
                   {
-                    backgroundColor: isSel ? '#c9a84c' : bgCard,
-                    borderColor: isSel ? '#c9a84c' : borderCard,
+                    backgroundColor: isSel ? '#16A36A' : bgCard,
+                    borderColor: isSel ? '#16A36A' : borderCard,
                   },
                 ]}
                 onPress={() => setSelectedFaculty(fac)}
@@ -366,8 +366,8 @@ export default function TeamScreen() {
               <View style={styles.teamDetailsCol}>
                 {/* Badges Row */}
                 <View style={styles.badgesRow}>
-                  <View style={[styles.facultyBadge, { backgroundColor: isDark ? 'rgba(201, 168, 76, 0.15)' : '#fdf8e8' }]}>
-                    <Text style={{ color: isDark ? '#f0d074' : '#b8943e', fontSize: 11, fontWeight: '700' }}>
+                  <View style={[styles.facultyBadge, { backgroundColor: isDark ? 'rgba(201, 168, 76, 0.15)' : '#E8F5EE' }]}>
+                    <Text style={{ color: isDark ? '#16A36A' : '#16A36A', fontSize: 11, fontWeight: '700' }}>
                       {post.faculty || post.department || 'Faculty of Engineering (SSIT)'}
                     </Text>
                   </View>
@@ -385,7 +385,7 @@ export default function TeamScreen() {
                   </View>
 
                   <TouchableOpacity onPress={() => toggleBookmark(post._id)} style={styles.bookmarkBtn} activeOpacity={0.7}>
-                    <Icon name="bookmark" size={17} color={isSaved ? '#c9a84c' : isDark ? '#64748B' : '#94A3B8'} />
+                    <Icon name="bookmark" size={17} color={isSaved ? '#16A36A' : isDark ? '#64748B' : '#94A3B8'} />
                   </TouchableOpacity>
                 </View>
 
@@ -411,7 +411,7 @@ export default function TeamScreen() {
                 <View style={styles.teamFooterRow}>
                   <View style={styles.leadInfo}>
                     <View style={styles.leadRow}>
-                      <Icon name="user" size={13} color="#c9a84c" style={{ marginRight: 5 }} />
+                      <Icon name="user" size={13} color="#16A36A" style={{ marginRight: 5 }} />
                       <Text style={[styles.leadLabel, { color: textSub }]}>Team Lead: </Text>
                       <Text style={[styles.leadName, { color: textTitle }]}>
                         {post.lead?.name || post.owner?.name || 'Dharmi Patel'}
@@ -451,7 +451,7 @@ export default function TeamScreen() {
         <TouchableOpacity style={[styles.pageBtn, { backgroundColor: bgCard, borderColor: borderCard }]}>
           <Text style={{ color: textSub }}>‹</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.pageBtn, { backgroundColor: '#c9a84c', borderColor: '#c9a84c' }]}>
+        <TouchableOpacity style={[styles.pageBtn, { backgroundColor: '#16A36A', borderColor: '#16A36A' }]}>
           <Text style={{ color: '#0c0f10', fontWeight: '700' }}>1</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.pageBtn, { backgroundColor: bgCard, borderColor: borderCard }]}>
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
   pageSub: { fontSize: 13, marginTop: 3 },
 
   postTeamBtn: {
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -830,7 +830,7 @@ const styles = StyleSheet.create({
   },
   cancelBtn: { paddingVertical: 10, paddingHorizontal: 16 },
   confirmApplyBtn: {
-    backgroundColor: '#c9a84c',
+    backgroundColor: '#16A36A',
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 8,
