@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 
 const EVENTS = [
@@ -54,6 +55,7 @@ const NOTICES = [
     tagText: '#DC2626',
     title: 'Tembus Melebihi Kuota, Kampus Rangkul 2.300 Mahasiswa Baru Jalur Mandiri',
     date: '13 Jul 2026',
+    content: 'Penerimaan mahasiswa baru tahun akademik 2026 telah rampung dengan rekor partisipasi tertinggi.',
   },
   {
     id: '102',
@@ -62,16 +64,33 @@ const NOTICES = [
     tagText: '#2563EB',
     title: 'Alur Yudisium Dan Wisuda Periode Agustus 2026 Terbuka',
     date: '19 Jul 2026',
+    content: 'Mahasiswa semester akhir diharapkan melengkapi berkas bebas pustaka dan transkrip final sebelum 30 Juli.',
   },
 ];
 
 export default function EventsScreen() {
-  const [filter, setFilter] = useState<'events' | 'notices'>('events');
+  const [filter, setFilter] = useState('events');
   const [eventsList, setEventsList] = useState(EVENTS);
 
-  const toggleRegister = (id: string) => {
+  const toggleRegister = (id) => {
     setEventsList((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, registered: !e.registered } : e))
+      prev.map((e) => {
+        if (e.id === id) {
+          const newState = !e.registered;
+          Alert.alert(
+            newState ? 'Registration Confirmed! 🎉' : 'Registration Cancelled',
+            newState
+              ? `You are now registered for "${e.title}". Check your student email for the entry pass.`
+              : `Your registration for "${e.title}" has been cancelled.`
+          );
+          return {
+            ...e,
+            registered: newState,
+            seatsLeft: newState ? e.seatsLeft - 1 : e.seatsLeft + 1,
+          };
+        }
+        return e;
+      })
     );
   };
 
@@ -148,6 +167,7 @@ export default function EventsScreen() {
                 <Text style={styles.noticeDate}>📅 {notice.date}</Text>
               </View>
               <Text style={styles.noticeTitle}>{notice.title}</Text>
+              <Text style={styles.noticeBody}>{notice.content}</Text>
             </View>
           ))}
         </View>
@@ -306,9 +326,15 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
   },
   noticeTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#172B4D',
     lineHeight: 20,
+    marginBottom: 6,
+  },
+  noticeBody: {
+    fontSize: 13,
+    color: '#64748B',
+    lineHeight: 18,
   },
 });

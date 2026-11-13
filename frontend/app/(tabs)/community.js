@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from 'react-native';
 
 const POSTS = [
@@ -20,6 +21,7 @@ const POSTS = [
     tags: ['Hackathon', 'React Native', 'Team'],
     upvotes: 24,
     comments: 8,
+    upvoted: false,
   },
   {
     id: '2',
@@ -32,6 +34,7 @@ const POSTS = [
     tags: ['Academics', 'OS', 'Exam'],
     upvotes: 42,
     comments: 15,
+    upvoted: false,
   },
 ];
 
@@ -57,15 +60,45 @@ const LOST_FOUND = [
 ];
 
 export default function CommunityScreen() {
-  const [activeSection, setActiveSection] = useState<'forum' | 'lostfound'>('forum');
+  const [activeSection, setActiveSection] = useState('forum');
   const [search, setSearch] = useState('');
+  const [postList, setPostList] = useState(POSTS);
+
+  const toggleUpvote = (id) => {
+    setPostList((prev) =>
+      prev.map((p) => {
+        if (p.id === id) {
+          const newUpvoted = !p.upvoted;
+          return {
+            ...p,
+            upvoted: newUpvoted,
+            upvotes: newUpvoted ? p.upvotes + 1 : p.upvotes - 1,
+          };
+        }
+        return p;
+      })
+    );
+  };
+
+  const handleNewPost = () => {
+    Alert.alert(
+      'New Community Post',
+      'Community discussion creation modal will connect to backend API in Day 5.',
+      [{ text: 'Got it' }]
+    );
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Campus Community</Text>
-        <Text style={styles.headerSubtitle}>Discussions, Study Squads & Lost/Found</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.headerTitle}>Campus Community</Text>
+          <Text style={styles.headerSubtitle}>Discussions, Study Squads & Lost/Found</Text>
+        </View>
+        <TouchableOpacity style={styles.newPostBtn} onPress={handleNewPost} activeOpacity={0.8}>
+          <Text style={styles.newPostBtnText}>+ Post</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Search Input */}
@@ -87,7 +120,7 @@ export default function CommunityScreen() {
           onPress={() => setActiveSection('forum')}
         >
           <Text style={[styles.segmentText, activeSection === 'forum' && styles.segmentTextActive]}>
-            💬 Discussions ({POSTS.length})
+            💬 Discussions ({postList.length})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -102,7 +135,7 @@ export default function CommunityScreen() {
 
       {activeSection === 'forum' ? (
         <View style={styles.list}>
-          {POSTS.map((post) => (
+          {postList.map((post) => (
             <View key={post.id} style={styles.postCard}>
               <View style={styles.authorRow}>
                 <View style={styles.avatar}>
@@ -128,11 +161,21 @@ export default function CommunityScreen() {
               <View style={styles.cardDivider} />
 
               <View style={styles.postFooter}>
-                <TouchableOpacity style={styles.footerAction}>
-                  <Text style={{ fontSize: 14 }}>▲</Text>
-                  <Text style={styles.actionText}>{post.upvotes} Upvotes</Text>
+                <TouchableOpacity
+                  style={[styles.footerAction, post.upvoted && styles.actionActive]}
+                  onPress={() => toggleUpvote(post.id)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={{ fontSize: 14 }}>{post.upvoted ? '▲' : '△'}</Text>
+                  <Text style={[styles.actionText, post.upvoted && { color: '#16A36A', fontWeight: '800' }]}>
+                    {post.upvotes} Upvotes
+                  </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.footerAction}>
+                <TouchableOpacity
+                  style={styles.footerAction}
+                  onPress={() => Alert.alert('Discussion Comments', `Opening ${post.comments} student replies.`)}
+                  activeOpacity={0.7}
+                >
                   <Text style={{ fontSize: 14 }}>💬</Text>
                   <Text style={styles.actionText}>{post.comments} Comments</Text>
                 </TouchableOpacity>
@@ -175,6 +218,9 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 16,
   },
   headerTitle: {
@@ -187,6 +233,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#64748B',
     marginTop: 2,
+  },
+  newPostBtn: {
+    backgroundColor: '#16A36A',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  newPostBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
   },
   searchBar: {
     flexDirection: 'row',
@@ -320,6 +377,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  actionActive: {
+    backgroundColor: '#E8F5EE',
   },
   actionText: {
     fontSize: 13,

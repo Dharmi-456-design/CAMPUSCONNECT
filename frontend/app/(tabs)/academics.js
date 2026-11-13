@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 
 const SUBJECTS = [
@@ -56,14 +57,22 @@ const SUBJECTS = [
 ];
 
 export default function AcademicsScreen() {
-  const [activeTab, setActiveTab] = useState<'krs' | 'notes'>('krs');
+  const [activeTab, setActiveTab] = useState('krs');
+
+  const handleDownloadNotes = (subjectName) => {
+    Alert.alert(
+      'Download Lecture Notes',
+      `Downloading verified lecture notes and question bank for ${subjectName}.`,
+      [{ text: 'Download PDF' }, { text: 'Cancel', style: 'cancel' }]
+    );
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       {/* Top Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Kartu Hasil Studi</Text>
-        <Text style={styles.headerSubtitle}>Academic Record & Study Materials</Text>
+        <Text style={styles.headerSubtitle}>Academic Record, Syllabus & Verified Notes</Text>
       </View>
 
       {/* Semester Dropdown / Filter Pill */}
@@ -72,7 +81,7 @@ export default function AcademicsScreen() {
         <Text style={styles.dropdownIcon}>▼</Text>
       </View>
 
-      {/* Summary Score Card (Inspired by Screenshot 2) */}
+      {/* Summary Score Card */}
       <View style={styles.scoreCard}>
         <View style={styles.scoreItem}>
           <Text style={styles.scoreLabel}>Indeks Prestasi (IPS)</Text>
@@ -134,10 +143,13 @@ export default function AcademicsScreen() {
                 <Text style={styles.statLabel}>Total</Text>
                 <Text style={styles.statVal}>{sub.total}</Text>
               </View>
-              <View style={styles.statCol}>
-                <Text style={styles.statLabel}>Notes</Text>
-                <Text style={[styles.statVal, { color: '#16A36A' }]}>{sub.notesCount} PDFs</Text>
-              </View>
+              <TouchableOpacity
+                style={styles.downloadPill}
+                onPress={() => handleDownloadNotes(sub.name)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.downloadPillText}>📥 {sub.notesCount} PDFs</Text>
+              </TouchableOpacity>
             </View>
           </View>
         ))}
@@ -307,6 +319,7 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   statCol: {
     alignItems: 'center',
@@ -321,5 +334,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#172B4D',
+  },
+  downloadPill: {
+    backgroundColor: '#E8F5EE',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  downloadPillText: {
+    color: '#16A36A',
+    fontSize: 11,
+    fontWeight: '700',
   },
 });

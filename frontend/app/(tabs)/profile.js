@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -15,14 +15,17 @@ import {
   APP_VERSION,
 } from '../../src/constants/api';
 
+/**
+ * Profile & Settings Screen
+ * Features student card, APK Download link, GitHub Repo link,
+ * account settings, and working logout action.
+ */
 export default function ProfileScreen() {
-  const [downloadNotice, setDownloadNotice] = useState<string | null>(null);
-
   const handleDownloadAPK = () => {
     if (!APK_DOWNLOAD_URL) {
       Alert.alert(
         'APK Not Configured Yet',
-        'The release Android APK has not been published to Google Drive yet. Please run Day 7 EAS build and set EXPO_PUBLIC_APK_DOWNLOAD_URL.',
+        'The release Android APK has not been published to Google Drive yet. Please run Day 7 EAS build and set EXPO_PUBLIC_APK_DOWNLOAD_URL in .env.',
         [{ text: 'OK' }]
       );
       return;
@@ -63,7 +66,7 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* APK & Submission Section (MANDATORY per Master Prompt) */}
+      {/* APK & Submission Section */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>College Submission & Deliverables</Text>
       </View>
@@ -82,7 +85,7 @@ export default function ProfileScreen() {
 
         <View style={styles.cardDivider} />
 
-        <TouchableOpacity style={styles.menuItem} onPress={handleOpenGitHub}>
+        <TouchableOpacity style={styles.menuItem} onPress={handleOpenGitHub} activeOpacity={0.7}>
           <Text style={styles.menuEmoji}>🐙</Text>
           <View style={{ flex: 1 }}>
             <Text style={styles.menuLabel}>GitHub Repository</Text>
@@ -105,7 +108,11 @@ export default function ProfileScreen() {
           { emoji: '📄', label: 'Privacy Policy & Terms' },
         ].map((item, index) => (
           <React.Fragment key={item.label}>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => Alert.alert(item.label, `${item.label} module available.`)}
+              activeOpacity={0.7}
+            >
               <Text style={styles.menuEmoji}>{item.emoji}</Text>
               <Text style={styles.menuLabelSimple}>{item.label}</Text>
               <Text style={styles.menuArrow}>›</Text>
