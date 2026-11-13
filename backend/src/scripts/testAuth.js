@@ -1,281 +1,251 @@
 /**
  * testAuth.js — Integration tests for authentication and protected routes
- * Uses supertest to fire real HTTP requests through the Express app.
- * MongoDB is mocked in-memory so no network connection is needed.
+ * Mocks User model at the Node module cache level so no DB is needed.
  *
  * Run: node src/scripts/testAuth.js
  */
-
 'use strict';
 
-// ─── 1. Prevent real MongoDB connection before anything is required ───────────
-process.env.MONGODB_URI = '';
-process.env.JWT_SECRET = 'test_jwt_secret_campusconnect_2026';
-process.env.NODE_ENV = 'test';
+process.env.JWT_SECRET     = 'test_jwt_secret_campusconnect_2026';
+process.env.JWT_EXPIRES_IN = '7d';
+process.env.NODE_ENV       = 'test';
+process.env.MONGODB_URI    = '';   // empty → db.js should skip connect
 
-// ─── 2. Mock mongoose BEFORE requiring app/models ─────────────────────────────
-const mongoose = require('mongoose');
+// ── Resolve the User model path and inject our mock BEFORE anything loads it ─
+const Module  = require('module');
+const path    = require('path');
+const bcrypt  = require('bcryptjs');
 
-// Stub connect so it resolves immediately without hitting Atlas
-mongoose.connect = () => Promise.resolve();
+const USER_MODEL_PATH = path.resolve(__dirname, '../models/User.js');
 
-// ─── 3. Build in-memory user store & mock User model ─────────────────────────
-const bcrypt = require('bcryptjs');
+// In-memory user store
+const _store = [];
+let   _seq   = 1;
+const newId  = () => new Array(25).join('0').slice(0, 24 - String(_seq).length) + String(_seq++);
 
-let _users = [];
-let _idCounter = 1;
-
-function makeId() {
-  return String(_idCounter++).padStart(24, '0');
-}
-
-// Minimal mongoose ObjectId-like wrapper
 class FakeUser {
-  constructor(data) {
-    Object.assign(this, data);
-    if (!this._id) this._id = makeId();
-  }
+  constructor (data) { Object.assign(this, data); }
 
-  async matchPassword(plain) {
+  async matchPassword (plain) {
     if (!this.passwordHash) return false;
     return bcrypt.compare(plain, this.passwordHash);
   }
 
-  async save() {
-    const idx = _users.findIndex(u => String(u._id) === String(this._id));
-    if (idx !== -1) _users[idx] = this;
-    else _users.push(this);
+  async save () {
+    const i = _store.findIndex(u => u._id === this._id);
+    const snap = { ...this };
+    if (i !== -1) _store[i] = snap; else _store.push(snap);
     return this;
   }
 
-  toJSON() {
-    const obj = { ...this };
-    delete obj.passwordHash;
-    delete obj.__v;
-    return obj;
+  toJSON () {
+    const o = { ...this };
+    delete o.passwordHash;
+    delete o.__v;
+    return o;
   }
 }
 
-// Chainable query helper
-function makeQuery(user) {
-  const q = { _user: user };
-  q.select = function (fields) {
-    if (typeof fields === 'string' && fields.includes('-passwordHash')) {
-      if (this._user) delete this._user.passwordHash;
-    }
-    return Promise.resolve(this._user ? new FakeUser(this._user) : null);
-  };
-  return q;
-}
+class FakeQuery {
+  constructor (doc) { this._doc = doc; }
 
-// Patch the User model that will be loaded by controllers
-const UserModule = require('../models/User');
-
-// Override static & instance methods on the already-compiled model
-UserModule.findOne = async (query) => {
-  const key = Object.keys(query)[0];
-  const val = Object.values(query)[0];
-  const found = _users.find(u => u[key] === val);
-  if (!found) return null;
-  const u = new FakeUser({ ...found });
-  // Return a chainable query that also has .select()
-  const q = { _user: found };
-  q.select = function (fields) {
-    // If +passwordHash is requested keep it, else strip
-    if (typeof fields === 'string' && fields.startsWith('+')) {
-      return Promise.resolve(new FakeUser({ ...found })); // keep hash
+  select (fields) {
+    if (!this._doc) return Promise.resolve(null);
+    // Keep passwordHash only when explicitly selected via '+passwordHash'
+    if (typeof fields === 'string' && fields.includes('+passwordHash')) {
+      return Promise.resolve(new FakeUser({ ...this._doc }));
     }
-    const copy = { ...found };
+    const copy = { ...this._doc };
     delete copy.passwordHash;
     return Promise.resolve(new FakeUser(copy));
-  };
-  // Also works as a thenable (for await without .select())
-  q.then = function (resolve, reject) {
-    return Promise.resolve(new FakeUser({ ...found })).then(resolve, reject);
-  };
-  return q;
-};
+  }
 
-UserModule.create = async (data) => {
-  const user = new FakeUser({ ...data, _id: makeId(), __v: 0 });
-  _users.push({ ...user });
-  return user;
-};
-
-UserModule.findById = (id) => {
-  const found = _users.find(u => String(u._id) === String(id));
-  return makeQuery(found ? { ...found } : null);
-};
-
-UserModule.findByIdAndUpdate = async (id, update, opts) => {
-  const idx = _users.findIndex(u => String(u._id) === String(id));
-  if (idx === -1) return null;
-  const set = update.$set || {};
-  _users[idx] = { ..._users[idx], ...set };
-  return new FakeUser({ ..._users[idx] });
-};
-
-UserModule.hashPassword = async (plain) => {
-  const salt = await bcrypt.genSalt(10);
-  return bcrypt.hash(plain, salt);
-};
-
-// ─── 4. Load app AFTER mocks are in place ─────────────────────────────────────
-const request = require('supertest');
-const app = require('../app');
-
-// ─── 5. Test runner helpers ───────────────────────────────────────────────────
-let passed = 0;
-let failed = 0;
-
-function assert(condition, label, detail) {
-  if (condition) {
-    console.log(`  ✅  PASS — ${label}`);
-    passed++;
-  } else {
-    console.error(`  ❌  FAIL — ${label}${detail ? ': ' + detail : ''}`);
-    failed++;
+  then (resolve, reject) {
+    if (!this._doc) return Promise.resolve(null).then(resolve, reject);
+    const copy = { ...this._doc };
+    delete copy.passwordHash;
+    return Promise.resolve(new FakeUser(copy)).then(resolve, reject);
   }
 }
 
-// ─── 6. Test suite ────────────────────────────────────────────────────────────
-async function runTests() {
+// The fake User "model" object controllers will get
+const UserMock = {
+  findOne: (query) => {
+    const [k, v] = Object.entries(query)[0];
+    const found = _store.find(u => u[k] === v) || null;
+    return new FakeQuery(found);
+  },
+  create: async (data) => {
+    const doc = { ...data, _id: newId(), __v: 0 };
+    _store.push(doc);
+    return new FakeUser(doc);
+  },
+  findById: (id) => {
+    const found = _store.find(u => u._id === String(id)) || null;
+    return new FakeQuery(found);
+  },
+  findByIdAndUpdate: (id, update, _opts) => {
+    const i = _store.findIndex(u => u._id === String(id));
+    if (i === -1) return new FakeQuery(null);
+    _store[i] = { ..._store[i], ...(update.$set || {}) };
+    return new FakeQuery({ ..._store[i] });
+  },
+  hashPassword: async (plain) => {
+    const salt = await bcrypt.genSalt(10);
+    return bcrypt.hash(plain, salt);
+  }
+};
+
+// Inject mock into module cache BEFORE app loads
+Module._cache[USER_MODEL_PATH] = { id: USER_MODEL_PATH, filename: USER_MODEL_PATH, loaded: true, exports: UserMock };
+
+// Also stub out db connect so it's a no-op
+const DB_PATH = path.resolve(__dirname, '../config/db.js');
+Module._cache[DB_PATH] = { id: DB_PATH, filename: DB_PATH, loaded: true, exports: async () => {} };
+
+// Also stub mongoose so models don't try to register
+const mongoosePaths = Object.keys(Module._cache).filter(k => k.includes('mongoose') && k.endsWith('mongoose.js'));
+// We won't stub mongoose itself — just prevent server.js from connecting by patching db.js above.
+
+// ── Load app via app.js (not server.js — server.js calls connectDB) ───────────
+const request = require('supertest');
+const app     = require('../app');
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+let pass = 0, fail = 0;
+function ok (cond, label, hint) {
+  if (cond) { console.log(`  ✅  PASS — ${label}`); pass++; }
+  else       { console.error(`  ❌  FAIL — ${label}${hint ? ' → ' + hint : ''}`); fail++; }
+}
+
+// ── Test suite ────────────────────────────────────────────────────────────────
+async function run () {
   console.log('\n════════════════════════════════════════════════════════');
   console.log(' CampusConnect — Authentication & Protected Routes Tests');
   console.log('════════════════════════════════════════════════════════\n');
 
-  let token = '';
-  const TEST_USER = {
-    name:     'Test Student',
-    email:    'teststudent@campusconnect.test',
-    password: 'SecurePass123'
-  };
+  const EMAIL = 'dharmi.test@campusconnect.dev';
+  const PASS  = 'SecurePass123';
+  let token   = '';
 
-  // ── Test 1: Register a new user ───────────────────────────────────────────
+  // 1 ─────────────────────────────────────────────────────────────────────────
   console.log('Test 1: Register a new user');
   {
-    const res = await request(app)
-      .post('/api/v1/auth/register')
-      .send(TEST_USER);
-    assert(res.status === 201, 'POST /api/v1/auth/register returns 201', `got ${res.status}`);
-    assert(res.body.success === true, 'Response has success:true');
-    assert(res.body.data && res.body.data.token, 'Response contains JWT token');
-    assert(!JSON.stringify(res.body).includes('passwordHash'), 'passwordHash NOT in response body');
-    if (res.body.data && res.body.data.token) token = res.body.data.token;
+    const r = await request(app).post('/api/v1/auth/register')
+      .send({ name: 'Dharmi Test', email: EMAIL, password: PASS });
+    ok(r.status === 201,              'POST /api/v1/auth/register returns 201',   `got ${r.status} — ${r.body.message}`);
+    ok(r.body.success === true,       'success: true');
+    ok(!!r.body.data?.token,          'Response contains JWT token');
+    ok(!JSON.stringify(r.body).includes('passwordHash'), 'passwordHash NOT in response');
+    token = r.body.data?.token || '';
   }
 
-  // ── Test 2: Duplicate email is rejected ───────────────────────────────────
+  // 2 ─────────────────────────────────────────────────────────────────────────
   console.log('\nTest 2: Duplicate email is rejected');
   {
-    const res = await request(app)
-      .post('/api/v1/auth/register')
-      .send(TEST_USER);
-    assert(res.status === 400, 'Duplicate email returns 400', `got ${res.status}`);
-    assert(res.body.success === false, 'Response has success:false');
+    const r = await request(app).post('/api/v1/auth/register')
+      .send({ name: 'Dharmi Test', email: EMAIL, password: PASS });
+    ok(r.status === 400,         'Returns 400 for duplicate email', `got ${r.status}`);
+    ok(r.body.success === false, 'success: false');
   }
 
-  // ── Test 3: Login with valid credentials ──────────────────────────────────
+  // 3 ─────────────────────────────────────────────────────────────────────────
   console.log('\nTest 3: Login with valid credentials');
   {
-    const res = await request(app)
-      .post('/api/v1/auth/login')
-      .send({ email: TEST_USER.email, password: TEST_USER.password });
-    assert(res.status === 200, 'POST /api/v1/auth/login returns 200', `got ${res.status}`);
-    assert(res.body.success === true, 'Login success:true');
-    assert(res.body.data && res.body.data.token, 'Login returns JWT token');
-    assert(!JSON.stringify(res.body).includes('passwordHash'), 'passwordHash NOT in login response');
-    if (res.body.data && res.body.data.token) token = res.body.data.token;
+    const r = await request(app).post('/api/v1/auth/login')
+      .send({ email: EMAIL, password: PASS });
+    ok(r.status === 200,         'POST /api/v1/auth/login returns 200',  `got ${r.status} — ${r.body.message}`);
+    ok(r.body.success === true,  'success: true');
+    ok(!!r.body.data?.token,     'Response contains JWT token');
+    ok(!JSON.stringify(r.body).includes('passwordHash'), 'passwordHash NOT in login response');
+    if (r.body.data?.token) token = r.body.data.token;
   }
 
-  // ── Test 4: Login with wrong password is rejected ─────────────────────────
-  console.log('\nTest 4: Wrong password is rejected');
+  // 4 ─────────────────────────────────────────────────────────────────────────
+  console.log('\nTest 4: Login with wrong password');
   {
-    const res = await request(app)
-      .post('/api/v1/auth/login')
-      .send({ email: TEST_USER.email, password: 'wrongpassword' });
-    assert(res.status === 401, 'Wrong password returns 401', `got ${res.status}`);
-    assert(res.body.success === false, 'Response has success:false');
+    const r = await request(app).post('/api/v1/auth/login')
+      .send({ email: EMAIL, password: 'WrongPassword!' });
+    ok(r.status === 401,         'Returns 401 for wrong password', `got ${r.status}`);
+    ok(r.body.success === false, 'success: false');
   }
 
-  // ── Test 5: Protected route without token returns 401 ─────────────────────
-  console.log('\nTest 5: Protected route without token returns 401');
+  // 5 ─────────────────────────────────────────────────────────────────────────
+  console.log('\nTest 5: Protected route without token → 401');
   {
-    const res = await request(app).get('/api/v1/auth/me');
-    assert(res.status === 401, 'GET /api/v1/auth/me without token returns 401', `got ${res.status}`);
-    assert(res.body.success === false, 'Response has success:false');
+    const r = await request(app).get('/api/v1/auth/me');
+    ok(r.status === 401,         'GET /api/v1/auth/me without token returns 401', `got ${r.status}`);
+    ok(r.body.success === false, 'success: false');
   }
 
-  // ── Test 6: Fetch profile with valid token ────────────────────────────────
+  // 6 ─────────────────────────────────────────────────────────────────────────
   console.log('\nTest 6: GET /api/v1/auth/me with valid token');
   {
-    const res = await request(app)
-      .get('/api/v1/auth/me')
+    const r = await request(app).get('/api/v1/auth/me')
       .set('Authorization', `Bearer ${token}`);
-    assert(res.status === 200, 'GET /api/v1/auth/me returns 200', `got ${res.status}`);
-    assert(res.body.success === true, 'Response has success:true');
-    assert(res.body.data && res.body.data.user, 'Response contains user object');
-    assert(!JSON.stringify(res.body).includes('passwordHash'), 'passwordHash NOT in profile response');
+    ok(r.status === 200,         'Returns 200',         `got ${r.status} — ${r.body.message}`);
+    ok(r.body.success === true,  'success: true');
+    ok(!!r.body.data?.user,      'Response contains user object');
+    ok(!JSON.stringify(r.body).includes('passwordHash'), 'passwordHash NOT in profile response');
   }
 
-  // ── Test 7: Update profile ────────────────────────────────────────────────
-  console.log('\nTest 7: PUT /api/v1/users/profile updates profile');
+  // 7 ─────────────────────────────────────────────────────────────────────────
+  console.log('\nTest 7: PUT /api/v1/users/profile — update profile');
   {
-    const res = await request(app)
-      .put('/api/v1/users/profile')
+    const r = await request(app).put('/api/v1/users/profile')
       .set('Authorization', `Bearer ${token}`)
-      .send({ bio: 'CS student, 3rd year', college: 'Tech University' });
-    assert(res.status === 200, 'PUT /api/v1/users/profile returns 200', `got ${res.status}`);
-    assert(res.body.success === true, 'Response has success:true');
-    assert(!JSON.stringify(res.body).includes('passwordHash'), 'passwordHash NOT in update response');
+      .send({ bio: 'CS student, final year', college: 'Gujarat Tech University' });
+    ok(r.status === 200,         'Returns 200',    `got ${r.status} — ${r.body.message}`);
+    ok(r.body.success === true,  'success: true');
+    ok(!JSON.stringify(r.body).includes('passwordHash'), 'passwordHash NOT in update response');
   }
 
-  // ── Test 8: Change password — wrong current password ─────────────────────
-  console.log('\nTest 8: Change password with wrong current password');
+  // 8 ─────────────────────────────────────────────────────────────────────────
+  console.log('\nTest 8: Change password — wrong current password');
   {
-    const res = await request(app)
-      .put('/api/v1/users/change-password')
+    const r = await request(app).put('/api/v1/users/change-password')
       .set('Authorization', `Bearer ${token}`)
-      .send({ currentPassword: 'wrongOldPassword', newPassword: 'NewPass456' });
-    assert(res.status === 400, 'Wrong current password returns 400', `got ${res.status}`);
-    assert(res.body.success === false, 'Response has success:false');
+      .send({ currentPassword: 'WrongOldPass!', newPassword: 'SomethingNew456' });
+    ok(r.status === 400,         'Returns 400',  `got ${r.status} — ${r.body.message}`);
+    ok(r.body.success === false, 'success: false');
   }
 
-  // ── Test 9: Change password with correct current password ─────────────────
-  console.log('\nTest 9: Change password with correct current password');
+  // 9 ─────────────────────────────────────────────────────────────────────────
+  console.log('\nTest 9: Change password — correct current password');
   {
-    const res = await request(app)
-      .put('/api/v1/users/change-password')
+    const r = await request(app).put('/api/v1/users/change-password')
       .set('Authorization', `Bearer ${token}`)
-      .send({ currentPassword: TEST_USER.password, newPassword: 'NewSecurePass789' });
-    assert(res.status === 200, 'PUT /api/v1/users/change-password returns 200', `got ${res.status}`);
-    assert(res.body.success === true, 'Response has success:true');
+      .send({ currentPassword: PASS, newPassword: 'NewSecurePass789' });
+    ok(r.status === 200,         'Returns 200',    `got ${r.status} — ${r.body.message}`);
+    ok(r.body.success === true,  'success: true');
   }
 
-  // ── Test 10: Login with new password ──────────────────────────────────────
+  // 10 ─────────────────────────────────────────────────────────────────────────
   console.log('\nTest 10: Login with new password after password change');
   {
-    const res = await request(app)
-      .post('/api/v1/auth/login')
-      .send({ email: TEST_USER.email, password: 'NewSecurePass789' });
-    assert(res.status === 200, 'Login with new password returns 200', `got ${res.status}`);
-    assert(res.body.success === true, 'Login success:true');
-    assert(!JSON.stringify(res.body).includes('passwordHash'), 'passwordHash NOT in response');
+    const r = await request(app).post('/api/v1/auth/login')
+      .send({ email: EMAIL, password: 'NewSecurePass789' });
+    ok(r.status === 200,         'Login with new password returns 200', `got ${r.status} — ${r.body.message}`);
+    ok(r.body.success === true,  'success: true');
+    ok(!JSON.stringify(r.body).includes('passwordHash'), 'passwordHash NOT in response');
   }
 
-  // ── Summary ───────────────────────────────────────────────────────────────
+  // ── Summary ──────────────────────────────────────────────────────────────
+  const total = pass + fail;
   console.log('\n════════════════════════════════════════════════════════');
-  console.log(` Results: ${passed} passed, ${failed} failed out of ${passed + failed} tests`);
+  console.log(` Results: ${pass} passed, ${fail} failed out of ${total} tests`);
   console.log('════════════════════════════════════════════════════════\n');
 
-  if (failed > 0) {
+  if (fail > 0) {
+    console.error('❌  Some tests failed — see above for details.');
     process.exit(1);
   } else {
-    console.log('✅  All authentication and protected route tests passed!');
+    console.log('✅  All authentication and protected route tests passed!\n');
     process.exit(0);
   }
 }
 
-runTests().catch(err => {
-  console.error('Fatal error during test run:', err);
+run().catch(err => {
+  console.error('\nFatal error during test run:', err);
   process.exit(1);
 });
