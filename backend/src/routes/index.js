@@ -16,6 +16,7 @@ const adminRoutes = require('./admin.routes');
 const eventsRoutes = require('./events.routes');
 const noticeRoutes = require('./notice.routes');
 const lostFoundRoutes = require('./lostFound.routes');
+const communityRoutes = require('./community.routes');
 
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
@@ -30,6 +31,7 @@ router.use('/notifications', notificationRoutes);
 router.use('/events', eventsRoutes);
 router.use('/notices', noticeRoutes);
 router.use('/lost-found', lostFoundRoutes);
+router.use('/community', communityRoutes);
 router.use('/', reportRoutes);
 router.use('/admin', adminRoutes);
 

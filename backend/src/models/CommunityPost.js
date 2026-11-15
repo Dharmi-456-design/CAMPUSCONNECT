@@ -4,17 +4,38 @@ const CommunityPostSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, 'Post title is required'],
       trim: true,
+      maxlength: 200,
     },
     content: {
       type: String,
-      required: true,
+      required: [true, 'Post content is required'],
+      trim: true,
+      maxlength: 5000,
     },
     category: {
       type: String,
-      enum: ['Discussion', 'Question', 'Hackathon Squad', 'Study Group', 'General'],
+      enum: [
+        'Discussion',
+        'Question',
+        'Study Group',
+        'Hackathon Squad',
+        'General',
+        'Tech & Coding',
+        'Campus Life',
+      ],
       default: 'General',
+    },
+    subject: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    helpType: {
+      type: String,
+      enum: ['community', 'tutor'],
+      default: 'community',
     },
     tags: [
       {
@@ -36,6 +57,15 @@ const CommunityPostSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    status: {
+      type: String,
+      enum: ['open', 'solved', 'closed'],
+      default: 'open',
+    },
+    imageUrl: {
+      type: String,
+      default: '',
+    },
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -46,6 +76,6 @@ const CommunityPostSchema = new mongoose.Schema(
 );
 
 CommunityPostSchema.index({ createdAt: -1, category: 1 });
+CommunityPostSchema.index({ title: 'text', content: 'text', subject: 'text' });
 
 module.exports = mongoose.model('CommunityPost', CommunityPostSchema);
-

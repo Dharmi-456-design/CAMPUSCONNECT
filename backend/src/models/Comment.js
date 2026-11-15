@@ -15,6 +15,18 @@ const CommentSchema = new mongoose.Schema(
     content: {
       type: String,
       required: [true, 'Comment content cannot be empty'],
+      trim: true,
+      maxlength: 2000,
+    },
+    upvotes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    isSolution: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }
@@ -23,4 +35,3 @@ const CommentSchema = new mongoose.Schema(
 CommentSchema.index({ post: 1, createdAt: 1 });
 
 module.exports = mongoose.model('Comment', CommentSchema);
-
