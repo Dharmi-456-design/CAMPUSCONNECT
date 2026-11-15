@@ -5,6 +5,9 @@ const ApiResponse = require('../utils/apiResponse');
 // Helper to sanitize contact info based on user's privacy choices
 const applyPrivacyFilter = (item, currentUserId, currentUserRole) => {
   const doc = item.toObject ? item.toObject() : { ...item };
+  if (doc.contactInfo) {
+    doc.contactInfo = { ...doc.contactInfo };
+  }
   const isOwner =
     currentUserId &&
     doc.user &&

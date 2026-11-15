@@ -3,7 +3,7 @@ class ApiResponse {
     return res.status(statusCode).json({
       success: true,
       message,
-      data
+      data,
     });
   }
 
@@ -11,8 +11,28 @@ class ApiResponse {
     return res.status(statusCode).json({
       success: false,
       message,
-      errors: Array.isArray(errors) ? errors : [errors]
+      errors: Array.isArray(errors) ? errors : [errors],
     });
+  }
+
+  static created(res, message = 'Resource created successfully', data = {}) {
+    return ApiResponse.success(res, message, data, 201);
+  }
+
+  static badRequest(res, message = 'Bad Request', errors = []) {
+    return ApiResponse.error(res, message, errors, 400);
+  }
+
+  static unauthorized(res, message = 'Unauthorized access') {
+    return ApiResponse.error(res, message, [], 401);
+  }
+
+  static forbidden(res, message = 'Forbidden') {
+    return ApiResponse.error(res, message, [], 403);
+  }
+
+  static notFound(res, message = 'Resource not found') {
+    return ApiResponse.error(res, message, [], 404);
   }
 }
 

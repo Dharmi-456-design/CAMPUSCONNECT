@@ -36,12 +36,15 @@ import UniversitySubscriptionScreen from '../screens/admin/UniversitySubscriptio
 import CameraScreen from '../screens/hardware/CameraScreen';
 import LocationScreen from '../screens/hardware/LocationScreen';
 import ContactsScreen from '../screens/hardware/ContactsScreen';
+import CommunityHubScreen from '../screens/CommunityHubScreen';
+import LostFoundScreen from '../screens/LostFoundScreen';
 
 const SIDEBAR_ITEMS = [
   { key: 'home', label: 'Dashboard', icon: 'grid' },
   { key: 'academics', label: 'Academics & KHS', icon: 'book-open' },
   { key: 'events', label: 'Events & Notices', icon: 'calendar' },
   { key: 'community', label: 'Community & Doubts', icon: 'users' },
+  { key: 'lost-found', label: 'Lost & Found', icon: 'search' },
   { key: 'notes', label: 'Lecture Notes', icon: 'file-text' },
   { key: 'marketplace', label: 'Campus Market', icon: 'shopping-bag' },
   { key: 'explore', label: 'Campus Services', icon: 'briefcase' },
@@ -215,7 +218,9 @@ export default function AppNavigator() {
       case 'events':
         return <EventsNoticesScreen onBack={() => setActiveTab('home')} />;
       case 'community':
-        return <DoubtsScreen onNavigateTab={setActiveTab} />;
+        return <CommunityHubScreen onNavigateTab={setActiveTab} />;
+      case 'lost-found':
+        return <LostFoundScreen onBack={() => setActiveTab('community')} />;
       case 'explore':
         return <ExploreScreen onNavigateTab={setActiveTab} />;
       case 'leaderboard':

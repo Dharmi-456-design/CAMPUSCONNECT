@@ -8,11 +8,12 @@ export default function ExploreScreen({ onNavigateTab }) {
 
     const modules = [
         { id: "1", title: "📚 Study Notes & PDFs", desc: "Access verified lecture notes & PYQs", tab: "notes" },
-        { id: "2", title: "❓ Doubts & Q&A Hub", desc: "Ask questions and get answers", tab: "doubts" },
-        { id: "3", title: "🚀 Hackathon Teams", desc: "Find teammates for projects & hackathons", tab: "team" },
-        { id: "4", title: "🛍️ Campus Marketplace", desc: "Buy & sell books, calculators, and lab gear", tab: "marketplace" },
-        { id: "5", title: "💬 Student Chat", desc: "Real-time chat with peers and groups", tab: "chat" },
-        { id: "6", title: "📸 Camera & Scanner", desc: "Scan notes with live camera preview", tab: "camera" },
+        { id: "2", title: "🔍 Lost & Found Portal", desc: "Report lost campus items & claim found belongings", tab: "lost-found" },
+        { id: "3", title: "❓ Doubts & Q&A Hub", desc: "Ask questions and get answers from community & tutors", tab: "community" },
+        { id: "4", title: "🚀 Hackathon Teams", desc: "Find teammates for projects & hackathons", tab: "team" },
+        { id: "5", title: "🛍️ Campus Marketplace", desc: "Buy & sell books, calculators, and lab gear", tab: "marketplace" },
+        { id: "6", title: "💬 Student Chat", desc: "Real-time chat with peers and groups", tab: "chat" },
+        { id: "7", title: "📸 Camera & Scanner", desc: "Scan notes with live camera preview", tab: "camera" },
     ];
 
     const filteredModules = modules.filter(
