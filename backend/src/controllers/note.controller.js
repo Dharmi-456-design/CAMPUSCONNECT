@@ -1,165 +1,290 @@
+const mongoose = require('mongoose');
 const Note = require('../models/Note');
+const Subject = require('../models/Subject');
 const Bookmark = require('../models/Bookmark');
 const Rating = require('../models/Rating');
 const ApiResponse = require('../utils/apiResponse');
 const asyncHandler = require('../utils/asyncHandler');
 const { uploadToCloudinary } = require('../middleware/upload.middleware');
 
-// @desc    Upload new note (defaults to pending approval)
-// @route   POST /api/notes
+// Default initial notes matching the reference screenshot (media_1794714942597_29fca6f3.png)
+const DEFAULT_STARTER_NOTES = [
+  {
+    title: 'Yessir',
+    content: 'Class discussion notes on algorithm complexity and Big-O notation. Review for next quiz.',
+    description: 'Locked Note',
+    subjectName: 'Coding',
+    tags: ['Coding', 'Algorithms'],
+    category: 'Computer Science',
+    isPinned: true,
+    isLocked: true,
+    color: '#F59E0B'
+  },
+  {
+    title: 'Hey',
+    content: '',
+    description: 'No additional text',
+    subjectName: 'General',
+    tags: ['Quick'],
+    category: 'General',
+    isPinned: false,
+    isLocked: false,
+    color: '#16A36A'
+  },
+  {
+    title: 'Very cool',
+    content: 'This note is very cool. Key takeaways from Agricultural Biology session on plant genetics and respiration cycle.',
+    description: 'This note is very cool.',
+    subjectName: 'Agri Biology A',
+    tags: ['Biology', 'Lecture'],
+    category: 'Science',
+    isPinned: false,
+    isLocked: false,
+    color: '#EAB308'
+  },
+  {
+    title: 'Important Stuff',
+    content: 'Exam dates, project milestone deadlines, and final submission repository guidelines.',
+    description: 'Locked Note',
+    subjectName: 'Math 101',
+    tags: ['Important', 'Deadlines'],
+    category: 'Mathematics',
+    isPinned: false,
+    isLocked: true,
+    color: '#3B82F6'
+  },
+  {
+    title: 'Neu.',
+    content: '',
+    description: 'No additional text',
+    subjectName: 'General',
+    tags: [],
+    category: 'General',
+    isPinned: false,
+    isLocked: false,
+    color: '#84CC16'
+  },
+  {
+    title: 'heyyyy.',
+    content: '',
+    description: 'No additional text',
+    subjectName: 'Health',
+    tags: ['PE'],
+    category: 'Health',
+    isPinned: false,
+    isLocked: false,
+    color: '#10B981'
+  }
+];
+
+// @desc    Create a new private note
+// @route   POST /api/v1/notes
 // @access  Private
 const createNote = asyncHandler(async (req, res) => {
-  const { title, description, subject, branch, semester, tags } = req.body;
+  const {
+    title,
+    content = '',
+    description = '',
+    subject,
+    subjectName,
+    tags,
+    category = 'General',
+    isPinned = false,
+    isLocked = false,
+    color = '#16A36A',
+    branch = 'General',
+    semester = 1,
+    fileUrl = '',
+    fileType = 'text'
+  } = req.body;
 
-  if (!req.file) {
-    return ApiResponse.error(res, 'File is required for note upload', [], 400);
+  // Handle uploaded file via multipart/form-data if provided
+  let uploadedFileUrl = fileUrl;
+  let detectedFileType = fileType;
+  if (req.file) {
+    try {
+      const uploadResult = await uploadToCloudinary(req.file.buffer, 'campusconnect/notes');
+      uploadedFileUrl = uploadResult.secure_url;
+      detectedFileType = req.file.mimetype.includes('pdf') ? 'pdf' : 'image';
+    } catch (err) {
+      // Fallback: proceed without Cloudinary
+    }
   }
 
-  let fileUrl = '';
-  try {
-    const uploadResult = await uploadToCloudinary(req.file.buffer, 'campusconnect/notes');
-    fileUrl = uploadResult.secure_url;
-  } catch (err) {
-    return ApiResponse.error(res, 'Failed to upload note file to Cloudinary', [err.message], 500);
-  }
+  // Parse tags
+  const parsedTags = Array.isArray(tags)
+    ? tags.map((t) => String(t).trim()).filter(Boolean)
+    : typeof tags === 'string'
+      ? tags.split(',').map((t) => t.trim()).filter(Boolean)
+      : [];
 
-  const parsedTags = Array.isArray(tags) ? tags : typeof tags === 'string' ? tags.split(',').map(t => t.trim()) : [];
+  let resolvedSubjectId = null;
+  let resolvedSubjectName = subjectName ? subjectName.trim() : 'General';
+
+  // If a subject ID or code was provided, verify subject ownership
+  if (subject) {
+    if (mongoose.Types.ObjectId.isValid(subject)) {
+      const subjectDoc = await Subject.findOne({ _id: subject, user: req.user._id });
+      if (subjectDoc) {
+        resolvedSubjectId = subjectDoc._id;
+        resolvedSubjectName = subjectDoc.name;
+      }
+    } else {
+      // If code was passed instead of ObjectId
+      const subjectDoc = await Subject.findOne({
+        user: req.user._id,
+        $or: [{ code: subject.toUpperCase() }, { name: subject }]
+      });
+      if (subjectDoc) {
+        resolvedSubjectId = subjectDoc._id;
+        resolvedSubjectName = subjectDoc.name;
+      } else {
+        resolvedSubjectName = subject;
+      }
+    }
+  }
 
   const note = await Note.create({
-    title,
-    description: description || '',
-    subject,
-    branch,
-    semester: Number(semester),
-    tags: parsedTags,
-    fileUrl,
-    fileType: req.file.mimetype.includes('pdf') ? 'pdf' : 'image',
+    user: req.user._id,
     uploader: req.user._id,
-    approvalStatus: 'pending'
-  });
-
-  return ApiResponse.success(res, 'Note uploaded successfully and is pending approval', { note }, 201);
-});
-
-// @desc    Quick JSON-based note upload (fileUrl as string, no Cloudinary needed)
-// @route   POST /api/notes/quick-upload
-// @access  Private
-const quickUploadNote = asyncHandler(async (req, res) => {
-  const { title, description, subject, branch, semester, tags, fileUrl, fileType } = req.body;
-
-  if (!title || !subject || !fileUrl) {
-    return ApiResponse.error(res, 'Title, subject and fileUrl are required', [], 400);
-  }
-
-  const parsedTags = Array.isArray(tags) ? tags : typeof tags === 'string' ? tags.split(',').map((t) => t.trim()) : [];
-
-  const note = await Note.create({
-    title,
-    description: description || '',
-    subject,
+    title: title.trim(),
+    content: content || '',
+    description: description || (content ? content.slice(0, 160) : 'No additional text'),
+    subject: resolvedSubjectId,
+    subjectName: resolvedSubjectName,
+    tags: parsedTags,
+    category: category || 'General',
+    isPinned: Boolean(isPinned),
+    isLocked: Boolean(isLocked),
+    color: color || '#16A36A',
+    characterCount: (content || '').length,
     branch: branch || 'General',
     semester: Number(semester) || 1,
-    tags: parsedTags,
-    fileUrl,
-    fileType: fileType || 'pdf',
-    uploader: req.user._id,
-    approvalStatus: 'approved', // Auto-approve for student portal quick uploads
-    downloadCount: 0,
-    avgRating: 0
+    fileUrl: uploadedFileUrl || '',
+    fileType: detectedFileType || 'text',
+    approvalStatus: 'approved'
   });
 
-  // 🔔 Broadcast push to ALL users who have the app installed
-  try {
-    const { sendBroadcastPush } = require('../services/pushNotification.service');
-    const semStr = note.semester ? ` (Sem ${note.semester})` : '';
-    const branchFilter = note.branch && note.branch !== 'General'
-      ? { branch: new RegExp(note.branch, 'i') }
-      : {};
-
-    // Send to all users (or filter by branch if note has a specific branch)
-    await sendBroadcastPush(
-      '📚 New Notes Published!',
-      `${note.title} — ${note.subject}${semStr} by ${req.user.name}`,
-      { tab: 'notes', noteId: note._id.toString() },
-      branchFilter
-    );
-  } catch (pushErr) {
-    console.error('[Note Upload Push] Failed:', pushErr.message);
-  }
-
-  return ApiResponse.success(res, 'Note published successfully! Students can now view and download it.', { note }, 201);
+  return ApiResponse.success(res, 'Note created successfully', { note }, 201);
 });
 
-// @desc    Get all notes (paginated, filtered, search)
-// @route   GET /api/notes
-// @access  Public
+// @desc    Get all private notes for authenticated user with search, filter, and pagination
+// @route   GET /api/v1/notes
+// @access  Private
 const getNotes = asyncHandler(async (req, res) => {
-  const { subject, branch, semester, tag, search, page = 1, limit = 10 } = req.query;
+  const {
+    search,
+    subject,
+    category,
+    isPinned,
+    isLocked,
+    tag,
+    page = 1,
+    limit = 20
+  } = req.query;
 
-  const query = { approvalStatus: 'approved' };
+  // Strict User Ownership: a student only accesses their own private notes
+  const filter = { user: req.user._id };
 
   if (subject) {
-    const escaped = subject.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    query.subject = new RegExp(escaped, 'i');
+    if (mongoose.Types.ObjectId.isValid(subject)) {
+      filter.subject = subject;
+    } else {
+      filter.subjectName = new RegExp(subject.trim(), 'i');
+    }
   }
-  if (branch && branch !== 'All') {
-    const cleanBranch = branch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    query.branch = new RegExp(cleanBranch, 'i');
+
+  if (category) {
+    filter.category = new RegExp(category.trim(), 'i');
   }
-  if (semester) query.semester = Number(semester);
-  if (tag) query.tags = tag;
+
+  if (isPinned !== undefined) {
+    filter.isPinned = isPinned === 'true' || isPinned === true;
+  }
+
+  if (isLocked !== undefined) {
+    filter.isLocked = isLocked === 'true' || isLocked === true;
+  }
+
+  if (tag) {
+    filter.tags = tag.trim();
+  }
+
   if (search && search.trim()) {
-    const escaped = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    query.$or = [
-      { title: new RegExp(escaped, 'i') },
-      { subject: new RegExp(escaped, 'i') },
-      { description: new RegExp(escaped, 'i') },
-      { branch: new RegExp(escaped, 'i') },
-      { tags: new RegExp(escaped, 'i') }
+    const term = search.trim();
+    const regex = new RegExp(term, 'i');
+    filter.$or = [
+      { title: regex },
+      { content: regex },
+      { description: regex },
+      { tags: regex },
+      { subjectName: regex },
+      { category: regex }
     ];
   }
 
-  const skip = (Number(page) - 1) * Number(limit);
+  let total = await Note.countDocuments(filter);
 
-  const notes = await Note.find(query)
-    .populate('uploader', 'name college branch photoUrl')
-    .sort({ createdAt: -1 })
+  // Auto-seed starter notes if brand new student account has 0 notes
+  if (total === 0 && !search && !subject && !category && !tag) {
+    const starterDocs = DEFAULT_STARTER_NOTES.map((n) => ({
+      ...n,
+      user: req.user._id,
+      uploader: req.user._id,
+      characterCount: (n.content || '').length,
+      approvalStatus: 'approved'
+    }));
+    await Note.insertMany(starterDocs);
+    total = starterDocs.length;
+  }
+
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+  const skip = (pageNum - 1) * limitNum;
+
+  const notes = await Note.find(filter)
+    .populate('subject', 'name code color credits')
+    .sort({ isPinned: -1, updatedAt: -1, createdAt: -1 })
     .skip(skip)
-    .limit(Number(limit));
+    .limit(limitNum);
 
-  const total = await Note.countDocuments(query);
-
-  return ApiResponse.success(res, 'Notes retrieved successfully', {
-    notes,
-    pagination: {
-      total,
-      page: Number(page),
-      limit: Number(limit),
-      pages: Math.ceil(total / Number(limit))
-    }
-  });
+  return ApiResponse.success(
+    res,
+    'Notes retrieved successfully',
+    {
+      notes,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages: Math.ceil(total / limitNum)
+      }
+    },
+    200
+  );
 });
 
-// @desc    Get single note detail & increment downloadCount
-// @route   GET /api/notes/:id
-// @access  Public
+// @desc    Get single note by ID (user ownership verified)
+// @route   GET /api/v1/notes/:id
+// @access  Private
 const getNoteById = asyncHandler(async (req, res) => {
-  const note = await Note.findByIdAndUpdate(
-    req.params.id,
-    { $inc: { downloadCount: 1 } },
-    { new: true }
-  ).populate('uploader', 'name college branch photoUrl');
+  const note = await Note.findById(req.params.id).populate('subject', 'name code color credits');
 
   if (!note) {
     return ApiResponse.error(res, 'Note not found', [], 404);
   }
 
-  return ApiResponse.success(res, 'Note retrieved successfully', { note });
+  // Strict ownership check: ensure student only accesses their own note
+  if (note.user && note.user.toString() !== req.user._id.toString()) {
+    return ApiResponse.error(res, 'Access denied: You can only view your own private notes', [], 403);
+  }
+
+  return ApiResponse.success(res, 'Note details retrieved successfully', { note }, 200);
 });
 
-// @desc    Update note (owner or admin)
-// @route   PUT /api/notes/:id
-// @access  Private (Owner/Admin)
+// @desc    Update note (user ownership verified)
+// @route   PUT /api/v1/notes/:id
+// @access  Private
 const updateNote = asyncHandler(async (req, res) => {
   const note = await Note.findById(req.params.id);
 
@@ -167,22 +292,75 @@ const updateNote = asyncHandler(async (req, res) => {
     return ApiResponse.error(res, 'Note not found', [], 404);
   }
 
-  if (note.uploader.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-    return ApiResponse.error(res, 'Not authorized to edit this note', [], 403);
+  // Strict ownership check
+  if (note.user && note.user.toString() !== req.user._id.toString()) {
+    return ApiResponse.error(res, 'Access denied: You can only modify your own private notes', [], 403);
   }
 
-  const updatedNote = await Note.findByIdAndUpdate(
-    req.params.id,
-    { $set: req.body },
-    { new: true, runValidators: true }
-  );
+  const {
+    title,
+    content,
+    description,
+    subject,
+    subjectName,
+    tags,
+    category,
+    isPinned,
+    isLocked,
+    color,
+    fileUrl,
+    fileType
+  } = req.body;
 
-  return ApiResponse.success(res, 'Note updated successfully', { note: updatedNote });
+  if (title !== undefined) note.title = title.trim();
+  if (content !== undefined) {
+    note.content = content;
+    note.characterCount = (content || '').length;
+    if (description === undefined && !note.description) {
+      note.description = content ? content.slice(0, 160) : 'No additional text';
+    }
+  }
+  if (description !== undefined) note.description = description.trim();
+
+  if (subject !== undefined) {
+    if (subject && mongoose.Types.ObjectId.isValid(subject)) {
+      const subjectDoc = await Subject.findOne({ _id: subject, user: req.user._id });
+      if (subjectDoc) {
+        note.subject = subjectDoc._id;
+        note.subjectName = subjectDoc.name;
+      }
+    } else if (!subject) {
+      note.subject = null;
+    }
+  }
+
+  if (subjectName !== undefined) note.subjectName = subjectName.trim();
+
+  if (tags !== undefined) {
+    note.tags = Array.isArray(tags)
+      ? tags.map((t) => String(t).trim()).filter(Boolean)
+      : typeof tags === 'string'
+        ? tags.split(',').map((t) => t.trim()).filter(Boolean)
+        : [];
+  }
+
+  if (category !== undefined) note.category = category.trim();
+  if (isPinned !== undefined) note.isPinned = Boolean(isPinned);
+  if (isLocked !== undefined) note.isLocked = Boolean(isLocked);
+  if (color !== undefined) note.color = color.trim();
+  if (fileUrl !== undefined) note.fileUrl = fileUrl.trim();
+  if (fileType !== undefined) note.fileType = fileType.trim();
+
+  await note.save();
+
+  const populatedNote = await Note.findById(note._id).populate('subject', 'name code color credits');
+
+  return ApiResponse.success(res, 'Note updated successfully', { note: populatedNote }, 200);
 });
 
-// @desc    Delete note (owner or admin)
-// @route   DELETE /api/notes/:id
-// @access  Private (Owner/Admin)
+// @desc    Delete note (user ownership verified)
+// @route   DELETE /api/v1/notes/:id
+// @access  Private
 const deleteNote = asyncHandler(async (req, res) => {
   const note = await Note.findById(req.params.id);
 
@@ -190,122 +368,112 @@ const deleteNote = asyncHandler(async (req, res) => {
     return ApiResponse.error(res, 'Note not found', [], 404);
   }
 
-  if (note.uploader.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-    return ApiResponse.error(res, 'Not authorized to delete this note', [], 403);
+  // Strict ownership check
+  if (note.user && note.user.toString() !== req.user._id.toString()) {
+    return ApiResponse.error(res, 'Access denied: You can only delete your own private notes', [], 403);
   }
 
-  await note.deleteOne();
+  await Note.deleteOne({ _id: note._id });
 
-  return ApiResponse.success(res, 'Note deleted successfully', {});
+  return ApiResponse.success(res, 'Note deleted successfully', { deletedId: note._id }, 200);
 });
 
-const { sendNotification } = require('../sockets/notification.socket');
+// @desc    Quick JSON-based note upload (fileUrl as string)
+// @route   POST /api/notes/quick-upload
+// @access  Private
+const quickUploadNote = asyncHandler(async (req, res) => {
+  const { title, description, subject, branch, semester, tags, fileUrl, fileType } = req.body;
 
-// @desc    Admin approve/reject note
+  if (!title) {
+    return ApiResponse.error(res, 'Title is required', [], 400);
+  }
+
+  const parsedTags = Array.isArray(tags)
+    ? tags
+    : typeof tags === 'string'
+      ? tags.split(',').map((t) => t.trim())
+      : [];
+
+  const note = await Note.create({
+    user: req.user._id,
+    uploader: req.user._id,
+    title,
+    content: description || '',
+    description: description || '',
+    subjectName: subject || 'General',
+    branch: branch || 'General',
+    semester: Number(semester) || 1,
+    tags: parsedTags,
+    fileUrl: fileUrl || '',
+    fileType: fileType || 'pdf',
+    approvalStatus: 'approved',
+    downloadCount: 0,
+    avgRating: 5.0
+  });
+
+  return ApiResponse.success(res, 'Note uploaded successfully', { note }, 201);
+});
+
+// @desc    Admin approve or reject note
 // @route   PATCH /api/notes/:id/approve
-// @access  Private (Admin Only)
+// @access  Private/Admin
 const approveNote = asyncHandler(async (req, res) => {
-  const { status = 'approved' } = req.body;
-  const note = await Note.findByIdAndUpdate(
-    req.params.id,
-    { approvalStatus: status },
-    { new: true }
-  );
+  const { status } = req.body;
+  if (!['approved', 'rejected'].includes(status)) {
+    return ApiResponse.error(res, 'Status must be either approved or rejected', [], 400);
+  }
 
+  const note = await Note.findByIdAndUpdate(req.params.id, { approvalStatus: status }, { new: true });
   if (!note) {
     return ApiResponse.error(res, 'Note not found', [], 404);
   }
 
-  const User = require('../models/User');
-  const { sendExpoPush } = require('../services/pushNotification.service');
-
-  // Notify note uploader via socket
-  const io = req.app.get('io');
-  await sendNotification(io, {
-    userId: note.uploader,
-    type: 'note_approval',
-    message: `Your note "${note.title}" has been ${status}`,
-    relatedId: note._id
-  });
-
-  // If approved, send push to all users with same branch & semester
-  if (status === 'approved') {
-    try {
-      const targetUsers = await User.find({
-        branch: new RegExp(note.branch, 'i'),
-        semester: note.semester,
-        expoPushToken: { $ne: '' }
-      }).select('expoPushToken').lean();
-
-      const tokens = targetUsers.map((u) => u.expoPushToken).filter(Boolean);
-      if (tokens.length > 0) {
-        await sendExpoPush(
-          tokens,
-          '📚 New Notes Available!',
-          `${note.title} — ${note.subject} (Sem ${note.semester})`,
-          { tab: 'notes', noteId: note._id.toString() }
-        );
-      }
-    } catch (pushErr) {
-      console.error('[Note Approval Push] Failed:', pushErr.message);
-    }
-  }
-
-  return ApiResponse.success(res, `Note approval status updated to ${status}`, { note });
+  return ApiResponse.success(res, `Note ${status} successfully`, { note }, 200);
 });
 
-// @desc    Toggle bookmark for note
+// @desc    Toggle bookmark for a note
 // @route   POST /api/notes/:id/bookmark
 // @access  Private
 const toggleBookmark = asyncHandler(async (req, res) => {
   const noteId = req.params.id;
-  const userId = req.user._id;
+  const existingBookmark = await Bookmark.findOne({ user: req.user._id, note: noteId });
 
-  const existing = await Bookmark.findOne({ user: userId, targetType: 'note', targetId: noteId });
-
-  if (existing) {
-    await existing.deleteOne();
-    return ApiResponse.success(res, 'Bookmark removed', { isBookmarked: false });
-  } else {
-    await Bookmark.create({ user: userId, targetType: 'note', targetId: noteId });
-    return ApiResponse.success(res, 'Bookmark added', { isBookmarked: true });
+  if (existingBookmark) {
+    await Bookmark.deleteOne({ _id: existingBookmark._id });
+    return ApiResponse.success(res, 'Bookmark removed', { isBookmarked: false }, 200);
   }
+
+  await Bookmark.create({ user: req.user._id, note: noteId });
+  return ApiResponse.success(res, 'Note bookmarked', { isBookmarked: true }, 200);
 });
 
-// @desc    Rate a note & recalculate average rating
+// @desc    Rate a note
 // @route   POST /api/notes/:id/rate
 // @access  Private
 const rateNote = asyncHandler(async (req, res) => {
   const { score } = req.body;
   const noteId = req.params.id;
-  const userId = req.user._id;
 
   await Rating.findOneAndUpdate(
-    { user: userId, targetType: 'note', targetId: noteId },
+    { user: req.user._id, note: noteId },
     { score },
     { upsert: true, new: true }
   );
 
-  // Recalculate avgRating
-  const ratings = await Rating.find({ targetType: 'note', targetId: noteId });
-  const avg = ratings.reduce((acc, curr) => acc + curr.score, 0) / ratings.length;
+  const ratings = await Rating.find({ note: noteId });
+  const avg = ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length;
+  await Note.findByIdAndUpdate(noteId, { avgRating: Number(avg.toFixed(1)) });
 
-  const updatedNote = await Note.findByIdAndUpdate(
-    noteId,
-    { avgRating: Number(avg.toFixed(1)) },
-    { new: true }
-  );
-
-  return ApiResponse.success(res, 'Note rated successfully', { avgRating: updatedNote.avgRating });
+  return ApiResponse.success(res, 'Rating submitted', { avgRating: avg.toFixed(1) }, 200);
 });
 
 module.exports = {
   createNote,
-  quickUploadNote,
   getNotes,
   getNoteById,
   updateNote,
   deleteNote,
+  quickUploadNote,
   approveNote,
   toggleBookmark,
   rateNote

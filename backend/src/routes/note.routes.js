@@ -2,11 +2,11 @@ const express = require('express');
 const router = express.Router();
 const {
   createNote,
-  quickUploadNote,
   getNotes,
   getNoteById,
   updateNote,
   deleteNote,
+  quickUploadNote,
   approveNote,
   toggleBookmark,
   rateNote
@@ -15,22 +15,31 @@ const { protect } = require('../middleware/auth.middleware');
 const adminOnly = require('../middleware/adminOnly.middleware');
 const validate = require('../middleware/validate.middleware');
 const { upload } = require('../middleware/upload.middleware');
-const { createNoteSchema, updateNoteSchema, rateNoteSchema } = require('../validators/note.validator');
+const {
+  createNoteSchema,
+  updateNoteSchema,
+  rateNoteSchema
+} = require('../validators/note.validator');
 
-router.route('/')
+// All note routes require authenticated student
+router.use(protect);
+
+router
+  .route('/')
   .get(getNotes)
-  .post(protect, upload.single('file'), validate(createNoteSchema), createNote);
+  .post(upload.single('file'), validate(createNoteSchema), createNote);
 
-// Quick JSON-based upload (no Cloudinary, fileUrl provided as string)
-router.post('/quick-upload', protect, quickUploadNote);
+// Quick JSON upload endpoint
+router.post('/quick-upload', quickUploadNote);
 
-router.route('/:id')
+router
+  .route('/:id')
   .get(getNoteById)
-  .put(protect, validate(updateNoteSchema), updateNote)
-  .delete(protect, deleteNote);
+  .put(validate(updateNoteSchema), updateNote)
+  .delete(deleteNote);
 
-router.patch('/:id/approve', protect, adminOnly, approveNote);
-router.post('/:id/bookmark', protect, toggleBookmark);
-router.post('/:id/rate', protect, validate(rateNoteSchema), rateNote);
+router.patch('/:id/approve', adminOnly, approveNote);
+router.post('/:id/bookmark', toggleBookmark);
+router.post('/:id/rate', validate(rateNoteSchema), rateNote);
 
 module.exports = router;
