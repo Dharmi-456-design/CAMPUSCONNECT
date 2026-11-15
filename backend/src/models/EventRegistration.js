@@ -1,27 +1,35 @@
 const mongoose = require('mongoose');
 
-const EventRegistrationSchema = new mongoose.Schema(
+const eventRegistrationSchema = new mongoose.Schema(
   {
     event: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Event',
-      required: true,
+      required: [true, 'Event reference is required'],
+      index: true
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: [true, 'User reference is required'],
+      index: true
     },
     status: {
       type: String,
       enum: ['CONFIRMED', 'CANCELLED', 'WAITLIST'],
-      default: 'CONFIRMED',
+      default: 'CONFIRMED'
     },
+    registeredAt: {
+      type: Date,
+      default: Date.now
+    }
   },
-  { timestamps: true }
+  {
+    timestamps: true
+  }
 );
 
-EventRegistrationSchema.index({ event: 1, user: 1 }, { unique: true });
+// Strictly prevent duplicate registrations for the same user and event
+eventRegistrationSchema.index({ event: 1, user: 1 }, { unique: true });
 
-module.exports = mongoose.model('EventRegistration', EventRegistrationSchema);
-
+module.exports = mongoose.model('EventRegistration', eventRegistrationSchema);

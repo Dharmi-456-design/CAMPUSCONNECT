@@ -1,35 +1,44 @@
 const mongoose = require('mongoose');
 
-const NoticeSchema = new mongoose.Schema(
+const noticeSchema = new mongoose.Schema(
   {
     title: {
       type: String,
       required: [true, 'Notice title is required'],
       trim: true,
+      maxlength: [140, 'Notice title cannot exceed 140 characters']
     },
     content: {
       type: String,
-      required: true,
+      required: [true, 'Notice content is required'],
+      trim: true
     },
     category: {
       type: String,
       enum: ['Academic', 'Administration', 'Examination', 'Campus', 'Emergency'],
-      default: 'Campus',
+      default: 'Campus'
     },
     isImportant: {
       type: Boolean,
-      default: false,
+      default: false
+    },
+    department: {
+      type: String,
+      default: 'All Departments',
+      trim: true
     },
     publishedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
-    },
+      required: true
+    }
   },
-  { timestamps: true }
+  {
+    timestamps: true
+  }
 );
 
-NoticeSchema.index({ createdAt: -1, isImportant: 1 });
+noticeSchema.index({ createdAt: -1, isImportant: 1 });
+noticeSchema.index({ title: 'text', content: 'text', department: 'text' });
 
-module.exports = mongoose.model('Notice', NoticeSchema);
-
+module.exports = mongoose.model('Notice', noticeSchema);
