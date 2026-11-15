@@ -6,722 +6,615 @@ import {
   ScrollView,
   Alert,
   TouchableOpacity,
-  TextInput,
   Platform,
-  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuthStore } from '../store/authStore';
 import Icon from '../components/common/Icon';
-import { updateProfileApi, changePasswordApi } from '../api/auth.api';
+import ManageAccountModal from './profile/ManageAccountModal';
+import ChangePasswordModal from './profile/ChangePasswordModal';
+import ProfileSettingsModal from './profile/ProfileSettingsModal';
 
-const SETTINGS_GROUPS = [
-  {
-    title: 'Academic Info',
-    icon: 'book-open',
-    color: '#16A36A',
-    items: [
-      { label: 'University / Institute', value: 'Shree Swaminarayan Institute of Technology (SSIT), Kalol', icon: 'home' },
-      { label: 'Program / Branch', value: 'B.Tech Computer Engineering', icon: 'code' },
-      { label: 'Semester', value: 'Semester 3 · 2023–24 Batch', icon: 'calendar' },
-      { label: 'Enrollment ID', value: 'SSIT2023CE047', icon: 'hash' },
-    ],
-  },
-  {
-    title: 'Hostel & Campus Life',
-    icon: 'home',
-    color: '#22D3EE',
-    items: [
-      { label: 'Hostel Block', value: 'Boys Hostel · Block B, Room 215', icon: 'map-pin' },
-      { label: 'Campus Card No.', value: 'CC-KALOL-2023-8821', icon: 'credit-card' },
-      { label: 'Library Pass', value: 'Active · Valid till Jun 2026', icon: 'book' },
-    ],
-  },
-  {
-    title: 'Account & Security',
-    icon: 'shield',
-    icon: 'help-circle',
-    color: '#F59E0B',
-    items: [
-      { label: 'About CampusOne', value: 'v2.1.0 · Swaminarayan University', icon: 'info' },
-      { label: 'Report a Problem', value: 'Write to SSIT IT Team', icon: 'alert-triangle', isAction: true },
-      { label: 'Privacy Policy', value: 'campus.ssit.edu/privacy', icon: 'file-text', isAction: true },
-    ],
-  },
-];
-
-const ACHIEVEMENTS = [
-  { label: '7 Days Streak', icon: 'zap', color: '#10B981', bg: 'rgba(16,185,129,0.15)' },
-  { label: 'Task Master', icon: 'award', color: '#8B5CF6', bg: 'rgba(139,92,246,0.15)' },
-  { label: 'Note Creator', icon: 'book-open', color: '#F59E0B', bg: 'rgba(245,158,11,0.15)' },
-  { label: 'Top Doubter', icon: 'help-circle', color: '#06B6D4', bg: 'rgba(6,182,212,0.15)' },
-];
-
-function ProfileHero({ user, isDark, theme, toggleTheme }) {
-  const initial = (user?.name || 'D').charAt(0).toUpperCase();
-  const userName = user?.name || 'Dharmi Patel';
-  const userEmail = user?.email || 'dharmi.patel@ssit.edu.in';
-  const userBranch = user?.branch || 'Computer Engineering';
-  const userSem = user?.semester || 3;
-
-  return (
-    <View
-      style={[
-        styles.heroCard,
-        {
-          backgroundColor: isDark ? '#101726' : '#FFFFFF',
-          borderColor: isDark ? 'rgba(99, 102, 241, 0.3)' : '#E2E8F0',
-        },
-      ]}
-    >
-      {/* Background Decoration */}
-      <View style={styles.heroGradBg} />
-
-      {/* Top Row: Avatar + Info */}
-      <View style={styles.heroTop}>
-        {/* Avatar */}
-        <View style={styles.avatarWrap}>
-          <View style={styles.avatarOuter}>
-            <View style={styles.avatarInner}>
-              <Text style={styles.avatarInitial}>{initial}</Text>
-            </View>
-          </View>
-          <View style={styles.onlineDot} />
-        </View>
-
-        {/* Name Info */}
-        <View style={styles.heroNameCol}>
-          <Text style={[styles.heroName, { color: theme.textPrimary }]}>{userName}</Text>
-          <Text style={[styles.heroEmail, { color: theme.textMuted }]}>{userEmail}</Text>
-          <View style={styles.heroTagsRow}>
-            <View style={[styles.heroTag, { backgroundColor: isDark ? 'rgba(201, 168, 76, 0.15)' : '#E8F5EE' }]}>
-              <Icon name="award" size={11} color="#16A36A" style={{ marginRight: 4 }} />
-              <Text style={{ color: isDark ? '#16A36A' : '#16A36A', fontSize: 11, fontWeight: '700' }}>Verified Scholar</Text>
-            </View>
-            <View style={[styles.heroTag, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}>
-              <Icon name="zap" size={11} color="#FBBF24" style={{ marginRight: 4 }} />
-              <Text style={{ color: '#FBBF24', fontSize: 11, fontWeight: '700' }}>340 Credits</Text>
-            </View>
-            <View style={[styles.heroTag, { backgroundColor: 'rgba(6, 182, 212, 0.15)' }]}>
-              <Text style={{ color: '#22D3EE', fontSize: 11, fontWeight: '700' }}>Sem {userSem}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Theme Toggle */}
-        <TouchableOpacity style={[styles.themeToggleBtn, { backgroundColor: isDark ? '#141D2D' : '#F1F5F9', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0' }]} onPress={toggleTheme} activeOpacity={0.8}>
-          <Icon name={isDark ? 'sun' : 'moon'} size={16} color={isDark ? '#FBBF24' : '#16A36A'} />
-          <Text style={[styles.themeToggleText, { color: theme.textPrimary }]}>{isDark ? 'Light' : 'Dark'}</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Stats Row */}
-      <View style={[styles.statsBar, { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.06)' : '#E2E8F0' }]}>
-        <View style={styles.statItem}>
-          <Text style={[styles.statNum, { color: isDark ? '#16A36A' : '#16A36A' }]}>14</Text>
-          <Text style={[styles.statLabel, { color: theme.textMuted }]}>Notes</Text>
-        </View>
-        <View style={[styles.statDivider, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0' }]} />
-        <View style={styles.statItem}>
-          <Text style={[styles.statNum, { color: '#22D3EE' }]}>8</Text>
-          <Text style={[styles.statLabel, { color: theme.textMuted }]}>Doubts Solved</Text>
-        </View>
-        <View style={[styles.statDivider, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0' }]} />
-        <View style={styles.statItem}>
-          <Text style={[styles.statNum, { color: '#34D399' }]}>3</Text>
-          <Text style={[styles.statLabel, { color: theme.textMuted }]}>Active Teams</Text>
-        </View>
-        <View style={[styles.statDivider, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0' }]} />
-        <View style={styles.statItem}>
-          <Text style={[styles.statNum, { color: '#FBBF24' }]}>7🔥</Text>
-          <Text style={[styles.statLabel, { color: theme.textMuted }]}>Day Streak</Text>
-        </View>
-      </View>
-
-      {/* Achievements Row */}
-      <View style={styles.achievementsRow}>
-        {ACHIEVEMENTS.map((a, i) => (
-          <View key={i} style={[styles.achieveBadge, { backgroundColor: a.bg }]}>
-            <Icon name={a.icon} size={13} color={a.color} style={{ marginRight: 5 }} />
-            <Text style={{ color: a.color, fontSize: 11, fontWeight: '700' }}>{a.label}</Text>
-          </View>
-        ))}
-      </View>
-    </View>
-  );
-}
-
-export default function ProfileScreen() {
+export default function ProfileScreen({ onNavigateTab }) {
   const { theme, isDark, toggleTheme } = useTheme();
   const { user, setAuth, logout } = useAuthStore();
 
-  const [name, setName] = useState(user?.name || '');
-  const [college, setCollege] = useState(user?.college || 'Swaminarayan University, Kalol');
-  const [branch, setBranch] = useState(user?.branch || 'Computer Engineering');
-  const [bio, setBio] = useState(user?.bio || '');
-  const [loading, setLoading] = useState(false);
-  const [editMode, setEditMode] = useState(false);
+  const [manageAccountVisible, setManageAccountVisible] = useState(false);
+  const [changePwdVisible, setChangePwdVisible] = useState(false);
+  const [settingsModalVisible, setSettingsModalVisible] = useState(false);
 
-  // Password Change State
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [pwdLoading, setPwdLoading] = useState(false);
-  const [showPwdForm, setShowPwdForm] = useState(false);
+  const initial = (user?.name || 'D').charAt(0).toUpperCase();
+  const userName = user?.name || 'Dharmi Patel';
+  const userEmail = user?.email || 'dharmi.patel@campus.edu';
+  const userBranch = user?.branch || 'Computer Engineering';
+  const userCollege = user?.college || 'Swaminarayan University, Kalol';
+  const userSem = user?.semester || 3;
+  const userRoll = user?.rollNumber || 'SSIT2023CE047';
+  const userBio = user?.bio || 'B.Tech Computer Engineering student passionate about Full-Stack & AI.';
 
-  const handleChangePassword = async () => {
-    if (!currentPassword || !newPassword) {
-      const msg = 'Please enter both current and new password.';
-      if (Platform.OS === 'web') window.alert(msg);
-      else Alert.alert('Required Fields', msg);
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      const msg = 'New password must be at least 6 characters long.';
-      if (Platform.OS === 'web') window.alert(msg);
-      else Alert.alert('Invalid Password', msg);
-      return;
-    }
-
-    try {
-      setPwdLoading(true);
-      const res = await changePasswordApi(currentPassword, newPassword);
-      setCurrentPassword('');
-      setNewPassword('');
-      setShowPwdForm(false);
-      const msg = res.message || 'Password changed successfully!';
-      if (Platform.OS === 'web') window.alert(msg);
-      else Alert.alert('Success', msg);
-    } catch (err) {
-      const msg = err.response?.data?.message || err.message || 'Could not change password.';
-      if (Platform.OS === 'web') window.alert(msg);
-      else Alert.alert('Error', msg);
-    } finally {
-      setPwdLoading(false);
+  const handleProfileUpdated = async (updatedUser) => {
+    if (updatedUser) {
+      await setAuth(updatedUser, useAuthStore.getState().token);
     }
   };
 
-  const handleUpdate = async () => {
-    try {
-      setLoading(true);
-      const res = await updateProfileApi({ name, college, branch, bio });
-      if (res.success) {
-        await setAuth(res.data.user, useAuthStore.getState().token);
-        setEditMode(false);
-        if (Platform.OS === 'web') window.alert('Profile updated successfully! 🎉');
-        else Alert.alert('Success 🎉', 'Profile updated!');
-      }
-    } catch (err) {
-      const msg = err.response?.data?.message || err.message || 'Could not save profile.';
-      if (Platform.OS === 'web') window.alert(msg);
-      else Alert.alert('Error', msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
+  const handleLogout = () => {
     if (Platform.OS === 'web') {
-      const confirmed = window.confirm('Sign out of CampusOne?');
-      if (confirmed) await logout();
+      const confirmed = window.confirm('Are you sure you want to sign out of CampusOne?');
+      if (confirmed) logout();
     } else {
-      Alert.alert('Sign Out', 'Are you sure?', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign Out', style: 'destructive', onPress: async () => await logout() },
-      ]);
+      Alert.alert(
+        'Sign Out',
+        'Are you sure you want to sign out of CampusOne? You will need to log back in.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Sign Out',
+            style: 'destructive',
+            onPress: () => logout(),
+          },
+        ]
+      );
     }
   };
-
-  const bgCard = theme.bgCard;
-  const borderCard = theme.border;
-  const textTitle = theme.textPrimary;
-  const textSub = theme.textMuted;
 
   return (
-    <ScrollView
-      style={[styles.scroll, { backgroundColor: theme.bg }]}
-      contentContainerStyle={styles.scrollInner}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* ======================================================== */}
-      {/* 1. PROFILE HERO BANNER                                   */}
-      {/* ======================================================== */}
-      <ProfileHero user={user} isDark={isDark} theme={theme} toggleTheme={toggleTheme} />
+    <View style={[styles.container, { backgroundColor: isDark ? '#0B0F19' : '#F8FAFC' }]}>
+      {/* Top Header Bar */}
+      <View
+        style={[
+          styles.headerBar,
+          {
+            backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+            borderBottomColor: isDark ? '#334155' : '#F1F5F9',
+          },
+        ]}
+      >
+        <Text style={[styles.headerTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+          My Profile
+        </Text>
+        <View style={styles.headerRightActions}>
+          <TouchableOpacity
+            style={[
+              styles.iconBtn,
+              { backgroundColor: isDark ? '#0F172A' : '#F1F5F9' },
+            ]}
+            onPress={toggleTheme}
+          >
+            <Icon
+              name={isDark ? 'sun' : 'moon'}
+              size={18}
+              color={isDark ? '#FBBF24' : '#16A36A'}
+            />
+          </TouchableOpacity>
 
-      {/* ======================================================== */}
-      {/* 2. TWO-COLUMN GRID: Edit Profile + Settings               */}
-      {/* ======================================================== */}
-      <View style={styles.twoColGrid}>
-        {/* LEFT: Edit Profile Form */}
-        <View style={styles.formCol}>
-          <View style={[styles.sectionCard, { backgroundColor: bgCard, borderColor: borderCard }]}>
-            <View style={styles.sectionHeaderRow}>
-              <View style={styles.sectionTitleRow}>
-                <Icon name="user" size={15} color="#16A36A" style={{ marginRight: 8 }} />
-                <Text style={[styles.sectionTitle, { color: textTitle }]}>Edit Academic Profile</Text>
+          <TouchableOpacity
+            style={[
+              styles.iconBtn,
+              { backgroundColor: isDark ? '#0F172A' : '#F1F5F9' },
+            ]}
+            onPress={() => setSettingsModalVisible(true)}
+          >
+            <Icon name="settings" size={18} color="#16A36A" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollBody}
+      >
+        {/* Profile Hero Card */}
+        <View
+          style={[
+            styles.heroCard,
+            {
+              backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+              borderColor: isDark ? '#334155' : '#E2E8F0',
+            },
+          ]}
+        >
+          <View style={styles.heroTopRow}>
+            {/* Avatar */}
+            <View style={styles.avatarWrap}>
+              <View style={[styles.avatar, { backgroundColor: '#16A36A' }]}>
+                <Text style={styles.avatarText}>{initial}</Text>
               </View>
-              <TouchableOpacity
-                style={[styles.editToggleBtn, { backgroundColor: editMode ? '#16A36A' : isDark ? '#141D2D' : '#F1F5F9', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0' }]}
-                onPress={() => setEditMode(!editMode)}
-              >
-                <Icon name={editMode ? 'x' : 'edit-2'} size={13} color={editMode ? '#0c0f10' : textSub} />
-                <Text style={{ color: editMode ? '#0c0f10' : textSub, fontSize: 11.5, fontWeight: '600', marginLeft: 4 }}>
-                  {editMode ? 'Cancel' : 'Edit'}
-                </Text>
-              </TouchableOpacity>
+              <View style={styles.onlineBadge} />
             </View>
 
-            <View style={styles.fieldsGrid}>
-              <View style={styles.fieldRow}>
-                <Text style={[styles.fieldLabel, { color: textSub }]}>Full Name</Text>
-                {editMode ? (
-                  <TextInput
-                    style={[styles.fieldInput, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0', color: textTitle }]}
-                    value={name}
-                    onChangeText={setName}
-                    placeholder="Your full name"
-                    placeholderTextColor={textSub}
-                  />
-                ) : (
-                  <Text style={[styles.fieldValue, { color: textTitle }]}>{name || user?.name || 'Dharmi Patel'}</Text>
-                )}
-              </View>
-
-              <View style={styles.fieldRow}>
-                <Text style={[styles.fieldLabel, { color: textSub }]}>University / Institute</Text>
-                {editMode ? (
-                  <TextInput
-                    style={[styles.fieldInput, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0', color: textTitle }]}
-                    value={college}
-                    onChangeText={setCollege}
-                    placeholder="University name"
-                    placeholderTextColor={textSub}
-                  />
-                ) : (
-                  <Text style={[styles.fieldValue, { color: textTitle }]}>{college}</Text>
-                )}
-              </View>
-
-              <View style={styles.fieldRow}>
-                <Text style={[styles.fieldLabel, { color: textSub }]}>Branch / Department</Text>
-                {editMode ? (
-                  <TextInput
-                    style={[styles.fieldInput, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0', color: textTitle }]}
-                    value={branch}
-                    onChangeText={setBranch}
-                    placeholder="Your branch"
-                    placeholderTextColor={textSub}
-                  />
-                ) : (
-                  <Text style={[styles.fieldValue, { color: textTitle }]}>{branch}</Text>
-                )}
-              </View>
-
-              <View style={styles.fieldRow}>
-                <Text style={[styles.fieldLabel, { color: textSub }]}>Current Term & Semester</Text>
-                <Text style={[styles.fieldValue, { color: textTitle }]}>Semester 3 (2026-27)</Text>
-              </View>
-
-              <View style={styles.fieldRow}>
-                <Text style={[styles.fieldLabel, { color: textSub }]}>Official Enrollment ID</Text>
-                <Text style={[styles.fieldValue, { color: isDark ? '#16A36A' : '#16A36A', fontWeight: '800' }]}>SUK250054CE081</Text>
-              </View>
-
-              <View style={styles.fieldRow}>
-                <Text style={[styles.fieldLabel, { color: textSub }]}>Bio & Skills</Text>
-                {editMode ? (
-                  <TextInput
-                    style={[styles.fieldInput, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#E2E8F0', color: textTitle, height: 60, textAlignVertical: 'top' }]}
-                    value={bio}
-                    onChangeText={setBio}
-                    multiline
-                    placeholder="e.g. 3rd Sem CSE student passionate about React Native & AI..."
-                    placeholderTextColor={textSub}
-                  />
-                ) : (
-                  <Text style={[styles.fieldValue, { color: textTitle }]}>
-                    {bio || 'B.Tech Computer Engineering student at SSIT, Kalol. Passionate about Full-Stack Development & Hackathons. 🚀'}
-                  </Text>
-                )}
-              </View>
-            </View>
-
-            {editMode && (
-              <TouchableOpacity
-                style={[styles.saveBtn, loading && { opacity: 0.7 }]}
-                onPress={handleUpdate}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator size="small" color="#FFF" />
-                ) : (
-                  <>
-                    <Icon name="check" size={14} color="#FFF" style={{ marginRight: 6 }} />
-                    <Text style={styles.saveBtnText}>Save Profile Updates</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* Change Password Card */}
-          <View style={[styles.sectionCard, { backgroundColor: bgCard, borderColor: borderCard, marginTop: 14 }]}>
-            <View style={styles.sectionHeaderRow}>
-              <View style={styles.sectionTitleRow}>
-                <Icon name="lock" size={15} color="#16A36A" style={{ marginRight: 8 }} />
-                <Text style={[styles.sectionTitle, { color: textTitle }]}>Security & Password</Text>
-              </View>
-              <TouchableOpacity
-                style={[styles.editToggleBtn, { backgroundColor: isDark ? '#141D2D' : '#F1F5F9', borderColor: borderCard }]}
-                onPress={() => setShowPwdForm(!showPwdForm)}
-              >
-                <Icon name={showPwdForm ? 'x' : 'key'} size={12} color="#16A36A" style={{ marginRight: 4 }} />
-                <Text style={{ fontSize: 11.5, fontWeight: '700', color: '#16A36A' }}>
-                  {showPwdForm ? 'Cancel' : 'Change'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {showPwdForm ? (
-              <View style={{ marginTop: 12 }}>
-                <Text style={[styles.fieldLabel, { color: textSub }]}>Current Password</Text>
-                <TextInput
-                  style={[styles.fieldInput, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: borderCard, color: textTitle, marginBottom: 10 }]}
-                  placeholder="Enter current password"
-                  placeholderTextColor={textSub}
-                  secureTextEntry
-                  value={currentPassword}
-                  onChangeText={setCurrentPassword}
-                />
-
-                <Text style={[styles.fieldLabel, { color: textSub }]}>New Password (min 6 chars)</Text>
-                <TextInput
-                  style={[styles.fieldInput, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: borderCard, color: textTitle, marginBottom: 12 }]}
-                  placeholder="Enter new password"
-                  placeholderTextColor={textSub}
-                  secureTextEntry
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                />
-
-                <TouchableOpacity
-                  style={[styles.saveBtn, pwdLoading && { opacity: 0.7 }]}
-                  onPress={handleChangePassword}
-                  disabled={pwdLoading}
+            {/* User Meta */}
+            <View style={styles.heroUserMeta}>
+              <View style={styles.nameRow}>
+                <Text
+                  style={[
+                    styles.userName,
+                    { color: isDark ? '#F8FAFC' : '#0F172A' },
+                  ]}
                 >
-                  {pwdLoading ? (
-                    <ActivityIndicator size="small" color="#FFF" />
-                  ) : (
-                    <>
-                      <Icon name="check" size={14} color="#FFF" style={{ marginRight: 6 }} />
-                      <Text style={styles.saveBtnText}>Update Password</Text>
-                    </>
-                  )}
-                </TouchableOpacity>
+                  {userName}
+                </Text>
+                <View style={styles.verifiedTag}>
+                  <Icon name="check" size={10} color="#16A36A" />
+                  <Text style={styles.verifiedText}>Verified</Text>
+                </View>
               </View>
-            ) : (
-              <Text style={[styles.settingsSub, { color: textSub }]}>
-                Manage password security and update authentication credentials.
-              </Text>
-            )}
+
+              <Text style={styles.userEmail}>{userEmail}</Text>
+
+              <View style={styles.pillsRow}>
+                <View style={styles.pillDept}>
+                  <Text style={styles.pillDeptText}>{userBranch}</Text>
+                </View>
+                <View style={styles.pillSem}>
+                  <Text style={styles.pillSemText}>Sem {userSem}</Text>
+                </View>
+              </View>
+            </View>
           </View>
 
-          {/* Sign Out Card */}
-          <View style={[styles.sectionCard, { backgroundColor: bgCard, borderColor: 'rgba(239, 68, 68, 0.3)' }]}>
-            <View style={styles.sectionTitleRow}>
-              <Icon name="log-out" size={15} color="#EF4444" style={{ marginRight: 8 }} />
-              <Text style={[styles.sectionTitle, { color: '#EF4444' }]}>Account Session</Text>
-            </View>
-            <Text style={[styles.settingsSub, { color: textSub }]}>
-              Sign out of your account on this device. Your data will remain saved.
+          {/* Bio Snippet */}
+          <View style={[styles.bioBox, { backgroundColor: isDark ? '#0F172A' : '#F8FAFC' }]}>
+            <Text style={[styles.bioText, { color: isDark ? '#94A3B8' : '#475569' }]}>
+              {userBio}
             </Text>
-            <TouchableOpacity style={[styles.dangerBtn, { marginTop: 12 }]} onPress={handleLogout}>
-              <Icon name="log-out" size={14} color="#FFF" style={{ marginRight: 6 }} />
-              <Text style={styles.dangerBtnText}>Sign Out of CampusOne</Text>
+          </View>
+
+          {/* Quick Action Buttons */}
+          <View style={styles.heroActionsRow}>
+            <TouchableOpacity
+              style={styles.editProfileBtn}
+              onPress={() => setManageAccountVisible(true)}
+              activeOpacity={0.85}
+            >
+              <Icon name="edit-2" size={15} color="#FFFFFF" />
+              <Text style={styles.editProfileBtnText}>Edit Profile</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.changePasswordBtn,
+                {
+                  backgroundColor: isDark ? '#0F172A' : '#F1F5F9',
+                  borderColor: isDark ? '#334155' : '#E2E8F0',
+                },
+              ]}
+              onPress={() => setChangePwdVisible(true)}
+              activeOpacity={0.85}
+            >
+              <Icon name="lock" size={15} color="#16A36A" />
+              <Text
+                style={[
+                  styles.changePasswordBtnText,
+                  { color: isDark ? '#F8FAFC' : '#0F172A' },
+                ]}
+              >
+                Password
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* RIGHT: Settings Panels */}
-        <View style={styles.settingsCol}>
-          {SETTINGS_GROUPS.map((group, gi) => (
-            <View key={gi} style={[styles.sectionCard, { backgroundColor: bgCard, borderColor: borderCard }]}>
-              <View style={[styles.sectionHeaderRow, { marginBottom: 14 }]}>
-                <View style={styles.sectionTitleRow}>
-                  <View style={[styles.settingsGroupIcon, { backgroundColor: `${group.color}22` }]}>
-                    <Icon name={group.icon} size={14} color={group.color} />
-                  </View>
-                  <Text style={[styles.sectionTitle, { color: textTitle }]}>{group.title}</Text>
-                </View>
-              </View>
+        {/* Academic Details Card */}
+        <View
+          style={[
+            styles.sectionCard,
+            {
+              backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+              borderColor: isDark ? '#334155' : '#E2E8F0',
+            },
+          ]}
+        >
+          <View style={styles.sectionHeader}>
+            <Icon name="book-open" size={16} color="#16A36A" />
+            <Text style={[styles.sectionTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+              Academic Credentials
+            </Text>
+          </View>
 
-              <View style={styles.settingsList}>
-                {group.items.map((item, ii) => (
-                  <TouchableOpacity
-                    key={ii}
-                    style={[
-                      styles.settingsItem,
-                      ii < group.items.length - 1 && { borderBottomWidth: 1, borderBottomColor: borderCard },
-                      item.isAction && { cursor: 'pointer' },
-                    ]}
-                    onPress={item.isToggle && item.label === 'Appearance' ? toggleTheme : undefined}
-                    activeOpacity={item.isAction || item.isToggle ? 0.7 : 1}
-                  >
-                    <View style={styles.settingsItemLeft}>
-                      <View style={[styles.settingsItemIconBox, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F1F5F9' }]}>
-                        <Icon name={item.icon} size={13} color={isDark ? '#94A3B8' : '#64748B'} />
-                      </View>
-                      <View>
-                        <Text style={[styles.settingsLabel, { color: textTitle }]}>{item.label}</Text>
-                        <Text style={[styles.settingsValue, { color: textSub }]}>
-                          {item.label === 'Appearance'
-                            ? isDark ? 'Dark Mode Active' : 'Light Mode Active'
-                            : item.value}
-                        </Text>
-                      </View>
-                    </View>
-                    {(item.isAction || item.isToggle) && (
-                      <Icon name="chevron-right" size={14} color={isDark ? '#64748B' : '#94A3B8'} />
-                    )}
-                  </TouchableOpacity>
-                ))}
+          <View style={styles.infoGrid}>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Institution</Text>
+              <Text
+                style={[
+                  styles.infoVal,
+                  { color: isDark ? '#F8FAFC' : '#0F172A' },
+                ]}
+              >
+                {userCollege}
+              </Text>
+            </View>
+
+            <View style={styles.infoDivider} />
+
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Enrollment ID</Text>
+              <Text style={[styles.infoVal, { color: '#16A36A', fontWeight: '800' }]}>
+                {userRoll}
+              </Text>
+            </View>
+
+            <View style={styles.infoDivider} />
+
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Academic Program</Text>
+              <Text
+                style={[
+                  styles.infoVal,
+                  { color: isDark ? '#F8FAFC' : '#0F172A' },
+                ]}
+              >
+                B.Tech in {userBranch}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Settings & Portals Quick Access */}
+        <View
+          style={[
+            styles.sectionCard,
+            {
+              backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+              borderColor: isDark ? '#334155' : '#E2E8F0',
+            },
+          ]}
+        >
+          <View style={styles.sectionHeader}>
+            <Icon name="sliders" size={16} color="#16A36A" />
+            <Text style={[styles.sectionTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+              Settings & Portals
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.navRow}
+            onPress={() => setSettingsModalVisible(true)}
+          >
+            <View style={styles.navRowLeft}>
+              <View style={[styles.navIconBox, { backgroundColor: 'rgba(22, 163, 106, 0.12)' }]}>
+                <Icon name="settings" size={16} color="#16A36A" />
+              </View>
+              <Text style={[styles.navRowTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                Account & Preferences
+              </Text>
+            </View>
+            <Icon name="chevron-right" size={16} color="#94A3B8" />
+          </TouchableOpacity>
+
+          <View style={styles.infoDivider} />
+
+          <TouchableOpacity
+            style={styles.navRow}
+            onPress={() => onNavigateTab && onNavigateTab('apk-download')}
+          >
+            <View style={styles.navRowLeft}>
+              <View style={[styles.navIconBox, { backgroundColor: '#DCFCE7' }]}>
+                <Icon name="download" size={16} color="#16A36A" />
+              </View>
+              <View>
+                <Text style={[styles.navRowTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                  Download Android APK
+                </Text>
+                <Text style={styles.navRowSub}>Version 1.0.0 APK</Text>
               </View>
             </View>
-          ))}
+            <Icon name="chevron-right" size={16} color="#94A3B8" />
+          </TouchableOpacity>
+
+          <View style={styles.infoDivider} />
+
+          <TouchableOpacity
+            style={styles.navRow}
+            onPress={() => onNavigateTab && onNavigateTab('about')}
+          >
+            <View style={styles.navRowLeft}>
+              <View style={[styles.navIconBox, { backgroundColor: '#E0F2FE' }]}>
+                <Icon name="info" size={16} color="#0284C7" />
+              </View>
+              <Text style={[styles.navRowTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                About CampusOne
+              </Text>
+            </View>
+            <Icon name="chevron-right" size={16} color="#94A3B8" />
+          </TouchableOpacity>
         </View>
-      </View>
-    </ScrollView>
+
+        {/* Logout Button with Confirmation */}
+        <TouchableOpacity
+          style={styles.logoutBtn}
+          onPress={handleLogout}
+          activeOpacity={0.85}
+        >
+          <Icon name="log-out" size={16} color="#EF4444" />
+          <Text style={styles.logoutBtnText}>Sign Out of CampusOne</Text>
+        </TouchableOpacity>
+      </ScrollView>
+
+      {/* Modals */}
+      <ManageAccountModal
+        visible={manageAccountVisible}
+        currentUser={user}
+        onClose={() => setManageAccountVisible(false)}
+        onProfileUpdated={handleProfileUpdated}
+        isDark={isDark}
+        theme={theme}
+      />
+
+      <ChangePasswordModal
+        visible={changePwdVisible}
+        onClose={() => setChangePwdVisible(false)}
+        isDark={isDark}
+      />
+
+      <ProfileSettingsModal
+        visible={settingsModalVisible}
+        onClose={() => setSettingsModalVisible(false)}
+        onOpenManageAccount={() => setManageAccountVisible(true)}
+        onOpenSecurity={() => setChangePwdVisible(true)}
+        onOpenApkDownload={() => onNavigateTab && onNavigateTab('apk-download')}
+        onOpenAbout={() => onNavigateTab && onNavigateTab('about')}
+        isDark={isDark}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1 },
-  scrollInner: { padding: 22, paddingBottom: 40 },
-
-  /* Hero */
-  heroCard: {
-    borderRadius: 18,
-    borderWidth: 1.5,
-    padding: 22,
-    marginBottom: 20,
-    overflow: 'hidden',
-    position: 'relative',
+  container: {
+    flex: 1,
   },
-  heroGradBg: {
-    position: 'absolute',
-    top: -60,
-    right: -60,
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: 'rgba(99, 102, 241, 0.08)',
-  },
-  heroTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 16,
-  },
-  avatarWrap: { position: 'relative' },
-  avatarOuter: {
-    width: 74,
-    height: 74,
-    borderRadius: 37,
-    backgroundColor: 'rgba(201, 168, 76, 0.2)',
-    borderWidth: 2.5,
-    borderColor: '#16A36A',
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...Platform.select({
-      web: { boxShadow: '0px 4px 20px rgba(201,168,76,0.45)' },
-      default: {
-        shadowColor: '#16A36A',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 10,
-        elevation: 4,
-      },
-    }),
-  },
-  avatarInner: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
-    backgroundColor: '#16A36A',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInitial: { color: '#0c0f10', fontSize: 26, fontWeight: '800' },
-  onlineDot: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#10B981',
-    borderWidth: 2,
-    borderColor: '#080C14',
-  },
-  heroNameCol: { flex: 1 },
-  heroName: { fontSize: 20, fontWeight: '800', letterSpacing: -0.3 },
-  heroEmail: { fontSize: 12.5, marginTop: 2, marginBottom: 8 },
-  heroTagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  heroTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 3.5,
-    borderRadius: 6,
-  },
-  themeToggleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    borderRadius: 10,
-    borderWidth: 1,
-    gap: 5,
-  },
-  themeToggleText: { fontSize: 11.5, fontWeight: '700' },
-
-  statsBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    marginBottom: 14,
-  },
-  statItem: { alignItems: 'center' },
-  statNum: { fontSize: 18, fontWeight: '800' },
-  statLabel: { fontSize: 10.5, marginTop: 2 },
-  statDivider: { width: 1, height: 26 },
-
-  achievementsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  achieveBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-  },
-
-  /* Two Column Layout */
-  twoColGrid: {
-    flexDirection: 'row',
-    gap: 18,
-    alignItems: 'flex-start',
-  },
-  formCol: { flex: 1.2, gap: 16 },
-  settingsCol: { flex: 1, gap: 16 },
-
-  /* Section Cards */
-  sectionCard: {
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 18,
-  },
-  sectionHeaderRow: {
+  headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+  },
+  headerRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  iconBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scrollBody: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  heroCard: {
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 18,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 14,
+  },
+  avatarWrap: {
+    position: 'relative',
+  },
+  avatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    color: '#FFFFFF',
+    fontSize: 26,
+    fontWeight: '800',
+  },
+  onlineBadge: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#22C55E',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+  },
+  heroUserMeta: {
+    flex: 1,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  verifiedTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    gap: 3,
+  },
+  verifiedText: {
+    color: '#166534',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  userEmail: {
+    fontSize: 12,
+    color: '#94A3B8',
+    marginTop: 2,
+  },
+  pillsRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 8,
+  },
+  pillDept: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  pillDeptText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  pillSem: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  pillSemText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#166534',
+  },
+  bioBox: {
+    borderRadius: 12,
+    padding: 12,
     marginBottom: 16,
   },
-  sectionTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sectionTitle: { fontSize: 14.5, fontWeight: '800' },
-  editToggleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-
-  /* Form Fields */
-  fieldsGrid: { gap: 14 },
-  fieldRow: {},
-  fieldLabel: { fontSize: 11.5, fontWeight: '600', marginBottom: 5 },
-  fieldValue: { fontSize: 13.5, fontWeight: '500', lineHeight: 19 },
-  fieldInput: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+  bioText: {
     fontSize: 13,
+    lineHeight: 19,
   },
-
-  saveBtn: {
+  heroActionsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  editProfileBtn: {
+    flex: 1,
     backgroundColor: '#16A36A',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 11,
-    borderRadius: 10,
-    marginTop: 16,
-    ...Platform.select({
-      web: { boxShadow: '0px 3px 12px rgba(201,168,76,0.4)' },
-      default: {
-        shadowColor: '#16A36A',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.35,
-        shadowRadius: 6,
-        elevation: 3,
-      },
-    }),
+    borderRadius: 12,
+    gap: 6,
   },
-  saveBtnText: { color: '#0c0f10', fontSize: 13.5, fontWeight: '700' },
-
-  outlineBtn: {
+  editProfileBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  changePasswordBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1.5,
+    paddingVertical: 11,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 6,
   },
-
-  dangerBtn: {
-    backgroundColor: '#EF4444',
+  changePasswordBtnText: {
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  sectionCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 16,
+  },
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 10,
+    gap: 8,
+    marginBottom: 14,
   },
-  dangerBtnText: { color: '#FFF', fontSize: 13, fontWeight: '700' },
-  settingsSub: { fontSize: 12, lineHeight: 17, marginTop: 4 },
-
-  /* Settings Groups */
-  settingsGroupIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
   },
-  settingsList: { gap: 0 },
-  settingsItem: {
+  infoGrid: {
+    gap: 10,
+  },
+  infoItem: {
+    paddingVertical: 2,
+  },
+  infoLabel: {
+    fontSize: 11,
+    color: '#94A3B8',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  infoVal: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  infoDivider: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+    marginVertical: 4,
+  },
+  navRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
+    paddingVertical: 8,
   },
-  settingsItemLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 10 },
-  settingsItemIconBox: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
+  navRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  navIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  settingsLabel: { fontSize: 13, fontWeight: '600' },
-  settingsValue: { fontSize: 11, marginTop: 1 },
+  navRowTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  navRowSub: {
+    fontSize: 11,
+    color: '#94A3B8',
+  },
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#FEE2E2',
+    backgroundColor: '#FEF2F2',
+    paddingVertical: 14,
+    borderRadius: 14,
+    gap: 8,
+    marginTop: 10,
+  },
+  logoutBtnText: {
+    color: '#EF4444',
+    fontSize: 14,
+    fontWeight: '700',
+  },
 });
