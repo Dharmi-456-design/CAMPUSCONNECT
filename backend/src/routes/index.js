@@ -14,6 +14,7 @@ const notificationRoutes = require('./notification.routes');
 const reportRoutes = require('./report.routes');
 const adminRoutes = require('./admin.routes');
 const eventsRoutes = require('./events.routes');
+const noticeRoutes = require('./notice.routes');
 
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
@@ -26,6 +27,7 @@ router.use('/marketplace', marketplaceRoutes);
 router.use('/chat', chatRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/events', eventsRoutes);
+router.use('/notices', noticeRoutes);
 router.use('/', reportRoutes);
 router.use('/admin', adminRoutes);
 
