@@ -8,7 +8,10 @@ const {
   getEventById,
   createEvent,
   updateEvent,
-  deleteEvent
+  deleteEvent,
+  registerForEvent,
+  cancelEventRegistration,
+  getMyRegistrations
 } = require('../controllers/events.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
 const validate = require('../middleware/validate.middleware');
@@ -31,11 +34,22 @@ const optionalAuth = async (req, res, next) => {
   next();
 };
 
+// Events listing & creation
 router
   .route('/')
   .get(optionalAuth, getEvents)
   .post(protect, authorize('admin', 'faculty'), validate(createEventSchema), createEvent);
 
+// Student registered events (placed before /:id)
+router.get('/my-registrations', protect, getMyRegistrations);
+
+// Event registrations
+router
+  .route('/:id/register')
+  .post(protect, registerForEvent)
+  .delete(protect, cancelEventRegistration);
+
+// Single event by ID & management
 router
   .route('/:id')
   .get(optionalAuth, getEventById)

@@ -267,10 +267,128 @@ const deleteEvent = asyncHandler(async (req, res) => {
   return ApiResponse.success(res, 'Event deleted successfully', { deletedId: event._id }, 200);
 });
 
+// @desc    Register authenticated user for an event
+// @route   POST /api/v1/events/:id/register
+// @access  Private
+const registerForEvent = asyncHandler(async (req, res) => {
+  const event = await Event.findById(req.params.id);
+
+  if (!event) {
+    return ApiResponse.error(res, 'Event not found', [], 404);
+  }
+
+  // Validate event date: cannot register for past events
+  if (new Date(event.date).getTime() < Date.now() - 24 * 60 * 60 * 1000) {
+    return ApiResponse.error(res, 'Cannot register for an event that has already ended', [], 400);
+  }
+
+  // Prevent duplicate registration
+  const existingRegistration = await EventRegistration.findOne({
+    event: event._id,
+    user: req.user._id,
+    status: 'CONFIRMED'
+  });
+
+  if (existingRegistration) {
+    return ApiResponse.error(res, 'You are already registered for this event', [], 400);
+  }
+
+  // Validate capacity / registration limits
+  const currentCount = event.registeredCount || 0;
+  const maxCapacity = event.capacity || 100;
+  if (currentCount >= maxCapacity) {
+    return ApiResponse.error(res, 'Event is currently at full capacity', [], 400);
+  }
+
+  // Create or confirm registration
+  const registration = await EventRegistration.findOneAndUpdate(
+    { event: event._id, user: req.user._id },
+    { status: 'CONFIRMED', registeredAt: new Date() },
+    { upsert: true, new: true }
+  );
+
+  // Increment registeredCount on event
+  event.registeredCount = currentCount + 1;
+  await event.save();
+
+  return ApiResponse.success(
+    res,
+    'Successfully registered for event',
+    {
+      registration,
+      event: {
+        ...event.toJSON(),
+        isRegistered: true
+      }
+    },
+    201
+  );
+});
+
+// @desc    Cancel registration for an event
+// @route   DELETE /api/v1/events/:id/register
+// @access  Private
+const cancelEventRegistration = asyncHandler(async (req, res) => {
+  const event = await Event.findById(req.params.id);
+
+  if (!event) {
+    return ApiResponse.error(res, 'Event not found', [], 404);
+  }
+
+  const registration = await EventRegistration.findOne({
+    event: event._id,
+    user: req.user._id,
+    status: 'CONFIRMED'
+  });
+
+  if (!registration) {
+    return ApiResponse.error(res, 'You are not registered for this event', [], 404);
+  }
+
+  // Mark as cancelled or remove
+  await EventRegistration.deleteOne({ _id: registration._id });
+
+  // Decrement registered count
+  if (event.registeredCount > 0) {
+    event.registeredCount = Math.max(0, event.registeredCount - 1);
+    await event.save();
+  }
+
+  return ApiResponse.success(res, 'Event registration cancelled successfully', { eventId: event._id }, 200);
+});
+
+// @desc    Get all events registered by the authenticated student (My Events)
+// @route   GET /api/v1/events/my-registrations
+// @access  Private
+const getMyRegistrations = asyncHandler(async (req, res) => {
+  const registrations = await EventRegistration.find({
+    user: req.user._id,
+    status: 'CONFIRMED'
+  })
+    .populate('event')
+    .sort({ createdAt: -1 });
+
+  // Map to clean list of events with registration metadata
+  const myEvents = registrations
+    .filter((r) => r.event != null)
+    .map((r) => {
+      const evObj = r.event.toJSON ? r.event.toJSON() : { ...r.event };
+      evObj.isRegistered = true;
+      evObj.registeredAt = r.registeredAt || r.createdAt;
+      evObj.registrationId = r._id;
+      return evObj;
+    });
+
+  return ApiResponse.success(res, 'My registered events retrieved successfully', { events: myEvents }, 200);
+});
+
 module.exports = {
   getEvents,
   getEventById,
   createEvent,
   updateEvent,
-  deleteEvent
+  deleteEvent,
+  registerForEvent,
+  cancelEventRegistration,
+  getMyRegistrations
 };
