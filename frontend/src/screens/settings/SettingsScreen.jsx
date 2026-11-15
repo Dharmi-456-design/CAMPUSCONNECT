@@ -256,6 +256,19 @@ export default function SettingsScreen({ onNavigateTab, onBack }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Bottom Floating Pill Bar matching Image 5 */}
+      <View style={styles.floatingBarWrapper}>
+        <View style={styles.floatingCapsule}>
+          <TouchableOpacity style={styles.floatingVoiceBtn} activeOpacity={0.7}>
+            <Icon name="mic" size={18} color="#94A3B8" />
+          </TouchableOpacity>
+          <View style={styles.floatingSettingsBtn}>
+            <Icon name="settings" size={16} color="#FFFFFF" />
+            <Text style={styles.floatingSettingsText}>Settings</Text>
+          </View>
+        </View>
+      </View>
     </View>
   );
 }
@@ -345,5 +358,48 @@ const styles = StyleSheet.create({
   rowDivider: {
     height: 1,
     marginLeft: 50,
+  },
+  floatingBarWrapper: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 8,
+    alignItems: 'center',
+  },
+  floatingCapsule: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E293B',
+    borderRadius: 30,
+    padding: 6,
+    width: '100%',
+    maxWidth: 380,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  floatingVoiceBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 4,
+  },
+  floatingSettingsBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#16A36A',
+    borderRadius: 24,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  floatingSettingsText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
   },
 });

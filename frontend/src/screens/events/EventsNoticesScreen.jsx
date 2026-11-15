@@ -264,8 +264,8 @@ export default function EventsNoticesScreen({ onBack }) {
         )}
 
         <View style={styles.brandTitleRow}>
-          <Text style={styles.brandTitle}>highfive</Text>
-          <View style={styles.liveDot} />
+          <Text style={[styles.brandTitle, { color: '#16A36A' }]}>CampusOne</Text>
+          <View style={[styles.liveDot, { backgroundColor: '#16A36A' }]} />
         </View>
 
         <View style={styles.headerRight}>

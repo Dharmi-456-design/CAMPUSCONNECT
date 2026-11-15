@@ -13,6 +13,7 @@ export default function EventCard({
   onPress,
   onRegisterPress,
   onCancelPress,
+  isDark,
 }) {
   const isRegistered = Boolean(event.isRegistered);
   const capacity = event.capacity || 100;
@@ -28,24 +29,33 @@ export default function EventCard({
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[
+        styles.card,
+        {
+          backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+          borderColor: isDark ? '#334155' : '#E2E8F0',
+        },
+      ]}
       onPress={onPress}
-      activeOpacity={0.85}
+      activeOpacity={0.88}
     >
-      {/* Hero Image */}
+      {/* Event Hero Image matching Image 1 */}
       {event.imageUrl ? (
-        <Image source={{ uri: event.imageUrl }} style={styles.cardImage} />
+        <Image source={{ uri: event.imageUrl }} style={styles.cardImage} resizeMode="cover" />
       ) : (
-        <View style={styles.imagePlaceholder}>
-          <Icon name="calendar" size={32} color="#16A36A" />
+        <View style={[styles.imagePlaceholder, { backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }]}>
+          <Icon name="calendar" size={36} color="#16A36A" />
         </View>
       )}
 
       <View style={styles.cardBody}>
-        {/* Category & Status */}
+        {/* Category & Registration Status Row matching Image 2 */}
         <View style={styles.topRow}>
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryBadgeText}>{event.category || 'Event'}</Text>
+          <View style={styles.categoryRow}>
+            <Icon name="users" size={13} color="#16A36A" />
+            <Text style={styles.categoryText}>
+              {event.category || 'Clubs and Orgs'}
+            </Text>
           </View>
 
           {isRegistered ? (
@@ -64,38 +74,63 @@ export default function EventCard({
           )}
         </View>
 
-        {/* Title & Organizer matching reference */}
-        <Text style={styles.title} numberOfLines={2}>
+        {/* Title matching Image 1 & 2 */}
+        <Text
+          style={[
+            styles.title,
+            { color: isDark ? '#F8FAFC' : '#0F172A' },
+          ]}
+          numberOfLines={2}
+        >
           {event.title}
         </Text>
 
-        <Text style={styles.organizer} numberOfLines={1}>
-          Organized by <Text style={styles.organizerBold}>{event.organizer || 'Student Services'}</Text>
+        {/* Organizer Subtitle matching Image 1 ("Organized by ...") */}
+        <Text style={styles.organizerText} numberOfLines={1}>
+          Organized by <Text style={styles.organizerBold}>{event.organizer || 'International Student Services'}</Text>
         </Text>
 
-        {/* Venue & Date with icons matching reference */}
-        <View style={styles.infoRow}>
-          <View style={styles.infoItem}>
+        {/* Venue & Date with Emerald Icons matching Image 1 */}
+        <View style={styles.metaRow}>
+          <View style={styles.metaItem}>
             <Icon name="map-pin" size={14} color="#16A36A" style={{ marginRight: 4 }} />
-            <Text style={styles.infoText} numberOfLines={1}>
-              {event.venue || 'Campus Auditorium'}
+            <Text
+              style={[
+                styles.metaText,
+                { color: isDark ? '#CBD5E1' : '#334155' },
+              ]}
+              numberOfLines={1}
+            >
+              {event.venue || 'Campus Hall'}
             </Text>
           </View>
 
-          <View style={styles.infoItem}>
+          <View style={styles.metaItem}>
             <Icon name="calendar" size={14} color="#16A36A" style={{ marginRight: 4 }} />
-            <Text style={styles.infoText} numberOfLines={1}>
+            <Text
+              style={[
+                styles.metaText,
+                { color: isDark ? '#CBD5E1' : '#334155' },
+              ]}
+              numberOfLines={1}
+            >
               {formattedDate} {event.time ? `, ${event.time}` : ''}
             </Text>
           </View>
         </View>
 
-        {/* Description Snippet */}
-        <Text style={styles.descSnippet} numberOfLines={2}>
+        {/* Description snippet */}
+        <Text
+          style={[
+            styles.descSnippet,
+            { color: isDark ? '#94A3B8' : '#64748B' },
+          ]}
+          numberOfLines={2}
+        >
           {event.description}
         </Text>
 
-        {/* Perks / Tags Chips */}
+        {/* Perks list e.g. "Free lunch!! Hiring!!" from Image 2 */}
         {event.perks && event.perks.length > 0 ? (
           <View style={styles.perksRow}>
             {event.perks.map((perk, idx) => (
@@ -106,7 +141,7 @@ export default function EventCard({
           </View>
         ) : null}
 
-        {/* Bottom Card Action */}
+        {/* Card Footer Actions */}
         <View style={styles.cardFooter}>
           <Text style={styles.freeBadge}>FREE ENTRY</Text>
 
@@ -143,27 +178,23 @@ export default function EventCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    borderRadius: 22,
     marginBottom: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowRadius: 10,
+    elevation: 3,
   },
   cardImage: {
     width: '100%',
-    height: 180,
-    resizeMode: 'cover',
+    height: 170,
   },
   imagePlaceholder: {
     width: '100%',
     height: 120,
-    backgroundColor: '#E8F5EE',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -172,35 +203,32 @@ const styles = StyleSheet.create({
   },
   topRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 8,
   },
-  categoryBadge: {
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
-  categoryBadgeText: {
-    fontSize: 11,
+  categoryText: {
+    fontSize: 12,
     fontWeight: '700',
-    color: '#334155',
+    color: '#16A36A',
   },
   registeredBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F5EE',
+    backgroundColor: '#DCFCE7',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
   },
   registeredBadgeText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#16A36A',
+    color: '#166534',
   },
   fullBadge: {
     backgroundColor: '#FEE2E2',
@@ -219,40 +247,37 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   title: {
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: '800',
-    color: '#0F172A',
     lineHeight: 24,
     marginBottom: 4,
   },
-  organizer: {
+  organizerText: {
     fontSize: 13,
     color: '#64748B',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   organizerBold: {
+    fontWeight: '700',
     color: '#0F172A',
-    fontWeight: '600',
   },
-  infoRow: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: 14,
     marginBottom: 10,
   },
-  infoItem: {
+  metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  infoText: {
+  metaText: {
     fontSize: 13,
-    color: '#334155',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   descSnippet: {
     fontSize: 13,
-    color: '#64748B',
     lineHeight: 18,
     marginBottom: 12,
   },
@@ -260,29 +285,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    marginBottom: 14,
+    marginBottom: 12,
   },
   perkChip: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#DCFCE7',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 8,
+    borderRadius: 6,
   },
   perkChipText: {
     fontSize: 11,
-    color: '#475569',
-    fontWeight: '600',
+    fontWeight: '700',
+    color: '#166534',
   },
   cardFooter: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
   },
   freeBadge: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     color: '#16A36A',
     letterSpacing: 0.5,
@@ -291,33 +316,33 @@ const styles = StyleSheet.create({
     backgroundColor: '#16A36A',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   registerSmallBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
     color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 13,
   },
   cancelSmallBtn: {
     backgroundColor: '#FEE2E2',
     paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 10,
+    paddingVertical: 8,
+    borderRadius: 12,
   },
   cancelSmallBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
     color: '#DC2626',
+    fontWeight: '700',
+    fontSize: 13,
   },
   fullSmallBtn: {
-    backgroundColor: '#E2E8F0',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 10,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
   },
   fullSmallBtnText: {
-    fontSize: 12,
-    fontWeight: '600',
     color: '#94A3B8',
+    fontWeight: '600',
+    fontSize: 13,
   },
 });

@@ -91,76 +91,115 @@ export default function LostFoundScreen({ onBack }) {
 
   return (
     <View style={[styles.container, { backgroundColor: isDark ? '#0B0F19' : '#F8FAFC' }]}>
-      {/* Top Hero Dark Banner matching screenshot */}
-      <View style={[styles.heroBanner, { backgroundColor: isDark ? '#0F172A' : '#1E293B' }]}>
-        <View style={styles.headerTopRow}>
-          {onBack && (
-            <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-              <Icon name="arrow-left" size={20} color="#FFFFFF" />
+      {/* Top Bar matching Image 3 middle screen */}
+      <View style={[styles.topBar, { backgroundColor: isDark ? '#1E293B' : '#FFFFFF' }]}>
+        <View style={styles.topBarLeft}>
+          {onBack ? (
+            <TouchableOpacity onPress={onBack} style={styles.topIconBtn}>
+              <Icon name="arrow-left" size={20} color={isDark ? '#F8FAFC' : '#0F172A'} />
             </TouchableOpacity>
+          ) : (
+            <View style={styles.topIconBtn}>
+              <Icon name="grid" size={20} color={isDark ? '#F8FAFC' : '#0F172A'} />
+            </View>
           )}
-          <View style={{ flex: 1 }}>
-            <Text style={styles.bannerSubtitle}>Campus Directory</Text>
-            <Text style={styles.bannerTitle}>Discover Lost Items</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.addReportBtn}
-            onPress={() => setAddModalVisible(true)}
-            activeOpacity={0.85}
-          >
-            <Icon name="plus" size={18} color="#FFFFFF" />
-            <Text style={styles.addReportBtnText}>Report</Text>
-          </TouchableOpacity>
+          <Text style={[styles.screenHeading, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+            Lost & Found
+          </Text>
         </View>
 
-        {/* Search Input Bar */}
-        <View style={styles.searchBar}>
-          <Icon name="search" size={18} color="#94A3B8" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search items, wallets, electronics..."
-            placeholderTextColor="#94A3B8"
-            value={search}
-            onChangeText={setSearch}
+        <TouchableOpacity
+          style={styles.addReportBtn}
+          onPress={() => setAddModalVisible(true)}
+          activeOpacity={0.85}
+        >
+          <Icon name="plus" size={16} color="#FFFFFF" />
+          <Text style={styles.addReportBtnText}>Report</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#16A36A']}
+            tintColor="#16A36A"
           />
-          {search ? (
-            <TouchableOpacity onPress={() => setSearch('')}>
-              <Icon name="x" size={16} color="#94A3B8" />
-            </TouchableOpacity>
-          ) : null}
+        }
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+        {/* Dark Hero Card matching Image 3 (Discover Lost Items) */}
+        <View style={styles.bannerWrapper}>
+          <View style={[styles.heroCard, { backgroundColor: '#1E293B' }]}>
+            <Text style={styles.heroCardTitle}>Discover Lost Items</Text>
+            <Text style={styles.heroCardSubtitle}>
+              Find your lost items or help a fellow student claim theirs
+            </Text>
+
+            {/* Search Bar matching Image 3 */}
+            <View style={styles.searchBar}>
+              <Icon name="search" size={18} color="#94A3B8" />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search items, wallets, keys..."
+                placeholderTextColor="#94A3B8"
+                value={search}
+                onChangeText={setSearch}
+              />
+              {search ? (
+                <TouchableOpacity onPress={() => setSearch('')}>
+                  <Icon name="x" size={16} color="#94A3B8" />
+                </TouchableOpacity>
+              ) : (
+                <Icon name="sliders" size={16} color="#94A3B8" />
+              )}
+            </View>
+          </View>
         </View>
 
-        {/* Categories Horizontal Scroll */}
+        {/* Item categories section matching Image 3 */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+            Item categories
+          </Text>
+        </View>
+
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryScroll}
         >
-          {CATEGORIES.map((cat) => (
-            <TouchableOpacity
-              key={cat}
-              style={[
-                styles.categoryPill,
-                categoryFilter === cat && styles.categoryPillActive,
-              ]}
-              onPress={() => setCategoryFilter(cat)}
-            >
-              <Text
+          {CATEGORIES.map((cat) => {
+            const isActive = categoryFilter === cat;
+            return (
+              <TouchableOpacity
+                key={cat}
                 style={[
-                  styles.categoryPillText,
-                  categoryFilter === cat && styles.categoryPillTextActive,
+                  styles.categoryPill,
+                  isActive
+                    ? { backgroundColor: '#16A36A' }
+                    : { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' },
                 ]}
+                onPress={() => setCategoryFilter(cat)}
               >
-                {cat}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.categoryPillText,
+                    isActive
+                      ? { color: '#FFFFFF', fontWeight: '700' }
+                      : { color: isDark ? '#CBD5E1' : '#475569' },
+                  ]}
+                >
+                  {cat}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
-      </View>
 
-      {/* Main Body */}
-      <View style={styles.body}>
-        {/* Type Toggle Tabs: All / Lost / Found */}
+        {/* Type Filter Tabs (All, Lost, Found) */}
         <View style={styles.typeTabsRow}>
           <TouchableOpacity
             style={[
@@ -189,10 +228,10 @@ export default function LostFoundScreen({ onBack }) {
             <Text
               style={[
                 styles.typeTabText,
-                typeFilter === 'LOST' && styles.typeTabTextActive,
+                typeFilter === 'LOST' && { color: '#FFFFFF', fontWeight: '700' },
               ]}
             >
-              Lost Items
+              Lost Only
             </Text>
           </TouchableOpacity>
 
@@ -206,71 +245,67 @@ export default function LostFoundScreen({ onBack }) {
             <Text
               style={[
                 styles.typeTabText,
-                typeFilter === 'FOUND' && styles.typeTabTextActive,
+                typeFilter === 'FOUND' && { color: '#FFFFFF', fontWeight: '700' },
               ]}
             >
-              Found Items
+              Found Only
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Items List */}
+        {/* Recent Posts Section Title */}
+        <View style={styles.sectionHeaderRow}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+            Recent posts
+          </Text>
+          <Text style={styles.countBadge}>{items.length} items</Text>
+        </View>
+
+        {/* 2-Column Grid Layout matching Image 3 */}
         {loading && !refreshing ? (
           <View style={styles.centerLoading}>
             <ActivityIndicator size="large" color="#16A36A" />
             <Text style={[styles.loadingText, { color: theme.textMuted }]}>
-              Finding campus reports...
+              Finding campus items...
             </Text>
           </View>
+        ) : items.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyIconCircle}>
+              <Icon name="search" size={32} color="#16A36A" />
+            </View>
+            <Text style={[styles.emptyTitle, { color: theme.textPrimary }]}>
+              No items reported
+            </Text>
+            <Text style={[styles.emptySub, { color: theme.textMuted }]}>
+              {typeFilter === 'LOST'
+                ? 'No lost items match your search.'
+                : typeFilter === 'FOUND'
+                ? 'No found items reported yet.'
+                : 'Be the first to report a lost or found item.'}
+            </Text>
+            <TouchableOpacity
+              style={styles.emptyReportBtn}
+              onPress={() => setAddModalVisible(true)}
+            >
+              <Icon name="plus" size={16} color="#FFFFFF" />
+              <Text style={styles.emptyReportBtnText}>Report An Item</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
-          <FlatList
-            data={items}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
+          <View style={styles.gridContainer}>
+            {items.map((item) => (
               <LostFoundCard
+                key={item._id}
                 item={item}
+                onPress={() => setSelectedItem(item)}
                 isDark={isDark}
                 theme={theme}
-                onPress={() => setSelectedItem(item)}
               />
-            )}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                colors={['#16A36A']}
-                tintColor="#16A36A"
-              />
-            }
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <View style={styles.emptyIconCircle}>
-                  <Icon name="inbox" size={36} color="#94A3B8" />
-                </View>
-                <Text style={[styles.emptyTitle, { color: theme.textPrimary }]}>
-                  No Items Reported Yet
-                </Text>
-                <Text style={[styles.emptySub, { color: theme.textMuted }]}>
-                  {typeFilter === 'LOST'
-                    ? 'No lost items match your search. Everything seems safe!'
-                    : typeFilter === 'FOUND'
-                    ? 'No found items reported in this category yet.'
-                    : 'Be the first to report a lost or found item.'}
-                </Text>
-                <TouchableOpacity
-                  style={styles.emptyReportBtn}
-                  onPress={() => setAddModalVisible(true)}
-                >
-                  <Icon name="plus" size={16} color="#FFFFFF" />
-                  <Text style={styles.emptyReportBtnText}>Report An Item</Text>
-                </TouchableOpacity>
-              </View>
-            }
-          />
+            ))}
+          </View>
         )}
-      </View>
+      </ScrollView>
 
       {/* Details Modal */}
       <LostFoundDetailsModal
@@ -296,39 +331,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  heroBanner: {
-    paddingTop: 16,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  headerTopRow: {
+  topBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    gap: 12,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
   },
-  backBtn: {
+  topBarLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  topIconBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  bannerSubtitle: {
-    fontSize: 12,
-    color: '#94A3B8',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  bannerTitle: {
-    fontSize: 22,
+  screenHeading: {
+    fontSize: 20,
     fontWeight: '800',
-    color: '#FFFFFF',
-    marginTop: 2,
   },
   addReportBtn: {
     backgroundColor: '#16A36A',
@@ -344,56 +371,91 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 13,
   },
+  bannerWrapper: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  heroCard: {
+    borderRadius: 22,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  heroCardTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  heroCardSubtitle: {
+    fontSize: 12,
+    color: '#94A3B8',
+    marginBottom: 16,
+    lineHeight: 17,
+  },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     borderRadius: 14,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 10,
     gap: 10,
-    marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   searchInput: {
     flex: 1,
     fontSize: 14,
     color: '#FFFFFF',
   },
-  categoryScroll: {
+  sectionHeader: {
+    paddingHorizontal: 16,
+    marginTop: 14,
+    marginBottom: 8,
+  },
+  sectionHeaderRow: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 10,
   },
-  categoryPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '800',
   },
-  categoryPillActive: {
-    backgroundColor: '#16A36A',
-  },
-  categoryPillText: {
+  countBadge: {
     fontSize: 12,
-    color: '#E2E8F0',
+    color: '#64748B',
     fontWeight: '600',
   },
-  categoryPillTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
-  body: {
-    flex: 1,
+  categoryScroll: {
     paddingHorizontal: 16,
-    paddingTop: 14,
+    gap: 8,
+    paddingBottom: 4,
+  },
+  categoryPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  categoryPillText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   typeTabsRow: {
     flexDirection: 'row',
+    marginHorizontal: 16,
+    marginTop: 14,
     backgroundColor: '#E2E8F0',
     borderRadius: 12,
     padding: 3,
-    marginBottom: 14,
   },
   typeTab: {
     flex: 1,
@@ -424,14 +486,15 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     fontWeight: '700',
   },
-  listContent: {
-    paddingBottom: 30,
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 10,
   },
   centerLoading: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 50,
+    paddingVertical: 50,
   },
   loadingText: {
     marginTop: 10,
@@ -443,10 +506,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   emptyIconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#F1F5F9',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#DCFCE7',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,

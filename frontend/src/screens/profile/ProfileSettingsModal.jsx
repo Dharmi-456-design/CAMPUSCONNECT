@@ -270,6 +270,16 @@ export default function ProfileSettingsModal({
                   <Text style={{ fontSize: 18 }}>🎵</Text>
                 </View>
               </View>
+
+              {/* Shortcuts pill matching Image 6 */}
+              <View style={styles.shortcutsWrapper}>
+                <View style={styles.shortcutsPill}>
+                  <View style={styles.shortcutsIconBox}>
+                    <Text style={{ fontSize: 14 }}>⚡</Text>
+                  </View>
+                  <Text style={styles.shortcutsText}>shortcuts</Text>
+                </View>
+              </View>
             </View>
           </ScrollView>
         </View>
@@ -375,5 +385,38 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  shortcutsWrapper: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  shortcutsPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  shortcutsIconBox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    backgroundColor: '#3B82F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shortcutsText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0F172A',
   },
 });

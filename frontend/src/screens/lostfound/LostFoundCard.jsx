@@ -26,22 +26,23 @@ export default function LostFoundCard({ item, onPress, isDark, theme }) {
   return (
     <TouchableOpacity
       style={[
-        styles.card,
+        styles.gridCard,
         {
           backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
-          borderColor: isDark ? '#334155' : '#E2E8F0',
+          borderColor: isDark ? '#334155' : '#F1F5F9',
         },
       ]}
       activeOpacity={0.85}
       onPress={onPress}
     >
-      {/* Thumbnail */}
-      <View style={styles.imageContainer}>
+      {/* Thumbnail Matching Image 3 */}
+      <View style={styles.imageWrapper}>
         <Image
           source={{ uri: item.imageUrl || defaultImg }}
           style={styles.image}
           resizeMode="cover"
         />
+        {/* Type pill badge */}
         <View
           style={[
             styles.typeBadge,
@@ -58,11 +59,11 @@ export default function LostFoundCard({ item, onPress, isDark, theme }) {
         )}
       </View>
 
-      {/* Card Content */}
-      <View style={styles.content}>
+      {/* Meta Content */}
+      <View style={styles.cardInfo}>
         <Text
           style={[
-            styles.title,
+            styles.itemTitle,
             { color: isDark ? '#F8FAFC' : '#0F172A' },
           ]}
           numberOfLines={1}
@@ -70,39 +71,35 @@ export default function LostFoundCard({ item, onPress, isDark, theme }) {
           {item.title}
         </Text>
 
-        <View style={styles.metaRow}>
-          <Icon name="map-pin" size={13} color="#16A36A" />
+        <View style={styles.locationRow}>
+          <Icon name="map-pin" size={11} color="#16A36A" />
           <Text
             style={[
-              styles.metaText,
+              styles.locationText,
               { color: isDark ? '#94A3B8' : '#64748B' },
             ]}
             numberOfLines={1}
           >
-            {item.location}
+            {item.location || 'Campus'}
           </Text>
         </View>
 
-        <View style={styles.footerRow}>
-          <View style={styles.dateRow}>
-            <Icon name="calendar" size={12} color="#94A3B8" />
-            <Text style={styles.dateText}>{dateStr}</Text>
-          </View>
-
+        <View style={styles.bottomMetaRow}>
+          <Text style={styles.dateLabel}>{dateStr}</Text>
           <View
             style={[
-              styles.categoryChip,
+              styles.catBadge,
               { backgroundColor: isDark ? '#0F172A' : '#F1F5F9' },
             ]}
           >
             <Text
               style={[
-                styles.categoryChipText,
+                styles.catBadgeText,
                 { color: isDark ? '#94A3B8' : '#475569' },
               ]}
               numberOfLines={1}
             >
-              {item.category}
+              {item.category || 'General'}
             </Text>
           </View>
         </View>
@@ -112,20 +109,22 @@ export default function LostFoundCard({ item, onPress, isDark, theme }) {
 }
 
 const styles = StyleSheet.create({
-  card: {
+  gridCard: {
+    flex: 1,
+    margin: 6,
     borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
-    marginBottom: 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 6,
+    shadowRadius: 5,
     elevation: 2,
+    maxWidth: '50%',
   },
-  imageContainer: {
+  imageWrapper: {
     width: '100%',
-    height: 140,
+    height: 120,
     backgroundColor: '#E2E8F0',
     position: 'relative',
   },
@@ -135,76 +134,71 @@ const styles = StyleSheet.create({
   },
   typeBadge: {
     position: 'absolute',
-    top: 10,
-    left: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    top: 8,
+    left: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
     borderRadius: 6,
   },
   typeBadgeText: {
     color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 9,
+    fontWeight: '800',
     letterSpacing: 0.5,
   },
   claimedBadge: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    top: 8,
+    right: 8,
     backgroundColor: 'rgba(15, 23, 42, 0.85)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     borderRadius: 6,
   },
   claimedBadgeText: {
     color: '#FBBF24',
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
   },
-  content: {
-    padding: 12,
+  cardInfo: {
+    padding: 10,
   },
-  title: {
-    fontSize: 15,
+  itemTitle: {
+    fontSize: 14,
     fontWeight: '700',
-    marginBottom: 6,
+    marginBottom: 4,
   },
-  metaRow: {
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    marginBottom: 8,
+    gap: 4,
+    marginBottom: 6,
   },
-  metaText: {
-    fontSize: 12,
+  locationText: {
+    fontSize: 11,
     fontWeight: '500',
     flex: 1,
   },
-  footerRow: {
+  bottomMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 4,
     borderTopWidth: 0.5,
-    borderTopColor: '#E2E8F0',
+    borderTopColor: '#F1F5F9',
   },
-  dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  dateText: {
-    fontSize: 11,
+  dateLabel: {
+    fontSize: 10,
     color: '#94A3B8',
   },
-  categoryChip: {
-    paddingHorizontal: 8,
+  catBadge: {
+    paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 6,
-    maxWidth: 120,
+    borderRadius: 4,
+    maxWidth: 70,
   },
-  categoryChipText: {
-    fontSize: 11,
+  catBadgeText: {
+    fontSize: 9,
     fontWeight: '600',
   },
 });
