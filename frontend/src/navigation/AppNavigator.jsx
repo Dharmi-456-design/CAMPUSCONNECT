@@ -223,7 +223,7 @@ export default function AppNavigator() {
       case 'subscription':
         return <UniversitySubscriptionScreen onBack={() => setActiveTab('explore')} />;
       case 'notes':
-        return <NotesScreen />;
+        return <NotesScreen onNavigateTab={setActiveTab} />;
       case 'doubts':
         return <DoubtsScreen />;
       case 'team':
