@@ -44,6 +44,7 @@ export default function NoteEditorScreen({
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  
   // Fetch student's subjects to select from
   useEffect(() => {
     let isMounted = true;
