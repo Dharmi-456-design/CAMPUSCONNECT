@@ -17,7 +17,7 @@ import ProfileSettingsModal from './profile/ProfileSettingsModal';
 
 export default function ProfileScreen({ onNavigateTab }) {
   const { theme, isDark, toggleTheme } = useTheme();
-  const { user, setAuth, logout } = useAuthStore();
+  const { user, setAuth, updateUser, logout } = useAuthStore();
 
   const [manageAccountVisible, setManageAccountVisible] = useState(false);
   const [changePwdVisible, setChangePwdVisible] = useState(false);
@@ -34,7 +34,7 @@ export default function ProfileScreen({ onNavigateTab }) {
 
   const handleProfileUpdated = async (updatedUser) => {
     if (updatedUser) {
-      await setAuth(updatedUser, useAuthStore.getState().token);
+      await updateUser(updatedUser);
     }
   };
 
