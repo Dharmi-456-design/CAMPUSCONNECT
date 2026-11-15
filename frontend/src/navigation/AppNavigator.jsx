@@ -38,6 +38,9 @@ import LocationScreen from '../screens/hardware/LocationScreen';
 import ContactsScreen from '../screens/hardware/ContactsScreen';
 import CommunityHubScreen from '../screens/CommunityHubScreen';
 import LostFoundScreen from '../screens/LostFoundScreen';
+import SettingsScreen from '../screens/settings/SettingsScreen';
+import AboutScreen from '../screens/about/AboutScreen';
+import ApkDownloadScreen from '../screens/apk/ApkDownloadScreen';
 
 const SIDEBAR_ITEMS = [
   { key: 'home', label: 'Dashboard', icon: 'grid' },
@@ -238,7 +241,13 @@ export default function AppNavigator() {
       case 'chat':
         return <ChatScreen />;
       case 'profile':
-        return <ProfileScreen />;
+        return <ProfileScreen onNavigateTab={setActiveTab} />;
+      case 'settings':
+        return <SettingsScreen onNavigateTab={setActiveTab} onBack={() => setActiveTab('profile')} />;
+      case 'about':
+        return <AboutScreen onNavigateTab={setActiveTab} onBack={() => setActiveTab('profile')} />;
+      case 'apk-download':
+        return <ApkDownloadScreen onBack={() => setActiveTab('profile')} />;
       case 'admin':
         return <AdminDashboardScreen />;
       case 'camera':

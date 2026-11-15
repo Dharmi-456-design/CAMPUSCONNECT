@@ -13,7 +13,8 @@ export default function ExploreScreen({ onNavigateTab }) {
         { id: "4", title: "🚀 Hackathon Teams", desc: "Find teammates for projects & hackathons", tab: "team" },
         { id: "5", title: "🛍️ Campus Marketplace", desc: "Buy & sell books, calculators, and lab gear", tab: "marketplace" },
         { id: "6", title: "💬 Student Chat", desc: "Real-time chat with peers and groups", tab: "chat" },
-        { id: "7", title: "📸 Camera & Scanner", desc: "Scan notes with live camera preview", tab: "camera" },
+        { id: "7", title: "📱 Download Android APK", desc: "Install latest mobile application package", tab: "apk-download" },
+        { id: "8", title: "ℹ️ About CampusOne", desc: "Version info, SSIT university affiliations & credits", tab: "about" },
     ];
 
     const filteredModules = modules.filter(
