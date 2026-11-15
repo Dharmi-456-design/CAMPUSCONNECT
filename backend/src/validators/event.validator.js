@@ -38,6 +38,7 @@ const createEventSchema = Joi.object({
   capacity: Joi.number().integer().min(1).default(100).messages({
     'number.min': 'Capacity must be at least 1 seat'
   }),
+  registeredCount: Joi.number().integer().min(0).optional().default(0),
   imageUrl: Joi.string().trim().allow('').default(''),
   perks: Joi.array().items(Joi.string().trim()).default([])
 });

@@ -202,7 +202,7 @@ const createEvent = asyncHandler(async (req, res) => {
     venue: venue.trim(),
     organizer: organizer ? organizer.trim() : 'Student Council',
     capacity: Number(capacity) || 100,
-    registeredCount: 0,
+    registeredCount: Number(req.body.registeredCount) || 0,
     imageUrl: imageUrl ? imageUrl.trim() : '',
     perks: Array.isArray(perks) ? perks : [],
     createdBy: req.user._id

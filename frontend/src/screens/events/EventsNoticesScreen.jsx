@@ -1,566 +1,718 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   View,
   Text,
   ScrollView,
-  FlatList,
-  RefreshControl,
   TouchableOpacity,
   TextInput,
+  Image,
+  ActivityIndicator,
+  RefreshControl,
   Modal,
   Alert,
   Platform,
-  ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
-import { useTheme } from '../../context/ThemeContext';
 import Icon from '../../components/common/Icon';
-import { getEventsAndNoticesApi, createEventNoticeApi } from '../../api/events.api';
 import { useAuthStore } from '../../store/authStore';
+import {
+  getEventsApi,
+  getMyRegistrationsApi,
+  registerForEventApi,
+  cancelEventRegistrationApi,
+} from '../../api/events.api';
+import { getNoticesApi, deleteNoticeApi, createNoticeApi } from '../../api/notices.api';
+import EventCard from './EventCard';
+import EventDetailsScreen from './EventDetailsScreen';
+import AdminEventModal from './AdminEventModal';
 
-const TYPE_TABS = [
-  { key: 'all',     label: 'All Updates',   icon: 'layers',     color: '#16A36A' },
-  { key: 'event',   label: 'Events',        icon: 'calendar',   color: '#06B6D4' },
-  { key: 'notice',  label: 'Exam Notices',  icon: 'bell',       color: '#F59E0B' },
-  { key: 'holiday', label: 'Holidays',      icon: 'sun',        color: '#10B981' },
-];
-
-const FACULTIES = [
-  'All Faculties',
-  'Faculty of Engineering & Tech',
-  'Faculty of Pharmacy',
-  'Faculty of Management & Commerce',
-  'Faculty of Ayurvedic Science',
-  'Faculty of Physiotherapy',
-  'Faculty of Nursing',
-];
-
-const DEFAULT_EVENTS = [
+// Featured clubs matching reference screen (media_1794716870205_ba96cb1c.jpg)
+const FEATURED_CLUBS = [
   {
-    _id: 'ev-placement-2026',
-    type: 'event',
-    category: 'Placement Drive',
-    title: 'Mega Campus Placement Drive 2026 — TCS, Infosys, Zydus Cadila & HDFC',
-    department: 'Final Year Engineering, Pharmacy & MBA Students',
-    description: 'Pre-placement talks and technical aptitude tests for graduating batch. Minimum CGPA required: 6.0.',
-    venue: 'Main University Placement Hall, Kalol',
-    date: '2026-12-05',
+    name: 'Games study Society',
+    logo: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=200&auto=format&fit=crop',
+    icon: 'gamepad-2',
+    color: '#3B82F6',
   },
   {
-    _id: 'ev-techsparks-2026',
-    type: 'event',
-    category: 'Technical & Hackathon',
-    title: 'TechSparks 2026 — State Level TechFest & Robotics Arena',
-    department: 'Shree Swaminarayan Institute of Technology (SSIT)',
-    description: '36-Hour National Hackathon, Robo-Race Championship, Web/App Dev Challenge, and Bridge Design. Total cash prizes worth ₹1,50,000!',
-    venue: 'Central Auditorium & Computer Labs Wing, Kalol',
-    date: '2026-11-20',
+    name: 'FESA',
+    logo: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=200&auto=format&fit=crop',
+    icon: 'feather',
+    color: '#EF4444',
   },
   {
-    _id: 'ev-diwali-2026',
-    type: 'holiday',
-    category: 'Academic Calendar',
-    title: 'Diwali Vacation & Academic Semester Break 2026',
-    department: 'All Departments',
-    description: 'The University announces official Diwali Vacation from 28th October 2026 to 12th November 2026 for all students across Engineering, Pharmacy, Ayurvedic, and Management.',
-    venue: 'Swaminarayan University Campus, Kalol',
-    date: '2026-10-28',
-  },
-  {
-    _id: 'ev-midsem-notice',
-    type: 'notice',
-    category: 'Mid Semester Exam',
-    title: 'Mid Semester Examination — Time Table Released (Nov 2026)',
-    department: 'All Faculties — Semester 1, 3, 5 & 7',
-    description: 'Mid Sem exams will commence from 10th November 2026. Students must carry their examination hall tickets. No entry without Hall Ticket.',
-    venue: 'Respective Department Exam Halls',
-    date: '2026-11-01',
-  },
-  {
-    _id: 'ev-cultural-fest',
-    type: 'event',
-    category: 'Cultural & Festival',
-    title: 'Navratri Mahotsav 2026 — Garba & Cultural Night',
-    department: 'All Students — Swaminarayan University',
-    description: 'Grand Navratri Celebration with Traditional Garba, Cultural Performances, and Special Cultural Contest. First Prize: ₹25,000!',
-    venue: 'University Open Amphitheatre, Kalol',
-    date: '2026-10-01',
+    name: 'Cliff Hanging Crew',
+    logo: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=200&auto=format&fit=crop',
+    icon: 'compass',
+    color: '#F59E0B',
   },
 ];
 
-function TypeConfig(type) {
-  switch (type) {
-    case 'event':   return { color: '#06B6D4', bg: 'rgba(6,182,212,0.15)',   label: 'EVENT',   icon: 'calendar' };
-    case 'notice':  return { color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', label: 'NOTICE',  icon: 'bell' };
-    case 'holiday': return { color: '#10B981', bg: 'rgba(16,185,129,0.15)', label: 'HOLIDAY', icon: 'sun' };
-    default:        return { color: '#16A36A', bg: 'rgba(22,163,106,0.15)', label: 'UPDATE',  icon: 'layers' };
-  }
-}
+const FILTER_PILLS = [
+  'All',
+  'Recent',
+  'Food Available',
+  'Limited seats',
+  'Clubs and Orgs',
+  'Networking',
+  'Cultural',
+  'Workshop',
+];
 
 export default function EventsNoticesScreen({ onBack }) {
-  const { theme, isDark } = useTheme();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 960;
   const { user } = useAuthStore();
+  const isAdmin = user?.role === 'admin' || user?.role === 'faculty';
 
-  const [items, setItems] = useState(DEFAULT_EVENTS);
-  const [loading, setLoading] = useState(false);
+  // Active top tab: 'events' | 'my-events' | 'notices'
+  const [activeTab, setActiveTab] = useState('events');
+
+  // Events state
+  const [events, setEvents] = useState([]);
+  const [myEvents, setMyEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeType, setActiveType] = useState('all');
-  const [selectedFaculty, setSelectedFaculty] = useState('All Faculties');
-  const [search, setSearch] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [adminModalVisible, setAdminModalVisible] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
 
-  // Post Modal
-  const [modalVisible, setModalVisible] = useState(false);
-  const [mTitle, setMTitle] = useState('');
-  const [mType, setMType] = useState('event');
-  const [mCategory, setMCategory] = useState('');
-  const [mDept, setMDept] = useState('All Departments');
-  const [mDesc, setMDesc] = useState('');
-  const [mVenue, setMVenue] = useState('Swaminarayan University Campus, Kalol');
-  const [submitting, setSubmitting] = useState(false);
+  // Notices state
+  const [notices, setNotices] = useState([]);
+  const [selectedNotice, setSelectedNotice] = useState(null);
+  const [noticeModalVisible, setNoticeModalVisible] = useState(false);
 
-  const fetchEvents = async () => {
+  // Notice creation modal state
+  const [newNoticeTitle, setNewNoticeTitle] = useState('');
+  const [newNoticeContent, setNewNoticeContent] = useState('');
+  const [newNoticeCategory, setNewNoticeCategory] = useState('Academic');
+  const [newNoticeImportant, setNewNoticeImportant] = useState(false);
+  const [createNoticeVisible, setCreateNoticeVisible] = useState(false);
+  const [noticeSaving, setNoticeSaving] = useState(false);
+
+  // Fetch all events
+  const fetchEvents = useCallback(async (search = '', filter = 'All') => {
     try {
-      setLoading(true);
-      const res = await getEventsAndNoticesApi({
-        type: activeType !== 'all' ? activeType : undefined,
-        search: search || undefined,
-      });
-      if (res.success && res.data?.length) {
-        setItems([...res.data, ...DEFAULT_EVENTS]);
-      } else {
-        setItems(DEFAULT_EVENTS);
+      const params = {};
+      if (search && search.trim()) params.search = search.trim();
+      if (filter && filter !== 'All') {
+        if (filter === 'Food Available' || filter === 'Limited seats' || filter === 'Recent') {
+          params.perk = filter;
+        } else {
+          params.category = filter;
+        }
       }
+      const res = await getEventsApi(params);
+      setEvents(res.data?.events || []);
+    } catch (e) {
+      // Fallback
+    }
+  }, []);
+
+  // Fetch my registered events
+  const fetchMyEvents = useCallback(async () => {
+    try {
+      const res = await getMyRegistrationsApi();
+      setMyEvents(res.data?.events || []);
+    } catch (e) {
+      // Fallback
+    }
+  }, []);
+
+  // Fetch college notices
+  const fetchNotices = useCallback(async (search = '') => {
+    try {
+      const params = {};
+      if (search && search.trim()) params.search = search.trim();
+      const res = await getNoticesApi(params);
+      setNotices(res.data?.notices || []);
+    } catch (e) {
+      // Fallback
+    }
+  }, []);
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    await Promise.all([
+      fetchEvents(searchQuery, activeFilter),
+      fetchMyEvents(),
+      fetchNotices(searchQuery),
+    ]);
+    setLoading(false);
+    setRefreshing(false);
+  }, [fetchEvents, fetchMyEvents, fetchNotices, searchQuery, activeFilter]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadData();
+  };
+
+  // Instant 1-tap registration handler
+  const handleRegisterEvent = async (ev) => {
+    try {
+      await registerForEventApi(ev._id);
+      if (Platform.OS === 'web') {
+        window.alert(`🎉 Success! You are registered for ${ev.title}.`);
+      } else {
+        Alert.alert('Registration Confirmed', `You have booked a seat for ${ev.title}.`);
+      }
+      fetchEvents(searchQuery, activeFilter);
+      fetchMyEvents();
     } catch (err) {
-      setItems(DEFAULT_EVENTS);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+      const msg = err.response?.data?.message || err.message || 'Registration failed';
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Registration Error', msg);
     }
   };
 
-  useEffect(() => { fetchEvents(); }, [activeType]);
+  // Cancel registration handler
+  const handleCancelRegistration = (ev) => {
+    const doCancel = async () => {
+      try {
+        await cancelEventRegistrationApi(ev._id);
+        fetchEvents(searchQuery, activeFilter);
+        fetchMyEvents();
+      } catch (err) {
+        const msg = err.response?.data?.message || err.message || 'Cancel failed';
+        if (Platform.OS === 'web') window.alert(msg);
+        else Alert.alert('Error', msg);
+      }
+    };
 
-  const handleCreate = async () => {
-    if (!mTitle.trim() || !mDesc.trim()) {
-      if (Platform.OS === 'web') window.alert('Please fill in title and description.');
-      else Alert.alert('Incomplete', 'Please enter title and description.');
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Cancel your seat for ${ev.title}?`)) doCancel();
+    } else {
+      Alert.alert('Cancel Seat', `Cancel your seat for ${ev.title}?`, [
+        { text: 'Keep Seat', style: 'cancel' },
+        { text: 'Cancel Seat', style: 'destructive', onPress: doCancel },
+      ]);
+    }
+  };
+
+  // Create notice handler for admins
+  const handleCreateNotice = async () => {
+    if (!newNoticeTitle.trim() || !newNoticeContent.trim()) {
+      if (Platform.OS === 'web') window.alert('Title and content are required');
+      else Alert.alert('Error', 'Title and content are required');
       return;
     }
+
+    setNoticeSaving(true);
     try {
-      setSubmitting(true);
-      const res = await createEventNoticeApi({
-        title: mTitle,
-        type: mType,
-        category: mCategory || 'General',
-        department: mDept,
-        description: mDesc,
-        venue: mVenue,
+      await createNoticeApi({
+        title: newNoticeTitle.trim(),
+        content: newNoticeContent.trim(),
+        category: newNoticeCategory,
+        isImportant: newNoticeImportant,
       });
-      const newItem = res.success && res.data
-        ? res.data
-        : {
-            _id: `custom-${Date.now()}`,
-            type: mType,
-            category: mCategory || 'General',
-            title: mTitle,
-            department: mDept,
-            description: mDesc,
-            venue: mVenue,
-            date: new Date().toISOString(),
-          };
-      setItems(prev => [newItem, ...prev]);
-      setModalVisible(false);
-      setMTitle(''); setMDesc(''); setMCategory('');
-      if (Platform.OS === 'web') window.alert('Update broadcasted to all students! 🎉');
-      else Alert.alert('Published 🎉', 'Announcement broadcast to Swaminarayan University students!');
+      setNewNoticeTitle('');
+      setNewNoticeContent('');
+      setCreateNoticeVisible(false);
+      fetchNotices(searchQuery);
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || 'Could not post.';
+      const msg = err.response?.data?.message || err.message || 'Failed to publish notice';
       if (Platform.OS === 'web') window.alert(msg);
       else Alert.alert('Error', msg);
     } finally {
-      setSubmitting(false);
+      setNoticeSaving(false);
     }
   };
 
-  const filteredItems = items.filter(item => {
-    const matchType = activeType === 'all' || item.type === activeType;
-    const matchFaculty =
-      selectedFaculty === 'All Faculties' ||
-      (item.department || '').toLowerCase().includes(selectedFaculty.toLowerCase().replace('faculty of ', ''));
-    const matchSearch =
-      !search ||
-      item.title?.toLowerCase().includes(search.toLowerCase()) ||
-      item.description?.toLowerCase().includes(search.toLowerCase()) ||
-      item.category?.toLowerCase().includes(search.toLowerCase());
-    return matchType && matchFaculty && matchSearch;
-  });
-
-  const bgCard = theme.bgCard;
-  const border = theme.border;
-  const textTitle = theme.textPrimary;
-  const textSub = theme.textMuted;
-
-  // Stats
-  const totalEvents   = items.filter(i => i.type === 'event').length;
-  const totalNotices  = items.filter(i => i.type === 'notice').length;
-  const totalHolidays = items.filter(i => i.type === 'holiday').length;
+  // If viewing single event details
+  if (selectedEvent) {
+    return (
+      <EventDetailsScreen
+        event={selectedEvent}
+        onBack={() => {
+          setSelectedEvent(null);
+          fetchEvents(searchQuery, activeFilter);
+          fetchMyEvents();
+        }}
+        onEdit={(ev) => {
+          setEditingEvent(ev);
+          setAdminModalVisible(true);
+        }}
+        onEventUpdated={(updatedEv, deletedId) => {
+          if (deletedId) setSelectedEvent(null);
+          else if (updatedEv) setSelectedEvent(updatedEv);
+          fetchEvents(searchQuery, activeFilter);
+          fetchMyEvents();
+        }}
+      />
+    );
+  }
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.bg }]}>
-      {/* ===================================================== */}
-      {/* TOP HEADER                                            */}
-      {/* ===================================================== */}
-      <View style={[styles.topHeader, { backgroundColor: isDark ? '#0B0F19' : '#FFFFFF', borderBottomColor: border }]}>
-        <View style={styles.topHeaderLeft}>
-          {onBack && (
-            <TouchableOpacity onPress={onBack} style={styles.backBtn} activeOpacity={0.8}>
-              <Icon name="arrow-left" size={18} color={textTitle} />
-            </TouchableOpacity>
-          )}
-          <View>
-            <Text style={[styles.headerTitle, { color: textTitle }]}>🏛️ Swaminarayan University</Text>
-            <Text style={[styles.headerSub, { color: textSub }]}>Live Circulars, Events & Academic Calendar</Text>
+    <View style={styles.root}>
+      {/* Top Header matching reference (media_1794716870205_ba96cb1c.jpg) */}
+      <View style={styles.header}>
+        {onBack ? (
+          <TouchableOpacity style={styles.headerIconBtn} onPress={onBack}>
+            <Icon name="arrow-left" size={20} color="#0F172A" />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.headerIconBtn}>
+            <Icon name="menu" size={22} color="#0F172A" />
           </View>
+        )}
+
+        <View style={styles.brandTitleRow}>
+          <Text style={styles.brandTitle}>highfive</Text>
+          <View style={styles.liveDot} />
         </View>
 
+        <View style={styles.headerRight}>
+          {isAdmin ? (
+            <TouchableOpacity
+              style={styles.adminAddBtn}
+              onPress={() => {
+                if (activeTab === 'notices') {
+                  setCreateNoticeVisible(true);
+                } else {
+                  setEditingEvent(null);
+                  setAdminModalVisible(true);
+                }
+              }}
+            >
+              <Icon name="plus" size={16} color="#FFFFFF" />
+            </TouchableOpacity>
+          ) : null}
+
+          <TouchableOpacity style={styles.headerIconBtn}>
+            <Icon name="bell" size={20} color="#0F172A" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Mode Switcher Tabs */}
+      <View style={styles.segmentBar}>
         <TouchableOpacity
-          style={styles.postBtn}
-          onPress={() => setModalVisible(true)}
-          activeOpacity={0.85}
+          style={[styles.segmentBtn, activeTab === 'events' && styles.segmentBtnActive]}
+          onPress={() => setActiveTab('events')}
         >
-          <Icon name="plus" size={14} color="#FFF" style={{ marginRight: 6 }} />
-          <Text style={styles.postBtnText}>+ Post Update</Text>
+          <Icon
+            name="calendar"
+            size={14}
+            color={activeTab === 'events' ? '#FFFFFF' : '#64748B'}
+            style={{ marginRight: 5 }}
+          />
+          <Text style={[styles.segmentText, activeTab === 'events' && styles.segmentTextActive]}>
+            Events
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.segmentBtn, activeTab === 'my-events' && styles.segmentBtnActive]}
+          onPress={() => setActiveTab('my-events')}
+        >
+          <Icon
+            name="user-check"
+            size={14}
+            color={activeTab === 'my-events' ? '#FFFFFF' : '#64748B'}
+            style={{ marginRight: 5 }}
+          />
+          <Text style={[styles.segmentText, activeTab === 'my-events' && styles.segmentTextActive]}>
+            My Events ({myEvents.length})
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.segmentBtn, activeTab === 'notices' && styles.segmentBtnActive]}
+          onPress={() => setActiveTab('notices')}
+        >
+          <Icon
+            name="bell"
+            size={14}
+            color={activeTab === 'notices' ? '#FFFFFF' : '#64748B'}
+            style={{ marginRight: 5 }}
+          />
+          <Text style={[styles.segmentText, activeTab === 'notices' && styles.segmentTextActive]}>
+            Notice Board
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* ===================================================== */}
-      {/* STATS ROW                                             */}
-      {/* ===================================================== */}
-      <View style={[styles.statsRow, { backgroundColor: isDark ? '#0B0F19' : '#FFFFFF', borderBottomColor: border }]}>
-        <View style={styles.statItem}>
-          <View style={[styles.statIcon, { backgroundColor: 'rgba(6,182,212,0.15)' }]}>
-            <Icon name="calendar" size={14} color="#22D3EE" />
-          </View>
-          <Text style={[styles.statNum, { color: textTitle }]}>{totalEvents}</Text>
-          <Text style={[styles.statLabel, { color: textSub }]}>Events</Text>
-        </View>
-        <View style={[styles.statDivider, { backgroundColor: border }]} />
-        <View style={styles.statItem}>
-          <View style={[styles.statIcon, { backgroundColor: 'rgba(245,158,11,0.15)' }]}>
-            <Icon name="bell" size={14} color="#FBBF24" />
-          </View>
-          <Text style={[styles.statNum, { color: textTitle }]}>{totalNotices}</Text>
-          <Text style={[styles.statLabel, { color: textSub }]}>Notices</Text>
-        </View>
-        <View style={[styles.statDivider, { backgroundColor: border }]} />
-        <View style={styles.statItem}>
-          <View style={[styles.statIcon, { backgroundColor: 'rgba(16,185,129,0.15)' }]}>
-            <Icon name="sun" size={14} color="#34D399" />
-          </View>
-          <Text style={[styles.statNum, { color: textTitle }]}>{totalHolidays}</Text>
-          <Text style={[styles.statLabel, { color: textSub }]}>Holidays</Text>
-        </View>
-        <View style={[styles.statDivider, { backgroundColor: border }]} />
-        <View style={styles.statItem}>
-          <View style={[styles.statIcon, { backgroundColor: 'rgba(201,168,76,0.15)' }]}>
-            <Icon name="layers" size={14} color={isDark ? '#16A36A' : '#16A36A'} />
-          </View>
-          <Text style={[styles.statNum, { color: textTitle }]}>{items.length}</Text>
-          <Text style={[styles.statLabel, { color: textSub }]}>Total Updates</Text>
-        </View>
-      </View>
-
-      {/* ===================================================== */}
-      {/* FIXED FILTER CONTROLS (Non-Scrollable Header Area)    */}
-      {/* ===================================================== */}
-      <View style={[styles.filtersArea, { backgroundColor: theme.bg, borderBottomColor: border }]}>
-        {/* TYPE TABS — Horizontal scrollable row */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.typeTabsScroll}
-        >
-          {TYPE_TABS.map(tab => {
-            const isActive = activeType === tab.key;
-            return (
-              <TouchableOpacity
-                key={tab.key}
-                style={[
-                  styles.typeTab,
-                  {
-                    backgroundColor: isActive ? '#16A36A' : bgCard,
-                    borderColor: isActive ? '#16A36A' : border,
-                  },
-                ]}
-                onPress={() => setActiveType(tab.key)}
-                activeOpacity={0.8}
-              >
-                <Icon
-                  name={tab.icon}
-                  size={13}
-                  color={isActive ? '#FFFFFF' : tab.color}
-                  style={{ marginRight: 6 }}
-                />
-                <Text style={[styles.typeTabText, { color: isActive ? '#FFFFFF' : textSub, fontWeight: isActive ? '800' : '600' }]}>
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-
-        {/* FACULTY FILTER PILLS — Horizontal scrollable row */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.facultyScroll}
-        >
-          {FACULTIES.map(fac => {
-            const isSel = selectedFaculty === fac;
-            return (
-              <TouchableOpacity
-                key={fac}
-                style={[
-                  styles.facultyPill,
-                  {
-                    backgroundColor: isSel ? (isDark ? 'rgba(22,163,106,0.18)' : '#E8F5EE') : bgCard,
-                    borderColor: isSel ? '#16A36A' : border,
-                  },
-                ]}
-                onPress={() => setSelectedFaculty(fac)}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.facultyPillText, { color: isSel ? '#16A36A' : textSub, fontWeight: isSel ? '700' : '500' }]}>
-                  {fac}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-
-        {/* SEARCH BAR */}
-        <View style={[styles.searchBox, { backgroundColor: bgCard, borderColor: border }]}>
-          <Icon name="search" size={15} color={isDark ? '#64748B' : '#94A3B8'} style={{ marginRight: 8 }} />
+      {/* Search Bar matching reference rounded grey pill */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBox}>
+          <Icon name="search" size={16} color="#94A3B8" style={{ marginRight: 8 }} />
           <TextInput
-            style={[styles.searchInput, { color: textTitle }]}
-            placeholder="Search circulars, exams, holidays..."
-            placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-            value={search}
-            onChangeText={setSearch}
-            onSubmitEditing={fetchEvents}
+            style={styles.searchInput}
+            placeholder={
+              activeTab === 'notices' ? 'Search college notices...' : 'Search events, venues, clubs...'
+            }
+            placeholderTextColor="#94A3B8"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            clearButtonMode="while-editing"
           />
-          {search.length > 0 && (
-            <TouchableOpacity onPress={() => setSearch('')}>
-              <Icon name="x" size={14} color={textSub} />
+          {searchQuery ? (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Icon name="x" size={16} color="#94A3B8" />
             </TouchableOpacity>
-          )}
+          ) : null}
         </View>
       </View>
 
-      {/* ===================================================== */}
-      {/* SCROLLABLE FEED LIST                                   */}
-      {/* ===================================================== */}
-      <FlatList
-        data={filteredItems}
-        keyExtractor={item => item._id}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => { setRefreshing(true); fetchEvents(); }}
-            tintColor={isDark ? '#16A36A' : '#16A36A'}
-          />
-        }
-        ListHeaderComponent={
-          filteredItems.length > 0 ? (
-            <Text style={[styles.resultCount, { color: textSub }]}>
-              Showing {filteredItems.length} update{filteredItems.length !== 1 ? 's' : ''}
-            </Text>
-          ) : null
-        }
-        ListEmptyComponent={
-          <View style={[styles.emptyBox, { backgroundColor: bgCard, borderColor: border }]}>
-            <Text style={{ fontSize: 32, marginBottom: 12 }}>📭</Text>
-            <Text style={[styles.emptyTitle, { color: textTitle }]}>No Updates Found</Text>
-            <Text style={[styles.emptyDesc, { color: textSub }]}>
-              No circulars or events match your filter. Try changing the category or faculty.
-            </Text>
-          </View>
-        }
-        renderItem={({ item, index }) => {
-          const cfg = TypeConfig(item.type);
-          const dateStr = item.date
-            ? new Date(item.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-            : '';
-
-          return (
-            <View
-              style={[
-                styles.eventCard,
-                {
-                  backgroundColor: bgCard,
-                  borderColor: `${cfg.color}55`,
-                  borderLeftColor: cfg.color,
-                },
-              ]}
-            >
-              {/* Left Accent Bar */}
-              <View style={[styles.accentBar, { backgroundColor: cfg.color }]} />
-
-              {/* Card Content */}
-              <View style={styles.cardInner}>
-                {/* Top Row: Badges + Date */}
-                <View style={styles.cardTopRow}>
-                  <View style={styles.badgesRow}>
-                    <View style={[styles.typeBadge, { backgroundColor: cfg.bg }]}>
-                      <Icon name={cfg.icon} size={11} color={cfg.color} style={{ marginRight: 4 }} />
-                      <Text style={[styles.typeBadgeText, { color: cfg.color }]}>{cfg.label}</Text>
-                    </View>
-                    <View style={[styles.catBadge, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#F1F5F9' }]}>
-                      <Text style={[styles.catBadgeText, { color: textSub }]}>{item.category || 'General'}</Text>
-                    </View>
-                  </View>
-
-                  <Text style={[styles.dateText, { color: textSub }]}>{dateStr}</Text>
-                </View>
-
-                {/* Title */}
-                <Text style={[styles.cardTitle, { color: textTitle }]}>{item.title}</Text>
-
-                {/* Department */}
-                <View style={styles.deptRow}>
-                  <Icon name="home" size={12} color={isDark ? '#16A36A' : '#16A36A'} style={{ marginRight: 5 }} />
-                  <Text style={[styles.deptText, { color: isDark ? '#16A36A' : '#16A36A' }]}>{item.department}</Text>
-                </View>
-
-                {/* Description */}
-                <Text style={[styles.cardDesc, { color: textSub }]}>{item.description}</Text>
-
-                {/* Venue */}
-                <View style={styles.venueRow}>
-                  <Icon name="map-pin" size={12} color={isDark ? '#64748B' : '#94A3B8'} style={{ marginRight: 5 }} />
-                  <Text style={[styles.venueText, { color: isDark ? '#64748B' : '#94A3B8' }]}>{item.venue}</Text>
-                </View>
+      {/* Main Content Render */}
+      {loading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#16A36A" />
+          <Text style={styles.loadingText}>Loading campus updates...</Text>
+        </View>
+      ) : (
+        <ScrollView
+          style={styles.scrollList}
+          contentContainerStyle={[
+            styles.scrollContent,
+            isDesktop && styles.desktopContainer,
+          ]}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#16A36A']}
+            />
+          }
+        >
+          {/* TAB 1: ALL CAMPUS EVENTS */}
+          {activeTab === 'events' ? (
+            <>
+              {/* Featured Societies Circles matching reference screen */}
+              <View style={styles.clubsSection}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.clubsScroll}>
+                  {FEATURED_CLUBS.map((club, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      style={styles.clubCircleItem}
+                      onPress={() => {
+                        setSearchQuery(club.name);
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <View style={[styles.clubAvatarBg, { borderColor: club.color }]}>
+                        <Icon name={club.icon} size={22} color={club.color} />
+                      </View>
+                      <Text style={styles.clubName} numberOfLines={2}>
+                        {club.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
-            </View>
-          );
+
+              {/* Filter Pills matching reference screen */}
+              <View style={styles.filtersSection}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll}>
+                  {FILTER_PILLS.map((pill) => {
+                    const isSelected = activeFilter === pill;
+                    return (
+                      <TouchableOpacity
+                        key={pill}
+                        style={[styles.filterPill, isSelected && styles.filterPillActive]}
+                        onPress={() => setActiveFilter(pill)}
+                      >
+                        <Text style={[styles.filterPillText, isSelected && styles.filterPillTextActive]}>
+                          {pill}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+
+              {/* Event Cards List */}
+              {events.length === 0 ? (
+                <View style={styles.emptyCard}>
+                  <Icon name="calendar" size={36} color="#CBD5E1" />
+                  <Text style={styles.emptyTitle}>No events found</Text>
+                  <Text style={styles.emptySub}>
+                    Try clearing your search query or switching category filters.
+                  </Text>
+                </View>
+              ) : (
+                events.map((ev) => (
+                  <EventCard
+                    key={ev._id}
+                    event={ev}
+                    onPress={() => setSelectedEvent(ev)}
+                    onRegisterPress={handleRegisterEvent}
+                    onCancelPress={handleCancelRegistration}
+                  />
+                ))
+              )}
+            </>
+          ) : null}
+
+          {/* TAB 2: MY REGISTERED EVENTS */}
+          {activeTab === 'my-events' ? (
+            <>
+              <View style={styles.myEventsHeader}>
+                <Text style={styles.myEventsTitle}>Your Registered Seats</Text>
+                <Text style={styles.myEventsSub}>
+                  Present your college ID and confirmed seat confirmation at the entrance.
+                </Text>
+              </View>
+
+              {myEvents.length === 0 ? (
+                <View style={styles.emptyCard}>
+                  <Icon name="ticket" size={40} color="#CBD5E1" />
+                  <Text style={styles.emptyTitle}>No registered events yet</Text>
+                  <Text style={styles.emptySub}>
+                    Browse upcoming campus events and reserve your seat with 1 click!
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.browseBtn}
+                    onPress={() => setActiveTab('events')}
+                  >
+                    <Text style={styles.browseBtnText}>Explore Events</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                myEvents.map((ev) => (
+                  <EventCard
+                    key={ev._id}
+                    event={ev}
+                    onPress={() => setSelectedEvent(ev)}
+                    onCancelPress={handleCancelRegistration}
+                  />
+                ))
+              )}
+            </>
+          ) : null}
+
+          {/* TAB 3: COLLEGE NOTICE BOARD */}
+          {activeTab === 'notices' ? (
+            <>
+              <View style={styles.noticeBoardHeader}>
+                <View>
+                  <Text style={styles.noticeBoardTitle}>Official Campus Notices</Text>
+                  <Text style={styles.noticeBoardSub}>
+                    Verified announcements from University Administration & Academic Bureau
+                  </Text>
+                </View>
+                {isAdmin ? (
+                  <TouchableOpacity
+                    style={styles.publishNoticeBtn}
+                    onPress={() => setCreateNoticeVisible(true)}
+                  >
+                    <Icon name="plus" size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
+                    <Text style={styles.publishNoticeBtnText}>Post Notice</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+
+              {notices.length === 0 ? (
+                <View style={styles.emptyCard}>
+                  <Icon name="bell" size={36} color="#CBD5E1" />
+                  <Text style={styles.emptyTitle}>No notices found</Text>
+                </View>
+              ) : (
+                notices.map((n) => {
+                  const dateStr = new Date(n.createdAt || Date.now()).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  });
+
+                  return (
+                    <TouchableOpacity
+                      key={n._id}
+                      style={[styles.noticeCard, n.isImportant && styles.noticeCardImportant]}
+                      onPress={() => {
+                        setSelectedNotice(n);
+                        setNoticeModalVisible(true);
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.noticeTopRow}>
+                        <View style={styles.noticeBadgeRow}>
+                          <View
+                            style={[
+                              styles.noticeCatBadge,
+                              n.category === 'Examination' && { backgroundColor: '#FEE2E2' },
+                              n.category === 'Academic' && { backgroundColor: '#EFF6FF' },
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.noticeCatText,
+                                n.category === 'Examination' && { color: '#DC2626' },
+                                n.category === 'Academic' && { color: '#2563EB' },
+                              ]}
+                            >
+                              {n.category}
+                            </Text>
+                          </View>
+
+                          {n.isImportant ? (
+                            <View style={styles.importantPill}>
+                              <Icon name="alert-triangle" size={11} color="#DC2626" style={{ marginRight: 3 }} />
+                              <Text style={styles.importantPillText}>Important</Text>
+                            </View>
+                          ) : null}
+                        </View>
+
+                        <Text style={styles.noticeDate}>{dateStr}</Text>
+                      </View>
+
+                      <Text style={styles.noticeTitle}>{n.title}</Text>
+                      <Text style={styles.noticeContentSnippet} numberOfLines={2}>
+                        {n.content}
+                      </Text>
+
+                      <View style={styles.noticeFooter}>
+                        <Text style={styles.noticeDept}>Issued by: {n.department || 'Administration'}</Text>
+                        <Icon name="chevron-right" size={16} color="#94A3B8" />
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })
+              )}
+            </>
+          ) : null}
+        </ScrollView>
+      )}
+
+      {/* Admin Event Modal */}
+      <AdminEventModal
+        visible={adminModalVisible}
+        onClose={() => {
+          setAdminModalVisible(false);
+          setEditingEvent(null);
+        }}
+        initialEvent={editingEvent}
+        onEventSaved={() => {
+          fetchEvents(searchQuery, activeFilter);
+          fetchMyEvents();
         }}
       />
 
-      {/* ===================================================== */}
-      {/* POST UPDATE MODAL                                      */}
-      {/* ===================================================== */}
-      <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={() => setModalVisible(false)}>
+      {/* Notice Details Modal */}
+      <Modal
+        visible={noticeModalVisible && Boolean(selectedNotice)}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setNoticeModalVisible(false)}
+      >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalBox, { backgroundColor: isDark ? '#111827' : '#FFFFFF', borderColor: border }]}>
-            {/* Header */}
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: textTitle }]}>📢 Broadcast University Update</Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Icon name="x" size={18} color={textSub} />
+          <View style={styles.noticeDetailCard}>
+            <View style={styles.noticeModalHeader}>
+              <View style={styles.noticeBadgeRow}>
+                <View style={styles.noticeCatBadge}>
+                  <Text style={styles.noticeCatText}>{selectedNotice?.category}</Text>
+                </View>
+                {selectedNotice?.isImportant ? (
+                  <View style={styles.importantPill}>
+                    <Text style={styles.importantPillText}>Important</Text>
+                  </View>
+                ) : null}
+              </View>
+
+              <TouchableOpacity onPress={() => setNoticeModalVisible(false)}>
+                <Icon name="x" size={20} color="#64748B" />
               </TouchableOpacity>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-              {/* Type Selector */}
-              <Text style={[styles.fieldLabel, { color: textSub }]}>Update Type</Text>
-              <View style={styles.typeSelectorRow}>
-                {['event', 'notice', 'holiday'].map(t => {
-                  const c = TypeConfig(t);
-                  const isSel = mType === t;
-                  return (
-                    <TouchableOpacity
-                      key={t}
-                      style={[
-                        styles.typeSelectBtn,
-                        {
-                          backgroundColor: isSel ? '#16A36A' : isDark ? '#141D2D' : '#F8FAFC',
-                          borderColor: isSel ? '#16A36A' : border,
-                        },
-                      ]}
-                      onPress={() => setMType(t)}
-                    >
-                      <Icon name={c.icon} size={14} color={isSel ? '#FFFFFF' : c.color} style={{ marginBottom: 4 }} />
-                      <Text style={{ color: isSel ? '#FFFFFF' : textSub, fontSize: 11.5, fontWeight: isSel ? '800' : '700' }}>
-                        {t.toUpperCase()}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+            <Text style={styles.noticeModalTitle}>{selectedNotice?.title}</Text>
+            <Text style={styles.noticeModalDate}>
+              Issued on{' '}
+              {new Date(selectedNotice?.createdAt || Date.now()).toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </Text>
 
-              <Text style={[styles.fieldLabel, { color: textSub }]}>Announcement Title *</Text>
-              <TextInput
-                style={[styles.modalInput, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: border, color: textTitle }]}
-                placeholder="e.g. Ganesh Mahotsav 2026 / Mid-Sem Exam Notice"
-                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                value={mTitle}
-                onChangeText={setMTitle}
-              />
-
-              <Text style={[styles.fieldLabel, { color: textSub }]}>Category</Text>
-              <TextInput
-                style={[styles.modalInput, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: border, color: textTitle }]}
-                placeholder="e.g. Placement Drive, Cultural & Festival"
-                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                value={mCategory}
-                onChangeText={setMCategory}
-              />
-
-              <Text style={[styles.fieldLabel, { color: textSub }]}>Description & Details *</Text>
-              <TextInput
-                style={[styles.modalTextArea, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: border, color: textTitle }]}
-                multiline
-                numberOfLines={4}
-                placeholder="Function timings, exam timetable rules, or holiday span details..."
-                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                value={mDesc}
-                onChangeText={setMDesc}
-              />
-
-              <Text style={[styles.fieldLabel, { color: textSub }]}>Faculty / Department</Text>
-              <TextInput
-                style={[styles.modalInput, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: border, color: textTitle }]}
-                placeholder="Faculty of Engineering / All Departments"
-                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                value={mDept}
-                onChangeText={setMDept}
-              />
-
-              <Text style={[styles.fieldLabel, { color: textSub }]}>Venue / Location</Text>
-              <TextInput
-                style={[styles.modalInput, { backgroundColor: isDark ? '#141D2D' : '#F8FAFC', borderColor: border, color: textTitle }]}
-                placeholder="Swaminarayan University Central Ground, Kalol"
-                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                value={mVenue}
-                onChangeText={setMVenue}
-              />
-
-              {/* Action Buttons */}
-              <View style={styles.modalActions}>
-                <TouchableOpacity
-                  style={[styles.cancelBtn, { borderColor: border }]}
-                  onPress={() => setModalVisible(false)}
-                >
-                  <Text style={{ color: textSub, fontWeight: '600', fontSize: 13 }}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.broadcastBtn, submitting && { opacity: 0.7 }]}
-                  onPress={handleCreate}
-                  disabled={submitting}
-                >
-                  {submitting ? (
-                    <ActivityIndicator size="small" color="#FFF" />
-                  ) : (
-                    <>
-                      <Icon name="send" size={14} color="#FFF" style={{ marginRight: 6 }} />
-                      <Text style={styles.broadcastBtnText}>Broadcast Update</Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-              </View>
+            <ScrollView style={{ maxHeight: 280, marginVertical: 14 }}>
+              <Text style={styles.noticeModalBody}>{selectedNotice?.content}</Text>
             </ScrollView>
+
+            <View style={styles.noticeModalFooter}>
+              <Text style={styles.noticeModalDept}>Department: {selectedNotice?.department}</Text>
+              <TouchableOpacity
+                style={styles.closeNoticeBtn}
+                onPress={() => setNoticeModalVisible(false)}
+              >
+                <Text style={styles.closeNoticeBtnText}>Done</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Post Notice Modal (Admin Only) */}
+      <Modal
+        visible={createNoticeVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setCreateNoticeVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.createNoticeCard}>
+            <View style={styles.noticeModalHeader}>
+              <Text style={styles.createNoticeTitle}>Publish College Notice</Text>
+              <TouchableOpacity onPress={() => setCreateNoticeVisible(false)}>
+                <Icon name="x" size={20} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <TextInput
+              style={styles.inputField}
+              placeholder="Notice Title *"
+              placeholderTextColor="#94A3B8"
+              value={newNoticeTitle}
+              onChangeText={setNewNoticeTitle}
+            />
+
+            <TextInput
+              style={[styles.inputField, styles.textAreaField]}
+              placeholder="Full announcement body & guidelines *"
+              placeholderTextColor="#94A3B8"
+              value={newNoticeContent}
+              onChangeText={setNewNoticeContent}
+              multiline
+            />
+
+            <View style={styles.checkboxRow}>
+              <TouchableOpacity
+                style={[styles.checkbox, newNoticeImportant && styles.checkboxActive]}
+                onPress={() => setNewNoticeImportant(!newNoticeImportant)}
+              >
+                {newNoticeImportant ? <Icon name="check" size={12} color="#FFFFFF" /> : null}
+              </TouchableOpacity>
+              <Text style={styles.checkboxLabel}>Mark as Urgent / Important</Text>
+            </View>
+
+            <View style={styles.createNoticeFooter}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setCreateNoticeVisible(false)}
+              >
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.publishBtn}
+                onPress={handleCreateNotice}
+                disabled={noticeSaving}
+              >
+                {noticeSaving ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.publishBtnText}>Publish Notice</Text>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -569,243 +721,490 @@ export default function EventsNoticesScreen({ onBack }) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-
-  /* Top Header */
-  topHeader: {
+  root: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
+    paddingTop: 16,
+    paddingBottom: 12,
   },
-  topHeaderLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  backBtn: { marginRight: 10, padding: 4 },
-  headerTitle: { fontSize: 16.5, fontWeight: '800', letterSpacing: -0.2 },
-  headerSub: { fontSize: 11.5, marginTop: 2 },
-  postBtn: {
+  headerIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  brandTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#E11D48', // red/coral accent matching "highfive" logo
+    letterSpacing: -0.5,
+  },
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: '#16A36A',
+  },
+  headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 9,
-    ...Platform.select({
-      web: { boxShadow: '0px 3px 12px rgba(22,163,106,0.3)' },
-      default: {
-        shadowColor: '#16A36A',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-        elevation: 3,
-      },
-    }),
-  },
-  postBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
-
-  /* Stats Row */
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-  },
-  statItem: { flex: 1, alignItems: 'center', gap: 4 },
-  statIcon: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  statNum: { fontSize: 17, fontWeight: '800' },
-  statLabel: { fontSize: 10, textAlign: 'center' },
-  statDivider: { width: 1, height: 30 },
-
-  /* Filters Area (fixed, not scrollable container itself) */
-  filtersArea: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 6,
-    borderBottomWidth: 1,
-  },
-  typeTabsScroll: {
-    flexDirection: 'row',
     gap: 8,
-    paddingBottom: 10,
   },
-  typeTab: {
+  adminAddBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#16A36A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  segmentBar: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  segmentBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    justifyContent: 'center',
     paddingVertical: 7,
     borderRadius: 10,
-    borderWidth: 1,
+    backgroundColor: '#F8FAFC',
   },
-  typeTabText: { fontSize: 12.5, fontWeight: '700' },
-
-  facultyScroll: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingBottom: 10,
+  segmentBtnActive: {
+    backgroundColor: '#16A36A',
   },
-  facultyPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
+  segmentText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
   },
-  facultyPillText: { fontSize: 11.5, fontWeight: '600' },
-
-  /* Search Box */
+  segmentTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 10,
-    borderWidth: 1,
-    paddingHorizontal: 12,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 18,
+    paddingHorizontal: 16,
     paddingVertical: 9,
-    marginBottom: 4,
   },
-  searchInput: { flex: 1, fontSize: 13, paddingVertical: 0 },
-
-  /* Feed */
-  listContent: { padding: 16, paddingBottom: 40 },
-  resultCount: { fontSize: 12, marginBottom: 12, fontWeight: '600' },
-
-  /* Event Card */
-  eventCard: {
-    borderRadius: 16,
-    borderWidth: 1.5,
-    marginBottom: 14,
-    flexDirection: 'row',
-    overflow: 'hidden',
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#0F172A',
+    padding: 0,
   },
-  accentBar: { width: 4, minHeight: '100%' },
-  cardInner: { flex: 1, padding: 16 },
-  cardTopRow: {
+  clubsSection: {
+    paddingLeft: 16,
+    marginBottom: 16,
+  },
+  clubsScroll: {
     flexDirection: 'row',
+  },
+  clubCircleItem: {
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
+    marginRight: 20,
+    width: 80,
   },
-  badgesRow: { flexDirection: 'row', gap: 6, alignItems: 'center', flexShrink: 1 },
-  typeBadge: {
-    flexDirection: 'row',
+  clubAvatarBg: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 2,
     alignItems: 'center',
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 6,
+    justifyContent: 'center',
+    marginBottom: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  typeBadgeText: { fontSize: 10.5, fontWeight: '800' },
-  catBadge: {
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 6,
+  clubName: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#334155',
+    textAlign: 'center',
+    lineHeight: 14,
   },
-  catBadgeText: { fontSize: 10.5, fontWeight: '600' },
-  dateText: { fontSize: 11, fontWeight: '600', flexShrink: 0 },
-
-  cardTitle: { fontSize: 15.5, fontWeight: '800', marginBottom: 8, lineHeight: 22, letterSpacing: -0.2 },
-
-  deptRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  deptText: { fontSize: 12, fontWeight: '700' },
-
-  cardDesc: { fontSize: 13, lineHeight: 19, marginBottom: 10 },
-
-  venueRow: { flexDirection: 'row', alignItems: 'center' },
-  venueText: { fontSize: 11.5 },
-
-  /* Empty State */
-  emptyBox: {
-    borderRadius: 16,
+  filtersSection: {
+    paddingLeft: 16,
+    marginBottom: 16,
+  },
+  filtersScroll: {
+    flexDirection: 'row',
+  },
+  filterPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    padding: 40,
+    borderColor: '#E2E8F0',
+    marginRight: 8,
+  },
+  filterPillActive: {
+    backgroundColor: '#0F172A',
+    borderColor: '#0F172A',
+  },
+  filterPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  filterPillTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  scrollList: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 40,
+  },
+  desktopContainer: {
+    maxWidth: 720,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  centerContainer: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  loadingText: {
+    marginTop: 12,
+    color: '#64748B',
+    fontSize: 14,
+  },
+  emptyCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 36,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
     marginTop: 20,
   },
-  emptyTitle: { fontSize: 17, fontWeight: '700', marginBottom: 6 },
-  emptyDesc: { fontSize: 13, textAlign: 'center', lineHeight: 19 },
-
-  /* Modal */
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginTop: 10,
   },
-  modalBox: {
-    width: '100%',
-    maxWidth: 520,
-    maxHeight: '90%',
-    borderRadius: 18,
-    borderWidth: 1,
-    padding: 22,
+  emptySub: {
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
+    marginTop: 4,
+    maxWidth: 280,
   },
-  modalHeader: {
+  browseBtn: {
+    marginTop: 14,
+    backgroundColor: '#16A36A',
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  browseBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  myEventsHeader: {
+    marginBottom: 16,
+  },
+  myEventsTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  myEventsSub: {
+    fontSize: 13,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  noticeBoardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
   },
-  modalTitle: { fontSize: 17, fontWeight: '800' },
-  fieldLabel: { fontSize: 12, fontWeight: '600', marginBottom: 6, marginTop: 12 },
-  modalInput: {
-    borderWidth: 1,
-    borderRadius: 9,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    fontSize: 13,
+  noticeBoardTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F172A',
   },
-  modalTextArea: {
-    borderWidth: 1,
-    borderRadius: 9,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    fontSize: 13,
-    minHeight: 80,
-    textAlignVertical: 'top',
+  noticeBoardSub: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+    maxWidth: 420,
   },
-  typeSelectorRow: {
+  publishNoticeBtn: {
     flexDirection: 'row',
-    gap: 10,
+    alignItems: 'center',
+    backgroundColor: '#16A36A',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  publishNoticeBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  noticeCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 1,
+  },
+  noticeCardImportant: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#DC2626',
+  },
+  noticeTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  noticeBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  noticeCatBadge: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  noticeCatText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  importantPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  importantPillText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#DC2626',
+  },
+  noticeDate: {
+    fontSize: 11,
+    color: '#94A3B8',
+  },
+  noticeTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+    lineHeight: 22,
+    marginBottom: 6,
+  },
+  noticeContentSnippet: {
+    fontSize: 13,
+    color: '#64748B',
+    lineHeight: 18,
+    marginBottom: 10,
+  },
+  noticeFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F8FAFC',
+  },
+  noticeDept: {
+    fontSize: 11,
+    color: '#94A3B8',
+    fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  noticeDetailCard: {
+    width: '100%',
+    maxWidth: 520,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  noticeModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  noticeModalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0F172A',
+    lineHeight: 26,
     marginBottom: 4,
   },
-  typeSelectBtn: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: 10,
-    borderWidth: 1,
+  noticeModalDate: {
+    fontSize: 12,
+    color: '#64748B',
+    marginBottom: 10,
   },
-  modalActions: {
+  noticeModalBody: {
+    fontSize: 14,
+    lineHeight: 22,
+    color: '#334155',
+  },
+  noticeModalFooter: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 18,
-  },
-  cancelBtn: {
-    flex: 1,
-    paddingVertical: 11,
-    borderRadius: 10,
-    borderWidth: 1,
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
   },
-  broadcastBtn: {
-    flex: 2,
+  noticeModalDept: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  closeNoticeBtn: {
     backgroundColor: '#16A36A',
-    paddingVertical: 11,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 10,
+  },
+  closeNoticeBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  createNoticeCard: {
+    width: '100%',
+    maxWidth: 480,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 22,
+  },
+  createNoticeTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  inputField: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#0F172A',
+    marginBottom: 12,
+  },
+  textAreaField: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
+  checkboxRow: {
     flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
     alignItems: 'center',
     justifyContent: 'center',
-    ...Platform.select({
-      web: { boxShadow: '0px 3px 12px rgba(22,163,106,0.3)' },
-      default: {
-        shadowColor: '#16A36A',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-        elevation: 3,
-      },
-    }),
   },
-  broadcastBtnText: { color: '#FFFFFF', fontSize: 13.5, fontWeight: '700' },
+  checkboxActive: {
+    backgroundColor: '#DC2626',
+    borderColor: '#DC2626',
+  },
+  checkboxLabel: {
+    fontSize: 13,
+    color: '#334155',
+    fontWeight: '600',
+  },
+  createNoticeFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+  },
+  cancelBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 10,
+    backgroundColor: '#F1F5F9',
+  },
+  cancelBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  publishBtn: {
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    borderRadius: 10,
+    backgroundColor: '#16A36A',
+  },
+  publishBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
 });
