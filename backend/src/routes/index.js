@@ -3,6 +3,7 @@ const router = express.Router();
 
 const authRoutes = require('./auth.routes');
 const userRoutes = require('./user.routes');
+const subjectRoutes = require('./subject.routes');
 const noteRoutes = require('./note.routes');
 const doubtRoutes = require('./doubt.routes');
 const teamPostRoutes = require('./teamPost.routes');
@@ -16,6 +17,7 @@ const eventsRoutes = require('./events.routes');
 
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
+router.use('/subjects', subjectRoutes);
 router.use('/notes', noteRoutes);
 router.use('/doubts', doubtRoutes);
 router.use('/team-posts', teamPostRoutes);
