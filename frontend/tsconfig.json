@@ -1,5 +1,4 @@
 {
-  "extends": "./node_modules/expo/tsconfig.base.json",
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
@@ -8,11 +7,21 @@
     "allowJs": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "strict": false,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "paths": {
+      "*": [
+        "*"
+      ]
+    }
   },
   "exclude": [
     "node_modules",
     "babel.config.js",
     "metro.config.js"
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }
