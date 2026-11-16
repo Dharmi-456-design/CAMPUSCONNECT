@@ -5,17 +5,7 @@ import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import SplashScreen from './src/components/SplashScreen';
 
-// Logo asset (can be replaced with user's uploaded logo)
-let projectLogo;
-try {
-  projectLogo = require('./src/assets/logo.png');
-} catch {
-  try {
-    projectLogo = require('./src/assets/icon.png');
-  } catch {
-    projectLogo = null;
-  }
-}
+const projectLogo = require('./src/assets/logo.png');
 
 function AppRoot() {
   const { isDark, theme } = useTheme();

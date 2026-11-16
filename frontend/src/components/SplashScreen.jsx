@@ -17,7 +17,7 @@ export default function SplashScreen({ onFinish, logoSource }) {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 250,
+        duration: 200,
         useNativeDriver: true,
       }),
       Animated.spring(scaleAnim, {
@@ -53,19 +53,13 @@ export default function SplashScreen({ onFinish, logoSource }) {
           },
         ]}
       >
-        {/* Project Logo */}
+        {/* Project Logo matching uploaded asset */}
         <View style={styles.logoWrapper}>
-          {logoSource ? (
-            <Image
-              source={typeof logoSource === 'string' ? { uri: logoSource } : logoSource}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-          ) : (
-            <View style={styles.defaultLogoBox}>
-              <Text style={styles.defaultLogoEmoji}>🎓</Text>
-            </View>
-          )}
+          <Image
+            source={typeof logoSource === 'string' ? { uri: logoSource } : logoSource}
+            style={styles.logoImage}
+            resizeMode="cover"
+          />
         </View>
 
         <Text style={styles.appName}>CampusOne</Text>
@@ -84,7 +78,7 @@ export default function SplashScreen({ onFinish, logoSource }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#16A36A',
+    backgroundColor: '#0F172A',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -94,33 +88,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   logoWrapper: {
-    width: 110,
-    height: 110,
-    borderRadius: 28,
+    width: 120,
+    height: 120,
+    borderRadius: 30,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 10,
     overflow: 'hidden',
   },
   logoImage: {
-    width: 90,
-    height: 90,
-  },
-  defaultLogoBox: {
     width: '100%',
     height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  defaultLogoEmoji: {
-    fontSize: 52,
+    borderRadius: 30,
   },
   appName: {
     fontSize: 32,
@@ -132,7 +117,7 @@ const styles = StyleSheet.create({
   appTagline: {
     fontSize: 14,
     fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: '#16A36A',
     letterSpacing: 0.5,
   },
   loadingBarWrapper: {
@@ -142,12 +127,12 @@ const styles = StyleSheet.create({
   loadingBarTrack: {
     height: 4,
     borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     overflow: 'hidden',
   },
   loadingBarFill: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#16A36A',
   },
 });
