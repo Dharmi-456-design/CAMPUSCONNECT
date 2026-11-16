@@ -12,10 +12,10 @@ export const APP_CONFIG = {
   DEVELOPER_INFO: 'Dharmi Patel • CampusOne Project',
   INSTITUTION: 'Shree Swaminarayan Institute of Technology (SSIT), Swaminarayan University',
   GITHUB_REPO_URL: 'https://github.com/Dharmi-456-design/CAMPUSCONNECT',
-  // Configured public Google Drive APK URL (fallback to public Google Drive file URL if env is set)
+  // Configured public APK URL generated from EAS Build
   APK_DOWNLOAD_URL:
     process.env.EXPO_PUBLIC_APK_DOWNLOAD_URL ||
-    'https://drive.google.com/uc?id=1V8e7qXjN9kM3rY0pZaW5uLt6sQ4dF2gH&export=download',
+    'https://expo.dev/artifacts/eas/r2Hcjw5ckhu12eKGlE0ylEUxKQue7ikMllCt_Hef-zQ.apk',
 };
 
 export default APP_CONFIG;
