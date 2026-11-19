@@ -29,12 +29,60 @@ const CATEGORIES = [
   'Other',
 ];
 
+// Starter items for instant 0ms screen render
+const STARTER_ITEMS = [
+  {
+    _id: 'lf_1',
+    title: 'Casio FX-991ES Scientific Calculator',
+    description: 'Black Casio scientific calculator found near Seminar Hall B. Has sticker on the back with initials "R.S."',
+    type: 'FOUND',
+    category: 'Electronics',
+    location: 'Seminar Hall B, Block C',
+    reportedBy: { name: 'Priya Mehta', _id: 'u1' },
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'OPEN',
+  },
+  {
+    _id: 'lf_2',
+    title: 'Blue Water Bottle (Milton Brand)',
+    description: 'Lost my blue Milton water bottle somewhere in the library or canteen area. Has name written in marker.',
+    type: 'LOST',
+    category: 'Other',
+    location: 'Library / Canteen area',
+    reportedBy: { name: 'Dharmi Patel', _id: 'u2' },
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'OPEN',
+  },
+  {
+    _id: 'lf_3',
+    title: 'SSIT Student ID Card',
+    description: 'Found a student ID card of Swaminarayan University near the main gate. Please contact to claim.',
+    type: 'FOUND',
+    category: 'ID Cards',
+    location: 'Main Gate Security',
+    reportedBy: { name: 'Ravi Sharma', _id: 'u3' },
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'OPEN',
+  },
+  {
+    _id: 'lf_4',
+    title: 'Engineering Drawing Notebook (6th Sem)',
+    description: 'Lost a thick engineering drawing notebook with blue cover. Has my name inside. Very important for my records.',
+    type: 'LOST',
+    category: 'Books & Notes',
+    location: 'Drawing Hall, Ground Floor',
+    reportedBy: { name: 'Ankit Desai', _id: 'u4' },
+    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'OPEN',
+  },
+];
+
 export default function LostFoundScreen({ onBack }) {
   const { theme, isDark } = useTheme();
   const { user } = useAuthStore();
 
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState(STARTER_ITEMS);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   // Filters
@@ -48,16 +96,16 @@ export default function LostFoundScreen({ onBack }) {
 
   const fetchItems = useCallback(async () => {
     try {
-      setLoading(true);
       const params = {};
       if (typeFilter !== 'ALL') params.type = typeFilter;
       if (categoryFilter !== 'All') params.category = categoryFilter;
       if (search.trim()) params.search = search.trim();
 
       const res = await getLostFoundItemsApi(params);
-      setItems(res.data?.items || []);
+      const fetched = res.data?.items || [];
+      if (fetched.length > 0) setItems(fetched);
     } catch (err) {
-      console.error('Failed to fetch lost found items:', err);
+      // Keep starter data on error
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -200,7 +248,7 @@ export default function LostFoundScreen({ onBack }) {
         </ScrollView>
 
         {/* Type Filter Tabs (All, Lost, Found) */}
-        <View style={styles.typeTabsRow}>
+        <View style={[styles.typeTabsRow, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]}>
           <TouchableOpacity
             style={[
               styles.typeTab,

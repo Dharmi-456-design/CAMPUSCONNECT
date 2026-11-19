@@ -92,7 +92,7 @@ export default function AcademicsScreen({ onNavigateTab }) {
               currentView === 'khs' && styles.segmentTextActive,
             ]}
           >
-            Kartu Hasil Studi (KHS)
+            Grade Card (SGPA / Result)
           </Text>
         </TouchableOpacity>
       </View>
@@ -109,33 +109,33 @@ export default function AcademicsScreen({ onNavigateTab }) {
           contentContainerStyle={[styles.khsContent, isDesktop && styles.desktopContainer]}
           showsVerticalScrollIndicator={false}
         >
-          {/* Alma Ata KHS summary card */}
+          {/* Swaminarayan University SGPA Result Summary */}
           <View style={styles.khsHeroCard}>
             <View style={styles.khsHeroHeader}>
               <View>
-                <Text style={styles.khsTitle}>Semester 5 - 2026/2027 Ganjil</Text>
-                <Text style={styles.khsSub}>Academic Transcript & Grade Breakdown</Text>
+                <Text style={styles.khsTitle}>Semester 6 Academic Result</Text>
+                <Text style={styles.khsSub}>Swaminarayan University, Kalol • SSIT</Text>
               </View>
               <View style={styles.khsGpaBadge}>
-                <Text style={styles.khsGpaLabel}>GPA</Text>
-                <Text style={styles.khsGpaValue}>3.84</Text>
+                <Text style={styles.khsGpaLabel}>SGPA</Text>
+                <Text style={styles.khsGpaValue}>8.92</Text>
               </View>
             </View>
 
             <View style={styles.khsStatsRow}>
               <View style={styles.khsStatItem}>
-                <Text style={styles.khsStatNum}>21</Text>
-                <Text style={styles.khsStatLbl}>Jumlah Total SKS</Text>
+                <Text style={styles.khsStatNum}>24</Text>
+                <Text style={styles.khsStatLbl}>Total Credits</Text>
               </View>
               <View style={styles.khsStatDivider} />
               <View style={styles.khsStatItem}>
-                <Text style={styles.khsStatNum}>7</Text>
-                <Text style={styles.khsStatLbl}>Mata Kuliah</Text>
+                <Text style={styles.khsStatNum}>6</Text>
+                <Text style={styles.khsStatLbl}>Subjects</Text>
               </View>
               <View style={styles.khsStatDivider} />
               <View style={styles.khsStatItem}>
-                <Text style={styles.khsStatNum}>100%</Text>
-                <Text style={styles.khsStatLbl}>Kelulusan</Text>
+                <Text style={styles.khsStatNum}>First Class</Text>
+                <Text style={styles.khsStatLbl}>Distinction</Text>
               </View>
             </View>
           </View>

@@ -11,9 +11,41 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import Icon from '../components/common/Icon';
+import { useTheme } from '../context/ThemeContext';
 import { getNotesApi } from '../api/notes.api';
 import NoteEditorScreen from './notes/NoteEditorScreen';
 import NoteDetailsScreen from './notes/NoteDetailsScreen';
+
+// Starter notes so the screen renders instantly (0ms)
+const STARTER_NOTES = [
+  {
+    _id: 'note_1',
+    title: 'ADA - Analysis & Design of Algorithms',
+    content: 'Unit 1: Divide & Conquer (Merge Sort, Quick Sort, Binary Search). Unit 2: Dynamic Programming (LCS, 0/1 Knapsack, Matrix Chain). Unit 3: Greedy Algorithms (Huffman, Prim, Kruskal).',
+    subjectName: 'ADA (CS601)',
+    isPinned: true,
+    isLocked: false,
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    _id: 'note_2',
+    title: 'Operating Systems - Important PYQs',
+    content: 'Process Scheduling: FCFS, SJF, Round Robin. Memory Management: Paging, Segmentation, Virtual Memory. Deadlock: Prevention, Avoidance (Banker\'s Algorithm), Detection.',
+    subjectName: 'OS (CS603)',
+    isPinned: false,
+    isLocked: false,
+    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    _id: 'note_3',
+    title: 'Computer Networks - Unit 3 Notes',
+    content: 'Network Layer: IP Addressing, Subnetting, VLSM. Routing Protocols: RIP, OSPF, BGP. Transport Layer: TCP vs UDP, Sliding Window, Congestion Control.',
+    subjectName: 'CN (CS604)',
+    isPinned: false,
+    isLocked: false,
+    createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+];
 
 export default function NotesScreen({
   initialSubjectId = null,
@@ -22,14 +54,15 @@ export default function NotesScreen({
 }) {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 960;
+  const { isDark } = useTheme();
 
   // View state: 'list' | 'details' | 'create' | 'edit'
   const [currentView, setCurrentView] = useState(
     initialSubjectId ? 'create' : 'list'
   );
   const [selectedNote, setSelectedNote] = useState(null);
-  const [notes, setNotes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [notes, setNotes] = useState(STARTER_NOTES);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'pinned' | 'locked'
@@ -121,18 +154,18 @@ export default function NotesScreen({
   });
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: isDark ? '#0B0F19' : '#FFFFFF' }]}>
       {/* Top Header matching reference (media_1794714942597_29fca6f3.png) */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Notes</Text>
+      <View style={[styles.header, { backgroundColor: isDark ? '#0B0F19' : '#FFFFFF' }]}>
+        <Text style={[styles.headerTitle, { color: isDark ? '#16A36A' : '#2563EB' }]}>Notes</Text>
 
         <View style={styles.headerRight}>
           <TouchableOpacity
-            style={styles.profileIconBox}
+            style={[styles.profileIconBox, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}
             onPress={() => onNavigateTab && onNavigateTab('profile')}
             activeOpacity={0.7}
           >
-            <Icon name="user" size={18} color="#475569" />
+            <Icon name="user" size={18} color={isDark ? '#94A3B8' : '#475569'} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -147,9 +180,9 @@ export default function NotesScreen({
 
       {/* Search notes rounded bar */}
       <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
+        <View style={[styles.searchBar, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: isDark ? '#F8FAFC' : '#0F172A' }]}
             placeholder="Search notes"
             placeholderTextColor="#94A3B8"
             value={searchQuery}
@@ -167,12 +200,13 @@ export default function NotesScreen({
       {/* Filter Tabs */}
       <View style={styles.filterTabsRow}>
         <TouchableOpacity
-          style={[styles.filterChip, activeFilter === 'all' && styles.filterChipActive]}
+          style={[styles.filterChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0' }, activeFilter === 'all' && styles.filterChipActive]}
           onPress={() => setActiveFilter('all')}
         >
           <Text
             style={[
               styles.filterChipText,
+              { color: isDark ? '#94A3B8' : '#64748B' },
               activeFilter === 'all' && styles.filterChipTextActive,
             ]}
           >
@@ -181,10 +215,7 @@ export default function NotesScreen({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.filterChip,
-            activeFilter === 'pinned' && styles.filterChipActive,
-          ]}
+          style={[styles.filterChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0' }, activeFilter === 'pinned' && styles.filterChipActive]}
           onPress={() => setActiveFilter('pinned')}
         >
           <Icon
@@ -196,6 +227,7 @@ export default function NotesScreen({
           <Text
             style={[
               styles.filterChipText,
+              { color: isDark ? '#94A3B8' : '#64748B' },
               activeFilter === 'pinned' && styles.filterChipTextActive,
             ]}
           >
@@ -204,10 +236,7 @@ export default function NotesScreen({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.filterChip,
-            activeFilter === 'locked' && styles.filterChipActive,
-          ]}
+          style={[styles.filterChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0' }, activeFilter === 'locked' && styles.filterChipActive]}
           onPress={() => setActiveFilter('locked')}
         >
           <Icon
@@ -219,6 +248,7 @@ export default function NotesScreen({
           <Text
             style={[
               styles.filterChipText,
+              { color: isDark ? '#94A3B8' : '#64748B' },
               activeFilter === 'locked' && styles.filterChipTextActive,
             ]}
           >
@@ -250,10 +280,10 @@ export default function NotesScreen({
           }
         >
           {displayedNotes.length === 0 ? (
-            <View style={styles.emptyCard}>
+            <View style={[styles.emptyCard, { backgroundColor: isDark ? '#121927' : '#FFFFFF', borderColor: isDark ? '#1E293B' : '#E2E8F0' }]}>
               <Icon name="file-text" size={42} color="#CBD5E1" />
-              <Text style={styles.emptyTitle}>No notes found</Text>
-              <Text style={styles.emptySub}>
+              <Text style={[styles.emptyTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>No notes found</Text>
+              <Text style={[styles.emptySub, { color: isDark ? '#94A3B8' : '#64748B' }]}>
                 {searchQuery
                   ? `No notes matching "${searchQuery}"`
                   : 'Start capturing your thoughts, coursework, and private study notes.'}
@@ -286,7 +316,7 @@ export default function NotesScreen({
                 return (
                   <TouchableOpacity
                     key={note._id}
-                    style={styles.noteCard}
+                    style={[styles.noteCard, { backgroundColor: isDark ? '#121927' : '#FFFFFF', borderColor: isDark ? '#1E293B' : '#F1F5F9' }]}
                     onPress={() => handleOpenNote(note)}
                     activeOpacity={0.7}
                   >
@@ -301,7 +331,7 @@ export default function NotesScreen({
                             style={{ marginRight: 6 }}
                           />
                         ) : null}
-                        <Text style={styles.cardTitle} numberOfLines={1}>
+                        <Text style={[styles.cardTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]} numberOfLines={1}>
                           {note.title}
                         </Text>
                       </View>
@@ -318,15 +348,15 @@ export default function NotesScreen({
                           style={{ marginRight: 6 }}
                         />
                       ) : null}
-                      <Text style={styles.cardSubtitle} numberOfLines={1}>
+                      <Text style={[styles.cardSubtitle, { color: isDark ? '#94A3B8' : '#64748B' }]} numberOfLines={1}>
                         {previewText}
                       </Text>
                     </View>
 
                     {/* Subject Tag badge */}
                     {note.subjectName && note.subjectName !== 'General' ? (
-                      <View style={styles.subjectBadge}>
-                        <Text style={styles.subjectBadgeText}>
+                      <View style={[styles.subjectBadge, { backgroundColor: isDark ? '#1E3A5F' : '#EFF6FF' }]}>
+                        <Text style={[styles.subjectBadgeText, { color: isDark ? '#93C5FD' : '#2563EB' }]}>
                           {note.subjectName}
                         </Text>
                       </View>
@@ -345,7 +375,6 @@ export default function NotesScreen({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',

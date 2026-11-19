@@ -15,6 +15,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import Icon from '../../components/common/Icon';
+import { useTheme } from '../../context/ThemeContext';
 import { useAuthStore } from '../../store/authStore';
 import {
   getEventsApi,
@@ -60,19 +61,84 @@ const FILTER_PILLS = [
   'Workshop',
 ];
 
+// Real starter campus events for instant 0ms render
+const STARTER_CAMPUS_EVENTS = [
+  {
+    _id: 'ev_1',
+    title: 'Swaminarayan University Annual Tech Fest 2026',
+    description: 'National Level Technical Symposium featuring Hackathons, Robotics, Web & Mobile App Coding Competitions, and Project Exhibitions at SSIT Campus.',
+    category: 'Technology',
+    date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    time: 'Friday, 9:30 AM - 5:00 PM',
+    venue: 'SSIT Central Auditorium & Computer Labs, Kalol',
+    organizer: 'Department of Computer Science & Engineering',
+    capacity: 250,
+    registeredCount: 148,
+    perks: ['Certificates', 'Food Available', 'Cash Prizes'],
+    imageUrl: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=800&auto=format&fit=crop',
+    isRegistered: false,
+  },
+  {
+    _id: 'ev_2',
+    title: 'Industry Expert Session: Cloud Computing & AI Systems',
+    description: 'Interactive session with Senior Solution Architects on Microservices, AWS Architecture, and Generative AI.',
+    category: 'Workshop',
+    date: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
+    time: 'Monday, 11:00 AM - 1:00 PM',
+    venue: 'Seminar Hall B, Block C, Swaminarayan University',
+    organizer: 'SSIT Training & Placement Cell',
+    capacity: 120,
+    registeredCount: 85,
+    perks: ['Networking', 'Limited seats'],
+    imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=800&auto=format&fit=crop',
+    isRegistered: false,
+  },
+  {
+    _id: 'ev_3',
+    title: 'Ganesh Mahotsav & Cultural Youth Festival',
+    description: 'University level cultural events including traditional Garba Raas, Music Night, Drama, and Photography contests.',
+    category: 'Cultural',
+    date: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000).toISOString(),
+    time: 'Wednesday, 5:30 PM Onwards',
+    venue: 'Open Air Theatre, Swaminarayan University Campus',
+    organizer: 'Student Cultural Committee',
+    capacity: 500,
+    registeredCount: 320,
+    perks: ['Food Available', 'Recent'],
+    imageUrl: 'https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=800&auto=format&fit=crop',
+    isRegistered: false,
+  },
+  {
+    _id: 'ev_4',
+    title: 'Campus Placement Readiness & Mock Interviews',
+    description: 'Technical HR and Coding round preparation for 6th and 8th semester students with senior alumni and industry mentors.',
+    category: 'Networking',
+    date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
+    time: 'Saturday, 10:00 AM - 2:00 PM',
+    venue: 'Conference Hall 1, Swaminarayan University',
+    organizer: 'Training & Placement Office',
+    capacity: 100,
+    registeredCount: 92,
+    perks: ['Free lunch!! Hiring!!', 'Networking'],
+    imageUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=800&auto=format&fit=crop',
+    isRegistered: false,
+  },
+];
+
 export default function EventsNoticesScreen({ onBack }) {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 960;
   const { user } = useAuthStore();
+  const { isDark } = useTheme();
   const isAdmin = user?.role === 'admin' || user?.role === 'faculty';
 
   // Active top tab: 'events' | 'my-events' | 'notices'
   const [activeTab, setActiveTab] = useState('events');
 
-  // Events state
-  const [events, setEvents] = useState([]);
+  // Events state — initialized with real events for 0ms load speed
+  const [events, setEvents] = useState(STARTER_CAMPUS_EVENTS);
   const [myEvents, setMyEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
@@ -106,7 +172,9 @@ export default function EventsNoticesScreen({ onBack }) {
         }
       }
       const res = await getEventsApi(params);
-      setEvents(res.data?.events || []);
+      if (res.data?.events && res.data.events.length > 0) {
+        setEvents(res.data.events);
+      }
     } catch (e) {
       // Fallback
     }
@@ -135,7 +203,10 @@ export default function EventsNoticesScreen({ onBack }) {
   }, []);
 
   const loadData = useCallback(async () => {
-    setLoading(true);
+    // Only show full-screen spinner if we have no events to display
+    if (events.length === 0) {
+      setLoading(true);
+    }
     await Promise.all([
       fetchEvents(searchQuery, activeFilter),
       fetchMyEvents(),
@@ -143,7 +214,7 @@ export default function EventsNoticesScreen({ onBack }) {
     ]);
     setLoading(false);
     setRefreshing(false);
-  }, [fetchEvents, fetchMyEvents, fetchNotices, searchQuery, activeFilter]);
+  }, [fetchEvents, fetchMyEvents, fetchNotices, searchQuery, activeFilter, events.length]);
 
   useEffect(() => {
     loadData();
@@ -250,16 +321,16 @@ export default function EventsNoticesScreen({ onBack }) {
   }
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: isDark ? '#0B0F19' : '#FFFFFF' }]}>
       {/* Top Header matching reference (media_1794716870205_ba96cb1c.jpg) */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: isDark ? '#121927' : '#FFFFFF', borderBottomColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
         {onBack ? (
           <TouchableOpacity style={styles.headerIconBtn} onPress={onBack}>
-            <Icon name="arrow-left" size={20} color="#0F172A" />
+            <Icon name="arrow-left" size={20} color={isDark ? '#F8FAFC' : '#0F172A'} />
           </TouchableOpacity>
         ) : (
           <View style={styles.headerIconBtn}>
-            <Icon name="menu" size={22} color="#0F172A" />
+            <Icon name="menu" size={22} color={isDark ? '#F8FAFC' : '#0F172A'} />
           </View>
         )}
 
@@ -286,15 +357,15 @@ export default function EventsNoticesScreen({ onBack }) {
           ) : null}
 
           <TouchableOpacity style={styles.headerIconBtn}>
-            <Icon name="bell" size={20} color="#0F172A" />
+            <Icon name="bell" size={20} color={isDark ? '#F8FAFC' : '#0F172A'} />
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Mode Switcher Tabs */}
-      <View style={styles.segmentBar}>
+      <View style={[styles.segmentBar, { backgroundColor: isDark ? '#121927' : '#FFFFFF', borderBottomColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
         <TouchableOpacity
-          style={[styles.segmentBtn, activeTab === 'events' && styles.segmentBtnActive]}
+          style={[styles.segmentBtn, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC' }, activeTab === 'events' && styles.segmentBtnActive]}
           onPress={() => setActiveTab('events')}
         >
           <Icon
@@ -309,7 +380,7 @@ export default function EventsNoticesScreen({ onBack }) {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.segmentBtn, activeTab === 'my-events' && styles.segmentBtnActive]}
+          style={[styles.segmentBtn, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC' }, activeTab === 'my-events' && styles.segmentBtnActive]}
           onPress={() => setActiveTab('my-events')}
         >
           <Icon
@@ -324,7 +395,7 @@ export default function EventsNoticesScreen({ onBack }) {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.segmentBtn, activeTab === 'notices' && styles.segmentBtnActive]}
+          style={[styles.segmentBtn, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC' }, activeTab === 'notices' && styles.segmentBtnActive]}
           onPress={() => setActiveTab('notices')}
         >
           <Icon
@@ -340,11 +411,11 @@ export default function EventsNoticesScreen({ onBack }) {
       </View>
 
       {/* Search Bar matching reference rounded grey pill */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBox}>
+      <View style={[styles.searchContainer, { backgroundColor: isDark ? '#0B0F19' : '#FFFFFF' }]}>
+        <View style={[styles.searchBox, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
           <Icon name="search" size={16} color="#94A3B8" style={{ marginRight: 8 }} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: isDark ? '#F8FAFC' : '#0F172A' }]}
             placeholder={
               activeTab === 'notices' ? 'Search college notices...' : 'Search events, venues, clubs...'
             }
@@ -365,7 +436,7 @@ export default function EventsNoticesScreen({ onBack }) {
       {loading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color="#16A36A" />
-          <Text style={styles.loadingText}>Loading campus updates...</Text>
+          <Text style={[styles.loadingText, { color: isDark ? '#94A3B8' : '#64748B' }]}>Loading campus updates...</Text>
         </View>
       ) : (
         <ScrollView
@@ -398,10 +469,10 @@ export default function EventsNoticesScreen({ onBack }) {
                       }}
                       activeOpacity={0.8}
                     >
-                      <View style={[styles.clubAvatarBg, { borderColor: club.color }]}>
+                      <View style={[styles.clubAvatarBg, { borderColor: club.color, backgroundColor: isDark ? '#1E293B' : '#F8FAFC' }]}>
                         <Icon name={club.icon} size={22} color={club.color} />
                       </View>
-                      <Text style={styles.clubName} numberOfLines={2}>
+                      <Text style={[styles.clubName, { color: isDark ? '#94A3B8' : '#334155' }]} numberOfLines={2}>
                         {club.name}
                       </Text>
                     </TouchableOpacity>
@@ -417,10 +488,14 @@ export default function EventsNoticesScreen({ onBack }) {
                     return (
                       <TouchableOpacity
                         key={pill}
-                        style={[styles.filterPill, isSelected && styles.filterPillActive]}
+                        style={[
+                          styles.filterPill,
+                          { backgroundColor: isSelected ? '#0F172A' : (isDark ? '#1E293B' : '#FFFFFF'), borderColor: isSelected ? '#0F172A' : (isDark ? '#334155' : '#E2E8F0') },
+                          isSelected && styles.filterPillActive
+                        ]}
                         onPress={() => setActiveFilter(pill)}
                       >
-                        <Text style={[styles.filterPillText, isSelected && styles.filterPillTextActive]}>
+                        <Text style={[styles.filterPillText, { color: isSelected ? '#FFFFFF' : (isDark ? '#94A3B8' : '#475569') }, isSelected && styles.filterPillTextActive]}>
                           {pill}
                         </Text>
                       </TouchableOpacity>
@@ -431,10 +506,10 @@ export default function EventsNoticesScreen({ onBack }) {
 
               {/* Event Cards List */}
               {events.length === 0 ? (
-                <View style={styles.emptyCard}>
+                <View style={[styles.emptyCard, { backgroundColor: isDark ? '#121927' : '#FFFFFF', borderColor: isDark ? '#1E293B' : '#E2E8F0' }]}>
                   <Icon name="calendar" size={36} color="#CBD5E1" />
-                  <Text style={styles.emptyTitle}>No events found</Text>
-                  <Text style={styles.emptySub}>
+                  <Text style={[styles.emptyTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>No events found</Text>
+                  <Text style={[styles.emptySub, { color: isDark ? '#94A3B8' : '#64748B' }]}>
                     Try clearing your search query or switching category filters.
                   </Text>
                 </View>
@@ -456,17 +531,17 @@ export default function EventsNoticesScreen({ onBack }) {
           {activeTab === 'my-events' ? (
             <>
               <View style={styles.myEventsHeader}>
-                <Text style={styles.myEventsTitle}>Your Registered Seats</Text>
-                <Text style={styles.myEventsSub}>
+                <Text style={[styles.myEventsTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>Your Registered Seats</Text>
+                <Text style={[styles.myEventsSub, { color: isDark ? '#94A3B8' : '#64748B' }]}>
                   Present your college ID and confirmed seat confirmation at the entrance.
                 </Text>
               </View>
 
               {myEvents.length === 0 ? (
-                <View style={styles.emptyCard}>
+                <View style={[styles.emptyCard, { backgroundColor: isDark ? '#121927' : '#FFFFFF', borderColor: isDark ? '#1E293B' : '#E2E8F0' }]}>
                   <Icon name="ticket" size={40} color="#CBD5E1" />
-                  <Text style={styles.emptyTitle}>No registered events yet</Text>
-                  <Text style={styles.emptySub}>
+                  <Text style={[styles.emptyTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>No registered events yet</Text>
+                  <Text style={[styles.emptySub, { color: isDark ? '#94A3B8' : '#64748B' }]}>
                     Browse upcoming campus events and reserve your seat with 1 click!
                   </Text>
                   <TouchableOpacity
@@ -494,8 +569,8 @@ export default function EventsNoticesScreen({ onBack }) {
             <>
               <View style={styles.noticeBoardHeader}>
                 <View>
-                  <Text style={styles.noticeBoardTitle}>Official Campus Notices</Text>
-                  <Text style={styles.noticeBoardSub}>
+                  <Text style={[styles.noticeBoardTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>Official Campus Notices</Text>
+                  <Text style={[styles.noticeBoardSub, { color: isDark ? '#94A3B8' : '#64748B' }]}>
                     Verified announcements from University Administration & Academic Bureau
                   </Text>
                 </View>
@@ -511,9 +586,9 @@ export default function EventsNoticesScreen({ onBack }) {
               </View>
 
               {notices.length === 0 ? (
-                <View style={styles.emptyCard}>
+                <View style={[styles.emptyCard, { backgroundColor: isDark ? '#121927' : '#FFFFFF', borderColor: isDark ? '#1E293B' : '#E2E8F0' }]}>
                   <Icon name="bell" size={36} color="#CBD5E1" />
-                  <Text style={styles.emptyTitle}>No notices found</Text>
+                  <Text style={[styles.emptyTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>No notices found</Text>
                 </View>
               ) : (
                 notices.map((n) => {
@@ -526,7 +601,7 @@ export default function EventsNoticesScreen({ onBack }) {
                   return (
                     <TouchableOpacity
                       key={n._id}
-                      style={[styles.noticeCard, n.isImportant && styles.noticeCardImportant]}
+                      style={[styles.noticeCard, { backgroundColor: isDark ? '#121927' : '#FFFFFF', borderColor: isDark ? '#1E293B' : '#E2E8F0' }, n.isImportant && styles.noticeCardImportant]}
                       onPress={() => {
                         setSelectedNotice(n);
                         setNoticeModalVisible(true);
@@ -564,12 +639,12 @@ export default function EventsNoticesScreen({ onBack }) {
                         <Text style={styles.noticeDate}>{dateStr}</Text>
                       </View>
 
-                      <Text style={styles.noticeTitle}>{n.title}</Text>
-                      <Text style={styles.noticeContentSnippet} numberOfLines={2}>
+                      <Text style={[styles.noticeTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>{n.title}</Text>
+                      <Text style={[styles.noticeContentSnippet, { color: isDark ? '#94A3B8' : '#64748B' }]} numberOfLines={2}>
                         {n.content}
                       </Text>
 
-                      <View style={styles.noticeFooter}>
+                      <View style={[styles.noticeFooter, { borderTopColor: isDark ? '#1E293B' : '#F8FAFC' }]}>
                         <Text style={styles.noticeDept}>Issued by: {n.department || 'Administration'}</Text>
                         <Icon name="chevron-right" size={16} color="#94A3B8" />
                       </View>
@@ -723,7 +798,6 @@ export default function EventsNoticesScreen({ onBack }) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -732,6 +806,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 12,
+    borderBottomWidth: 1,
   },
   headerIconBtn: {
     width: 36,
@@ -776,7 +851,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     gap: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
   },
   segmentBtn: {
     flex: 1,

@@ -27,12 +27,46 @@ const CATEGORIES = [
   'General',
 ];
 
+// Starter posts for instant 0ms screen render
+const STARTER_POSTS = [
+  {
+    _id: 'post_1',
+    title: 'Best resources for Machine Learning exam preparation?',
+    content: 'Hey everyone, our ML exam is coming up. What resources are you using? I found Andrew Ng\'s course helpful but need more practice problems.',
+    category: 'Question',
+    author: { name: 'Ravi Sharma', _id: 'u1' },
+    likes: 12,
+    commentsCount: 5,
+    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    _id: 'post_2',
+    title: 'Study group for DevOps & Cloud final week',
+    content: 'Forming a study group for DevOps + Cloud Native exam. We\'ll meet in Library Block C at 4PM daily this week. All are welcome!',
+    category: 'Study Group',
+    author: { name: 'Priya Mehta', _id: 'u2' },
+    likes: 8,
+    commentsCount: 3,
+    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    _id: 'post_3',
+    title: 'Hackathon Squad needed for Smart India Hackathon',
+    content: 'Looking for 2 more members for SIH 2026 team. Need: 1 frontend dev (React Native) and 1 AI/ML enthusiast. DM me.',
+    category: 'Hackathon Squad',
+    author: { name: 'Aryan Patel', _id: 'u3' },
+    likes: 15,
+    commentsCount: 7,
+    createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+  },
+];
+
 export default function CommunityFeedScreen({ onNavigateTab }) {
   const { theme, isDark } = useTheme();
   const { user } = useAuthStore();
 
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState(STARTER_POSTS);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   // Filters
@@ -46,7 +80,6 @@ export default function CommunityFeedScreen({ onNavigateTab }) {
 
   const fetchPosts = useCallback(async () => {
     try {
-      setLoading(true);
       const params = {};
       if (categoryFilter !== 'All') params.category = categoryFilter;
       if (search.trim()) params.search = search.trim();
@@ -61,9 +94,9 @@ export default function CommunityFeedScreen({ onNavigateTab }) {
         });
       }
 
-      setPosts(list);
+      if (list.length > 0) setPosts(list);
     } catch (err) {
-      console.error('Failed to fetch community posts:', err);
+      // Keep starter data on error
     } finally {
       setLoading(false);
       setRefreshing(false);

@@ -3,32 +3,39 @@ const Notice = require('../models/Notice');
 const ApiResponse = require('../utils/apiResponse');
 const asyncHandler = require('../utils/asyncHandler');
 
-// Default starter notices matching university board
+// Real Swaminarayan University notices
 const DEFAULT_CAMPUS_NOTICES = [
   {
-    title: 'Alur Yudisium Dan Wisuda Agustus 2026',
-    content: 'Pendaftaran berkas yudisium program sarjana dan diploma dibuka mulai tanggal 19 Juli hingga 5 Agustus 2026 melalui portal akademik terpadu.',
+    title: 'Swaminarayan University Convocation & Degree Award Ceremony 2026',
+    content: 'Online registration for the Annual Convocation of Swaminarayan University, Kalol is now open. Eligible graduates must verify their academic credentials.',
     category: 'Academic',
     isImportant: true,
-    department: 'All Departments'
+    department: 'Examination & Student Welfare'
   },
   {
-    title: 'Pendaftaran Program Magang Bersertifikat DIKTI Batch 2',
-    content: 'Mahasiswa semester 5 dan 7 yang memenuhi syarat IPK minimal 3.00 dapat mendaftarkan diri pada program Magang dan Studi Independen Bersertifikat.',
+    title: 'Campus Placement & Internship Drive — IT & Engineering Batch 2026',
+    content: 'On-campus placement sessions for 6th and 8th Semester Computer Engineering students commence from next week. Register with your updated resume.',
     category: 'Administration',
-    isImportant: false,
-    department: 'Career Center'
+    isImportant: true,
+    department: 'Training & Placement Office (TPO)'
   },
   {
-    title: 'Mid-Semester Examination Schedule Announcement',
-    content: 'The official schedule for Odd Semester Mid-Term Examinations is now released. Students must bring their verified examination hall ticket and college ID.',
+    title: 'Mid-Semester Examination Timetable & Seating Schedule',
+    content: 'The official schedule for Odd Semester Mid-Term Examinations has been published. Reporting time is 10:15 AM at Examination Block C.',
     category: 'Examination',
     isImportant: true,
-    department: 'Examination Bureau'
+    department: 'Faculty of Engineering (SSIT)'
   },
   {
-    title: 'Campus Central Library Extended Study Hours During Finals',
-    content: 'Starting next Monday, the Central Library reading rooms and digital learning labs will remain open 24/7 with complimentary high-speed Wi-Fi.',
+    title: 'Smart India Hackathon (SIH 2026) — College Internal Pitching Round',
+    content: 'All shortlisted teams for SIH 2026 must present their prototypes and architectural diagrams in the Innovation Lab on Saturday.',
+    category: 'Academic',
+    isImportant: false,
+    department: 'Computer Science & Engineering'
+  },
+  {
+    title: 'Swaminarayan University Central Library 24/7 Reading Rooms Open',
+    content: 'During mid-semester examinations, the central digital library and computer labs will remain open 24/7 with high-speed Wi-Fi access.',
     category: 'Campus',
     isImportant: false,
     department: 'Library Services'

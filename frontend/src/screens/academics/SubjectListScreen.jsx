@@ -16,6 +16,105 @@ import Icon from '../../components/common/Icon';
 import { getSubjectsApi, deleteSubjectApi } from '../../api/subjects.api';
 import AddSubjectModal from './AddSubjectModal';
 
+const DEFAULT_SWAMINARAYAN_SUBJECTS = [
+  {
+    _id: 'sub_1',
+    code: 'CSE-601',
+    name: 'Machine Learning & Deep Learning',
+    credits: 4,
+    semester: 6,
+    department: 'Computer Science & Engineering',
+    instructor: 'Dr. Rajesh Sharma',
+    grade: 'AA',
+    color: '#10B981',
+    category: 'my_subjects',
+  },
+  {
+    _id: 'sub_2',
+    code: 'CSE-602',
+    name: 'Web Technologies & Cloud Native Architecture',
+    credits: 4,
+    semester: 6,
+    department: 'Computer Science & Engineering',
+    instructor: 'Prof. Harsh Patel',
+    grade: 'AA',
+    color: '#3B82F6',
+    category: 'my_subjects',
+  },
+  {
+    _id: 'sub_3',
+    code: 'CSE-603',
+    name: 'Compiler Design & Language Translators',
+    credits: 4,
+    semester: 6,
+    department: 'Computer Science & Engineering',
+    instructor: 'Prof. Nidhi Shah',
+    grade: 'AB',
+    color: '#8B5CF6',
+    category: 'my_subjects',
+  },
+  {
+    _id: 'sub_4',
+    code: 'CSE-604',
+    name: 'Mobile App Development (React Native & Android)',
+    credits: 3,
+    semester: 6,
+    department: 'Computer Science & Engineering',
+    instructor: 'Prof. Sneha Prajapati',
+    grade: 'AA',
+    color: '#F59E0B',
+    category: 'my_subjects',
+  },
+  {
+    _id: 'sub_5',
+    code: 'CSE-605',
+    name: 'Cyber Security & Cryptography',
+    credits: 3,
+    semester: 6,
+    department: 'Computer Science & Engineering',
+    instructor: 'Prof. Viral Mehta',
+    grade: 'AB',
+    color: '#EF4444',
+    category: 'my_subjects',
+  },
+  {
+    _id: 'sub_6',
+    code: 'CSE-606',
+    name: 'Software Testing & Quality Assurance',
+    credits: 3,
+    semester: 6,
+    department: 'Computer Science & Engineering',
+    instructor: 'Prof. Bhavin Joshi',
+    grade: 'AA',
+    color: '#06B6D4',
+    category: 'my_subjects',
+  },
+  {
+    _id: 'sub_7',
+    code: 'CSE-607',
+    name: 'Cloud Computing & DevOps Architecture',
+    credits: 3,
+    semester: 6,
+    department: 'Computer Science & Engineering',
+    instructor: 'Dr. Alok Verma',
+    grade: 'AA',
+    color: '#6366F1',
+    category: 'main_hub',
+  },
+  {
+    _id: 'sub_8',
+    code: 'CSE-608',
+    name: 'Artificial Intelligence & Robotics',
+    credits: 4,
+    semester: 6,
+    department: 'Computer Science & Engineering',
+    instructor: 'Prof. Pooja Trivedi',
+    grade: 'AA',
+    color: '#EC4899',
+    category: 'main_hub',
+  },
+];
+
 export default function SubjectListScreen({
   onSelectSubject,
   onNavigateToProfile,
@@ -23,9 +122,9 @@ export default function SubjectListScreen({
   const { width } = useWindowDimensions();
   const isDesktop = width >= 960;
 
-  const [subjects, setSubjects] = useState([]);
-  const [gpa, setGpa] = useState('2.44');
-  const [loading, setLoading] = useState(true);
+  const [subjects, setSubjects] = useState(DEFAULT_SWAMINARAYAN_SUBJECTS);
+  const [gpa, setGpa] = useState('8.92');
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
@@ -36,7 +135,9 @@ export default function SubjectListScreen({
     try {
       const res = await getSubjectsApi({ search });
       const data = res.data || {};
-      setSubjects(data.subjects || []);
+      if (data.subjects && data.subjects.length > 0) {
+        setSubjects(data.subjects);
+      }
       if (data.gpa) {
         setGpa(data.gpa);
       }
