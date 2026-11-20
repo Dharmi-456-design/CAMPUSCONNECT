@@ -38,67 +38,67 @@ export default function HomeScreen({ onNavigateTab }) {
     }
   };
 
-  const studentName = user?.name || 'Michael Aguero';
+  const studentName = user?.name || 'Dharmi Patel';
   const firstName = studentName.split(' ')[0];
   const studentId = user?.rollNumber || '17081010086';
-  const gpa = user?.gpa || '3.67';
-  const sks = user?.sks || '89';
+  const gpa = user?.gpa || '8.92';
+  const sks = user?.sks || '24';
   const semester = user?.semester ? `0${user.semester}` : '06';
 
-  // 8 Quick Actions (matches Screenshot 2 Alma Ata Mobile)
+  // 8 Quick Actions (matches Swaminarayan University Services)
   const ALMA_ATA_SERVICES = [
-    { id: 'results', label: 'Hasil Studi', icon: 'file-text', color: '#3B82F6', bg: '#EFF6FF', action: () => onNavigateTab?.('academics') },
-    { id: 'transkrip', label: 'Transkrip', icon: 'award', color: '#10B981', bg: '#ECFDF5', action: () => setModalType('transcript') },
-    { id: 'jadwal', label: 'Jadwal', icon: 'calendar', color: '#06B6D4', bg: '#ECFEFF', action: () => setActiveSegment('routine') },
-    { id: 'berita', label: 'Berita', icon: 'bell', color: '#F59E0B', bg: '#FFFBEB', action: () => onNavigateTab?.('events') },
-    { id: 'pembayaran', label: 'Pembayaran', icon: 'credit-card', color: '#16A36A', bg: '#E8F5EE', action: () => setModalType('payment') },
-    { id: 'buku', label: 'Buku / Notes', icon: 'book-open', color: '#8B5CF6', bg: '#F5F3FF', action: () => onNavigateTab?.('notes') },
-    { id: 'presensi', label: 'Presensi', icon: 'check-circle', color: '#EC4899', bg: '#FDF2F8', action: () => setModalType('attendance') },
-    { id: 'lainnya', label: 'Lainnya', icon: 'grid', color: '#6366F1', bg: '#EEF2FF', action: () => onNavigateTab?.('explore') },
+    { id: 'results', label: 'Academic Result', icon: 'file-text', color: '#3B82F6', bg: '#EFF6FF', action: () => onNavigateTab?.('academics') },
+    { id: 'transkrip', label: 'Grade Card', icon: 'award', color: '#10B981', bg: '#ECFDF5', action: () => onNavigateTab?.('academics') },
+    { id: 'jadwal', label: 'Time Table', icon: 'calendar', color: '#06B6D4', bg: '#ECFEFF', action: () => setActiveSegment('routine') },
+    { id: 'berita', label: 'Campus News', icon: 'bell', color: '#F59E0B', bg: '#FFFBEB', action: () => onNavigateTab?.('events') },
+    { id: 'pembayaran', label: 'Fee Status', icon: 'credit-card', color: '#16A36A', bg: '#E8F5EE', action: () => setModalType('payment') },
+    { id: 'buku', label: 'Course Notes', icon: 'book-open', color: '#8B5CF6', bg: '#F5F3FF', action: () => onNavigateTab?.('notes') },
+    { id: 'presensi', label: 'Attendance', icon: 'check-circle', color: '#EC4899', bg: '#FDF2F8', action: () => setModalType('attendance') },
+    { id: 'lainnya', label: 'All Services', icon: 'grid', color: '#6366F1', bg: '#EEF2FF', action: () => onNavigateTab?.('explore') },
   ];
 
-  // Syllabus Chapters (matches Screenshot 4 Akbor Inside View)
+  // Syllabus Chapters (matches Swaminarayan University Course Modules)
   const SYLLABUS_CHAPTERS = [
-    { id: 1, chapter: 'Chapter 1', title: 'Set & function', lessons: 'Lesson count 8', status: 'completed' },
-    { id: 2, chapter: 'Chapter 2', title: 'Geometry & Coordinate Planes', lessons: 'Lesson count 10', status: 'completed' },
-    { id: 3, chapter: 'Chapter 3', title: 'Infinite series & Convergence', lessons: 'Lesson count 8', status: 'active' },
-    { id: 4, chapter: 'Chapter 4', title: 'Trigonometry & Polar Coordinates', lessons: 'Lesson count 10', status: 'upcoming' },
-    { id: 5, chapter: 'Chapter 5', title: 'Differential Calculus & Limits', lessons: 'Lesson count 12', status: 'upcoming' },
+    { id: 1, chapter: 'Module 1', title: 'Machine Learning Foundations', lessons: '8 Topics', status: 'completed' },
+    { id: 2, chapter: 'Module 2', title: 'Deep Neural Networks & Backprop', lessons: '10 Topics', status: 'completed' },
+    { id: 3, chapter: 'Module 3', title: 'Convolutional & Recurrent Nets', lessons: '8 Topics', status: 'active' },
+    { id: 4, chapter: 'Module 4', title: 'Cloud Native Microservices Architecture', lessons: '10 Topics', status: 'upcoming' },
+    { id: 5, chapter: 'Module 5', title: 'Compiler Code Generation & Optimization', lessons: '12 Topics', status: 'upcoming' },
   ];
 
   // Routine Timeline Items
   const ROUTINE_CLASSES = [
-    { time: '10:00 AM - 10:45 AM', room: 'Class 10 - C', subject: 'Higher Math', topic: 'Chapter 7: Infinite series', teacher: 'Prof. Harsh Patel', color: '#16A36A' },
-    { time: '11:00 AM - 12:30 PM', room: 'Lab SH-113', subject: 'Pemrograman Framework', topic: 'React Native & Mobile Architecture', teacher: 'Yuli Yuniar S.Kom, M.Kom', color: '#2563EB' },
-    { time: '02:00 PM - 03:30 PM', room: 'Hall B-201', subject: 'Data Mining', topic: 'K-Means Clustering & Decision Trees', teacher: 'Agung Mulya S.Kom', color: '#7C3AED' },
+    { time: '10:00 AM - 10:50 AM', room: 'Block C - Room 302', subject: 'Machine Learning', topic: 'Backpropagation & Gradient Descent', teacher: 'Dr. Rajesh Sharma', color: '#16A36A' },
+    { time: '11:00 AM - 12:30 PM', room: 'Lab C-104', subject: 'Web Technologies & Cloud Native', topic: 'Docker Containers & Kubernetes Deployments', teacher: 'Prof. Harsh Patel', color: '#2563EB' },
+    { time: '02:00 PM - 03:30 PM', room: 'Block C - Room 201', subject: 'Compiler Design', topic: 'LR Parsing Tables & Syntax Trees', teacher: 'Prof. Nidhi Shah', color: '#7C3AED' },
   ];
 
-  // Recent Notices (matches Screenshot 2 Berita Terbaru)
+  // Recent Notices
   const RECENT_NOTICES = [
     {
       id: 1,
-      badge: 'Berita Fakultas',
+      badge: 'Academic Notice',
       badgeColor: '#EF4444',
       badgeBg: '#FEE2E2',
-      title: 'Alur Yudisium Dan Wisuda Periode 2026',
+      title: 'Mid-Semester Examination Schedule for Semester 6 Announced',
       date: '19 Nov 2026',
       readTime: '3 min read',
     },
     {
       id: 2,
-      badge: 'Berita Kampus',
+      badge: 'Tech Fest',
       badgeColor: '#16A36A',
       badgeBg: '#DCFCE7',
-      title: 'Pendaftaran Program Magang Mahasiswa Bersertifikat (PMMB)',
+      title: 'Swaminarayan University Annual Tech Fest 2026 Registration Open',
       date: '14 Nov 2026',
       readTime: '5 min read',
     },
     {
       id: 3,
-      badge: 'Pengumuman',
+      badge: 'Placement Cell',
       badgeColor: '#F59E0B',
       badgeBg: '#FEF3C7',
-      title: 'Tembus Melebihi Kuota, UAA Rangkul Mahasiswa Baru Jalur Prestasi',
+      title: 'Campus Placement Readiness & Mock Interviews by Placement Cell',
       date: '10 Nov 2026',
       readTime: '2 min read',
     },
@@ -152,18 +152,18 @@ export default function HomeScreen({ onNavigateTab }) {
             <Text style={[styles.studentCardId, { color: isDark ? '#94A3B8' : '#64748B' }]}>ID: {studentId}</Text>
           </View>
           <View style={styles.activeStatusPill}>
-            <Text style={styles.activeStatusText}>Aktif</Text>
+            <Text style={styles.activeStatusText}>Active</Text>
           </View>
         </View>
 
         <View style={[styles.statsRow, { borderTopColor: isDark ? '#334155' : '#F1F5F9' }]}>
           <View style={styles.statCol}>
-            <Text style={[styles.statLabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>Jumlah SKS</Text>
+            <Text style={[styles.statLabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>Total Credits</Text>
             <Text style={[styles.statVal, { color: isDark ? '#F8FAFC' : '#172B4D' }]}>{sks}</Text>
           </View>
           <View style={[styles.statDivider, { backgroundColor: isDark ? '#334155' : '#E2E8F0' }]} />
           <View style={styles.statCol}>
-            <Text style={[styles.statLabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>Indeks Prestasi</Text>
+            <Text style={[styles.statLabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>SGPA / Result</Text>
             <Text style={[styles.statVal, { color: '#16A36A' }]}>{gpa}</Text>
           </View>
           <View style={[styles.statDivider, { backgroundColor: isDark ? '#334155' : '#E2E8F0' }]} />
@@ -430,7 +430,7 @@ export default function HomeScreen({ onNavigateTab }) {
             <View style={[styles.modalBox, { backgroundColor: isDark ? '#1E293B' : '#FFFFFF' }]}>
               <View style={styles.modalHeader}>
                 <Text style={[styles.modalTitle, { color: isDark ? '#F8FAFC' : '#172B4D' }]}>
-                  {modalType === 'transcript' ? '📜 Official Transcript' : modalType === 'payment' ? '💳 Status Pembayaran' : '✅ Ringkasan Presensi'}
+                  {modalType === 'transcript' ? '📜 Official Transcript' : modalType === 'payment' ? '💳 Fee Payment Status' : '✅ Attendance Summary'}
                 </Text>
                 <TouchableOpacity onPress={() => setModalType(null)}>
                   <Icon name="x" size={20} color={isDark ? '#94A3B8' : '#64748B'} />
@@ -440,7 +440,7 @@ export default function HomeScreen({ onNavigateTab }) {
               {modalType === 'transcript' && (
                 <View style={styles.modalBody}>
                   <Text style={[styles.modalText, { color: isDark ? '#E2E8F0' : '#172B4D' }]}>
-                    Cum Laude Standing: GPA {gpa} with {sks} completed credit units across Semesters 1 through 6.
+                    First Class Distinction: SGPA {gpa} with {sks} completed credit units in Semester 6.
                   </Text>
                   <TouchableOpacity
                     style={styles.modalPrimaryBtn}
@@ -459,7 +459,7 @@ export default function HomeScreen({ onNavigateTab }) {
                 <View style={styles.modalBody}>
                   <View style={styles.paymentStatusBadge}>
                     <Icon name="check-circle" size={16} color="#16A36A" />
-                    <Text style={styles.paymentStatusText}>All Semester 6 Tuition Fees LUNAS</Text>
+                    <Text style={styles.paymentStatusText}>All Semester 6 Tuition Fees PAID</Text>
                   </View>
                   <Text style={[styles.modalText, { color: isDark ? '#94A3B8' : '#64748B', marginTop: 10 }]}>
                     Virtual Account No: 880917081010086. No outstanding financial holds on exam registration.
