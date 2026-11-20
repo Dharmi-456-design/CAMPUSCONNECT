@@ -14,14 +14,21 @@
     "isolatedModules": true,
     "paths": {
       "*": [
-        "*"
+        "./*"
       ]
     }
   },
+  "include": [
+    "src/**/*",
+    "App.js",
+    "index.js"
+  ],
   "exclude": [
     "node_modules",
     "babel.config.js",
-    "metro.config.js"
+    "metro.config.js",
+    "dist",
+    "app"
   ],
   "extends": "expo/tsconfig.base"
 }

@@ -13,6 +13,7 @@ import {
   Alert,
 } from 'react-native';
 import Icon from '../../components/common/Icon';
+import { useTheme } from '../../context/ThemeContext';
 import { getSubjectsApi, deleteSubjectApi } from '../../api/subjects.api';
 import AddSubjectModal from './AddSubjectModal';
 
@@ -121,6 +122,7 @@ export default function SubjectListScreen({
 }) {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 960;
+  const { isDark } = useTheme();
 
   const [subjects, setSubjects] = useState(DEFAULT_SWAMINARAYAN_SUBJECTS);
   const [gpa, setGpa] = useState('8.92');
@@ -187,20 +189,38 @@ export default function SubjectListScreen({
   const mainHubSubjects = subjects.filter((s) => s.category === 'main_hub');
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: isDark ? '#0B0F19' : '#F3F4F6' }]}>
       {/* Top Header matching reference (media_1794714940209_282a55f9.png) */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: isDark ? '#121927' : '#FFFFFF',
+            borderBottomColor: isDark ? '#1E293B' : '#E5E7EB',
+          },
+        ]}
+      >
         <TouchableOpacity
           style={styles.profileBtn}
           onPress={onNavigateToProfile}
           activeOpacity={0.7}
         >
-          <View style={styles.avatarCircle}>
+          <View
+            style={[
+              styles.avatarCircle,
+              {
+                backgroundColor: isDark ? '#1E293B' : '#EFF6FF',
+                borderColor: isDark ? '#334155' : '#BFDBFE',
+              },
+            ]}
+          >
             <Icon name="user" size={18} color="#2563EB" />
           </View>
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Subjects</Text>
+        <Text style={[styles.headerTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+          Subjects
+        </Text>
 
         <View style={styles.headerActions}>
           <TouchableOpacity
@@ -227,11 +247,21 @@ export default function SubjectListScreen({
       </View>
 
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBox}>
+      <View
+        style={[
+          styles.searchContainer,
+          { backgroundColor: isDark ? '#121927' : '#FFFFFF' },
+        ]}
+      >
+        <View
+          style={[
+            styles.searchBox,
+            { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' },
+          ]}
+        >
           <Icon name="search" size={16} color="#94A3B8" style={{ marginRight: 8 }} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: isDark ? '#F8FAFC' : '#0F172A' }]}
             placeholder="Search subjects, codes, instructors..."
             placeholderTextColor="#94A3B8"
             value={searchQuery}
@@ -250,7 +280,9 @@ export default function SubjectListScreen({
       {loading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color="#16A36A" />
-          <Text style={styles.loadingText}>Loading enrolled subjects...</Text>
+          <Text style={[styles.loadingText, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+            Loading enrolled subjects...
+          </Text>
         </View>
       ) : (
         <ScrollView
@@ -270,12 +302,25 @@ export default function SubjectListScreen({
         >
           {/* SECTION 1: MY SUBJECTS */}
           <View style={styles.sectionContainer}>
-            <Text style={styles.sectionHeading}>MY SUBJECTS</Text>
+            <Text style={[styles.sectionHeading, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+              MY SUBJECTS
+            </Text>
 
-            <View style={styles.cardGroup}>
+            <View
+              style={[
+                styles.cardGroup,
+                {
+                  backgroundColor: isDark ? '#121927' : '#FFFFFF',
+                  borderColor: isDark ? '#1E293B' : '#F1F5F9',
+                  borderWidth: isDark ? 1 : 0,
+                },
+              ]}
+            >
               {mySubjects.length === 0 ? (
                 <View style={styles.emptyCard}>
-                  <Text style={styles.emptyText}>No subjects in this section.</Text>
+                  <Text style={[styles.emptyText, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                    No subjects in this section.
+                  </Text>
                 </View>
               ) : (
                 mySubjects.map((sub, index) => {
@@ -283,7 +328,11 @@ export default function SubjectListScreen({
                   return (
                     <TouchableOpacity
                       key={sub._id}
-                      style={[styles.subjectItem, isLast && styles.subjectItemLast]}
+                      style={[
+                        styles.subjectItem,
+                        { borderBottomColor: isDark ? '#1E293B' : '#F1F5F9' },
+                        isLast && styles.subjectItemLast,
+                      ]}
                       onPress={() => onSelectSubject && onSelectSubject(sub)}
                       activeOpacity={0.7}
                     >
@@ -297,11 +346,21 @@ export default function SubjectListScreen({
 
                       {/* Middle metadata */}
                       <View style={styles.itemMeta}>
-                        <Text style={styles.itemCode}>{sub.code}</Text>
-                        <Text style={styles.itemName} numberOfLines={1}>
+                        <Text style={[styles.itemCode, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                          {sub.code}
+                        </Text>
+                        <Text
+                          style={[styles.itemName, { color: isDark ? '#F8FAFC' : '#0F172A' }]}
+                          numberOfLines={1}
+                        >
                           {sub.name}
                         </Text>
-                        <Text style={styles.itemCredits}>
+                        <Text
+                          style={[
+                            styles.itemCredits,
+                            { color: isDark ? '#64748B' : '#94A3B8' },
+                          ]}
+                        >
                           {sub.credits} credit{sub.credits === 1 ? '' : 's'}
                         </Text>
                       </View>
@@ -318,7 +377,14 @@ export default function SubjectListScreen({
                         ) : (
                           <>
                             {sub.grade ? (
-                              <Text style={styles.itemGrade}>{sub.grade}</Text>
+                              <Text
+                                style={[
+                                  styles.itemGrade,
+                                  { color: isDark ? '#F8FAFC' : '#0F172A' },
+                                ]}
+                              >
+                                {sub.grade}
+                              </Text>
                             ) : null}
                             <Icon name="chevron-right" size={18} color="#94A3B8" />
                           </>
@@ -335,8 +401,10 @@ export default function SubjectListScreen({
           <View style={styles.sectionContainer}>
             <View style={styles.hubHeaderRow}>
               <View style={styles.hubTitleRow}>
-                <Icon name="lock" size={15} color="#64748B" style={{ marginRight: 6 }} />
-                <Text style={styles.sectionHeading}>MAIN HUB</Text>
+                <Icon name="lock" size={15} color={isDark ? '#94A3B8' : '#64748B'} style={{ marginRight: 6 }} />
+                <Text style={[styles.sectionHeading, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                  MAIN HUB
+                </Text>
               </View>
               <TouchableOpacity
                 onPress={() => {
@@ -344,14 +412,25 @@ export default function SubjectListScreen({
                   setModalVisible(true);
                 }}
               >
-                <Icon name="more-horizontal" size={18} color="#64748B" />
+                <Icon name="more-horizontal" size={18} color={isDark ? '#94A3B8' : '#64748B'} />
               </TouchableOpacity>
             </View>
 
-            <View style={styles.cardGroup}>
+            <View
+              style={[
+                styles.cardGroup,
+                {
+                  backgroundColor: isDark ? '#121927' : '#FFFFFF',
+                  borderColor: isDark ? '#1E293B' : '#F1F5F9',
+                  borderWidth: isDark ? 1 : 0,
+                },
+              ]}
+            >
               {mainHubSubjects.length === 0 ? (
                 <View style={styles.emptyCard}>
-                  <Text style={styles.emptyText}>No subjects in Main Hub.</Text>
+                  <Text style={[styles.emptyText, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                    No subjects in Main Hub.
+                  </Text>
                 </View>
               ) : (
                 mainHubSubjects.map((sub, index) => {
@@ -359,7 +438,11 @@ export default function SubjectListScreen({
                   return (
                     <TouchableOpacity
                       key={sub._id}
-                      style={[styles.subjectItem, isLast && styles.subjectItemLast]}
+                      style={[
+                        styles.subjectItem,
+                        { borderBottomColor: isDark ? '#1E293B' : '#F1F5F9' },
+                        isLast && styles.subjectItemLast,
+                      ]}
                       onPress={() => onSelectSubject && onSelectSubject(sub)}
                       activeOpacity={0.7}
                     >
@@ -379,11 +462,21 @@ export default function SubjectListScreen({
 
                       {/* Middle metadata */}
                       <View style={styles.itemMeta}>
-                        <Text style={styles.itemCode}>{sub.code}</Text>
-                        <Text style={styles.itemName} numberOfLines={1}>
+                        <Text style={[styles.itemCode, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                          {sub.code}
+                        </Text>
+                        <Text
+                          style={[styles.itemName, { color: isDark ? '#F8FAFC' : '#0F172A' }]}
+                          numberOfLines={1}
+                        >
                           {sub.name}
                         </Text>
-                        <Text style={styles.itemCredits}>
+                        <Text
+                          style={[
+                            styles.itemCredits,
+                            { color: isDark ? '#64748B' : '#94A3B8' },
+                          ]}
+                        >
                           {sub.credits} credit{sub.credits === 1 ? '' : 's'}
                         </Text>
                       </View>
@@ -411,8 +504,16 @@ export default function SubjectListScreen({
       )}
 
       {/* Bottom Sticky GPA Bar */}
-      <View style={styles.bottomBar}>
-        <Text style={styles.gpaText}>
+      <View
+        style={[
+          styles.bottomBar,
+          {
+            backgroundColor: isDark ? '#121927' : '#FFFFFF',
+            borderTopColor: isDark ? '#1E293B' : '#E5E7EB',
+          },
+        ]}
+      >
+        <Text style={[styles.gpaText, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
           GPA: {String(gpa).replace('.', ',')}
         </Text>
       </View>

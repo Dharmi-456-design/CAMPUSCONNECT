@@ -10,10 +10,12 @@ import {
 import SubjectListScreen from './academics/SubjectListScreen';
 import SubjectDetailsScreen from './academics/SubjectDetailsScreen';
 import Icon from '../components/common/Icon';
+import { useTheme } from '../context/ThemeContext';
 
 export default function AcademicsScreen({ onNavigateTab }) {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 960;
+  const { isDark } = useTheme();
 
   // Active view: 'subjects' | 'subject-details' | 'khs'
   const [currentView, setCurrentView] = useState('subjects');
@@ -51,23 +53,36 @@ export default function AcademicsScreen({ onNavigateTab }) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: isDark ? '#0B0F19' : '#F8FAFC' }]}>
       {/* Top segment switcher for Subjects vs Kartu Hasil Studi */}
-      <View style={styles.topSegmentBar}>
+      <View
+        style={[
+          styles.topSegmentBar,
+          {
+            backgroundColor: isDark ? '#121927' : '#FFFFFF',
+            borderBottomColor: isDark ? '#1E293B' : '#E2E8F0',
+          },
+        ]}
+      >
         <TouchableOpacity
-          style={[styles.segmentBtn, currentView === 'subjects' && styles.segmentBtnActive]}
+          style={[
+            styles.segmentBtn,
+            { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' },
+            currentView === 'subjects' && styles.segmentBtnActive,
+          ]}
           onPress={() => setCurrentView('subjects')}
           activeOpacity={0.8}
         >
           <Icon
             name="book"
             size={15}
-            color={currentView === 'subjects' ? '#FFFFFF' : '#64748B'}
+            color={currentView === 'subjects' ? '#FFFFFF' : (isDark ? '#94A3B8' : '#64748B')}
             style={{ marginRight: 6 }}
           />
           <Text
             style={[
               styles.segmentText,
+              { color: isDark ? '#94A3B8' : '#64748B' },
               currentView === 'subjects' && styles.segmentTextActive,
             ]}
           >
@@ -76,19 +91,24 @@ export default function AcademicsScreen({ onNavigateTab }) {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.segmentBtn, currentView === 'khs' && styles.segmentBtnActive]}
+          style={[
+            styles.segmentBtn,
+            { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' },
+            currentView === 'khs' && styles.segmentBtnActive,
+          ]}
           onPress={() => setCurrentView('khs')}
           activeOpacity={0.8}
         >
           <Icon
             name="award"
             size={15}
-            color={currentView === 'khs' ? '#FFFFFF' : '#64748B'}
+            color={currentView === 'khs' ? '#FFFFFF' : (isDark ? '#94A3B8' : '#64748B')}
             style={{ marginRight: 6 }}
           />
           <Text
             style={[
               styles.segmentText,
+              { color: isDark ? '#94A3B8' : '#64748B' },
               currentView === 'khs' && styles.segmentTextActive,
             ]}
           >
@@ -110,50 +130,72 @@ export default function AcademicsScreen({ onNavigateTab }) {
           showsVerticalScrollIndicator={false}
         >
           {/* Swaminarayan University SGPA Result Summary */}
-          <View style={styles.khsHeroCard}>
+          <View
+            style={[
+              styles.khsHeroCard,
+              {
+                backgroundColor: isDark ? '#121927' : '#FFFFFF',
+                borderColor: isDark ? '#1E293B' : '#E2E8F0',
+              },
+            ]}
+          >
             <View style={styles.khsHeroHeader}>
               <View>
-                <Text style={styles.khsTitle}>Semester 6 Academic Result</Text>
-                <Text style={styles.khsSub}>Swaminarayan University, Kalol • SSIT</Text>
+                <Text style={[styles.khsTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                  Semester 6 Academic Result
+                </Text>
+                <Text style={[styles.khsSub, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                  Swaminarayan University, Kalol • SSIT
+                </Text>
               </View>
-              <View style={styles.khsGpaBadge}>
+              <View style={[styles.khsGpaBadge, { backgroundColor: isDark ? '#064E3B' : '#E8F5EE' }]}>
                 <Text style={styles.khsGpaLabel}>SGPA</Text>
                 <Text style={styles.khsGpaValue}>8.92</Text>
               </View>
             </View>
 
-            <View style={styles.khsStatsRow}>
+            <View style={[styles.khsStatsRow, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC' }]}>
               <View style={styles.khsStatItem}>
-                <Text style={styles.khsStatNum}>24</Text>
-                <Text style={styles.khsStatLbl}>Total Credits</Text>
+                <Text style={[styles.khsStatNum, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>24</Text>
+                <Text style={[styles.khsStatLbl, { color: isDark ? '#94A3B8' : '#64748B' }]}>Total Credits</Text>
               </View>
-              <View style={styles.khsStatDivider} />
+              <View style={[styles.khsStatDivider, { backgroundColor: isDark ? '#334155' : '#E2E8F0' }]} />
               <View style={styles.khsStatItem}>
-                <Text style={styles.khsStatNum}>6</Text>
-                <Text style={styles.khsStatLbl}>Subjects</Text>
+                <Text style={[styles.khsStatNum, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>6</Text>
+                <Text style={[styles.khsStatLbl, { color: isDark ? '#94A3B8' : '#64748B' }]}>Subjects</Text>
               </View>
-              <View style={styles.khsStatDivider} />
+              <View style={[styles.khsStatDivider, { backgroundColor: isDark ? '#334155' : '#E2E8F0' }]} />
               <View style={styles.khsStatItem}>
-                <Text style={styles.khsStatNum}>First Class</Text>
-                <Text style={styles.khsStatLbl}>Distinction</Text>
+                <Text style={[styles.khsStatNum, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>First Class</Text>
+                <Text style={[styles.khsStatLbl, { color: isDark ? '#94A3B8' : '#64748B' }]}>Distinction</Text>
               </View>
             </View>
           </View>
 
           {/* Quick switch back banner */}
           <TouchableOpacity
-            style={styles.manageSubjectsBanner}
+            style={[
+              styles.manageSubjectsBanner,
+              {
+                backgroundColor: isDark ? '#064E3B' : '#E8F5EE',
+                borderColor: isDark ? '#047857' : '#A7F3D0',
+              },
+            ]}
             onPress={() => setCurrentView('subjects')}
             activeOpacity={0.8}
           >
             <View style={styles.manageBannerLeft}>
               <Icon name="edit-3" size={18} color="#16A36A" />
               <View style={{ marginLeft: 10 }}>
-                <Text style={styles.manageBannerTitle}>Manage Enrolled Subjects</Text>
-                <Text style={styles.manageBannerSub}>Add, edit, or customize your course modules & grades</Text>
+                <Text style={[styles.manageBannerTitle, { color: isDark ? '#34D399' : '#16A36A' }]}>
+                  Manage Enrolled Subjects
+                </Text>
+                <Text style={[styles.manageBannerSub, { color: isDark ? '#A7F3D0' : '#065F46' }]}>
+                  Add, edit, or customize your course modules & grades
+                </Text>
               </View>
             </View>
-            <Icon name="arrow-right" size={18} color="#16A36A" />
+            <Icon name="arrow-right" size={18} color={isDark ? '#34D399' : '#16A36A'} />
           </TouchableOpacity>
         </ScrollView>
       )}

@@ -7,8 +7,12 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Icon from '../../components/common/Icon';
+import { useTheme } from '../../context/ThemeContext';
 
-export default function LostFoundCard({ item, onPress, isDark, theme }) {
+export default function LostFoundCard({ item, onPress, isDark: propIsDark, theme: propTheme }) {
+  const { isDark: contextIsDark, theme: contextTheme } = useTheme();
+  const isDark = propIsDark !== undefined ? propIsDark : contextIsDark;
+  const theme = propTheme || contextTheme;
   const isLost = item.type === 'LOST';
   const isClaimed = item.status === 'CLAIMED' || item.status === 'RESOLVED';
 

@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import Icon from '../../components/common/Icon';
+import { useTheme } from '../../context/ThemeContext';
 import { getSubjectByIdApi, deleteSubjectApi } from '../../api/subjects.api';
 import { getNotesApi } from '../../api/notes.api';
 import AddSubjectModal from './AddSubjectModal';
@@ -24,6 +25,7 @@ export default function SubjectDetailsScreen({
 }) {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 960;
+  const { isDark } = useTheme();
 
   const [subject, setSubject] = useState(null);
   const [notes, setNotes] = useState([]);
@@ -115,12 +117,22 @@ export default function SubjectDetailsScreen({
   const subjectColor = subject.color || '#10B981';
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: isDark ? '#0B0F19' : '#F8FAFC' }]}>
       {/* Top Bar */}
-      <View style={styles.topBar}>
+      <View
+        style={[
+          styles.topBar,
+          {
+            backgroundColor: isDark ? '#121927' : '#FFFFFF',
+            borderBottomColor: isDark ? '#1E293B' : '#E2E8F0',
+          },
+        ]}
+      >
         <TouchableOpacity style={styles.topBarBtn} onPress={onBack} activeOpacity={0.7}>
-          <Icon name="arrow-left" size={20} color="#0F172A" />
-          <Text style={styles.topBarBtnText}>Subjects</Text>
+          <Icon name="arrow-left" size={20} color={isDark ? '#F8FAFC' : '#0F172A'} />
+          <Text style={[styles.topBarBtnText, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+            Subjects
+          </Text>
         </TouchableOpacity>
 
         <View style={styles.topBarRight}>
@@ -152,18 +164,38 @@ export default function SubjectDetailsScreen({
       </View>
 
       <ScrollView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: isDark ? '#0B0F19' : '#F8FAFC' }]}
         contentContainerStyle={[styles.contentContainer, isDesktop && styles.desktopContainer]}
         showsVerticalScrollIndicator={false}
       >
         {/* Hero Card */}
-        <View style={styles.heroCard}>
+        <View
+          style={[
+            styles.heroCard,
+            {
+              backgroundColor: isDark ? '#121927' : '#FFFFFF',
+              borderColor: isDark ? '#1E293B' : '#E2E8F0',
+            },
+          ]}
+        >
           <View style={styles.heroTopRow}>
             <View style={styles.heroBadgeRow}>
               <View style={[styles.colorDot, { backgroundColor: subjectColor }]} />
-              <Text style={styles.subjectCode}>{subject.code}</Text>
-              <View style={styles.sectionBadge}>
-                <Text style={styles.sectionBadgeText}>
+              <Text style={[styles.subjectCode, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                {subject.code}
+              </Text>
+              <View
+                style={[
+                  styles.sectionBadge,
+                  { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.sectionBadgeText,
+                    { color: isDark ? '#CBD5E1' : '#475569' },
+                  ]}
+                >
                   {subject.category === 'main_hub' ? 'Main Hub' : 'My Subjects'}
                 </Text>
               </View>
@@ -174,42 +206,63 @@ export default function SubjectDetailsScreen({
             </View>
           </View>
 
-          <Text style={styles.subjectName}>{subject.name}</Text>
+          <Text style={[styles.subjectName, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+            {subject.name}
+          </Text>
 
           {subject.description ? (
-            <Text style={styles.subjectDesc}>{subject.description}</Text>
+            <Text style={[styles.subjectDesc, { color: isDark ? '#94A3B8' : '#475569' }]}>
+              {subject.description}
+            </Text>
           ) : null}
 
           {/* Key Metrics Row */}
-          <View style={styles.metricsGrid}>
+          <View
+            style={[
+              styles.metricsGrid,
+              { backgroundColor: isDark ? '#1E293B' : '#F8FAFC' },
+            ]}
+          >
             <View style={styles.metricItem}>
               <Icon name="award" size={16} color="#16A36A" />
-              <Text style={styles.metricValue}>{subject.credits} Credits</Text>
-              <Text style={styles.metricLabel}>Credit Load</Text>
+              <Text style={[styles.metricValue, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                {subject.credits} Credits
+              </Text>
+              <Text style={[styles.metricLabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                Credit Load
+              </Text>
             </View>
 
             <View style={styles.metricItem}>
               <Icon name="calendar" size={16} color="#3B82F6" />
-              <Text style={styles.metricValue}>Semester {subject.semester || 1}</Text>
-              <Text style={styles.metricLabel}>Current Term</Text>
+              <Text style={[styles.metricValue, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                Semester {subject.semester || 1}
+              </Text>
+              <Text style={[styles.metricLabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                Current Term
+              </Text>
             </View>
 
             <View style={styles.metricItem}>
               <Icon name="book-open" size={16} color="#F59E0B" />
-              <Text style={styles.metricValue}>{notes.length} Notes</Text>
-              <Text style={styles.metricLabel}>Private Notes</Text>
+              <Text style={[styles.metricValue, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                {notes.length} Notes
+              </Text>
+              <Text style={[styles.metricLabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                Private Notes
+              </Text>
             </View>
           </View>
 
           {/* Department & Instructor Info */}
           <View style={styles.detailsList}>
             <View style={styles.detailRow}>
-              <View style={styles.detailIcon}>
-                <Icon name="layers" size={16} color="#64748B" />
+              <View style={[styles.detailIcon, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC' }]}>
+                <Icon name="layers" size={16} color={isDark ? '#94A3B8' : '#64748B'} />
               </View>
               <View style={styles.detailMeta}>
-                <Text style={styles.detailLabel}>Department</Text>
-                <Text style={styles.detailValue}>
+                <Text style={[styles.detailLabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>Department</Text>
+                <Text style={[styles.detailValue, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
                   {subject.department || 'Computer Science & Engineering'}
                 </Text>
               </View>
@@ -217,12 +270,12 @@ export default function SubjectDetailsScreen({
 
             {subject.instructor ? (
               <View style={styles.detailRow}>
-                <View style={styles.detailIcon}>
-                  <Icon name="user" size={16} color="#64748B" />
+                <View style={[styles.detailIcon, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC' }]}>
+                  <Icon name="user" size={16} color={isDark ? '#94A3B8' : '#64748B'} />
                 </View>
                 <View style={styles.detailMeta}>
-                  <Text style={styles.detailLabel}>Instructor / Lecturer</Text>
-                  <Text style={styles.detailValue}>{subject.instructor}</Text>
+                  <Text style={[styles.detailLabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>Instructor / Lecturer</Text>
+                  <Text style={[styles.detailValue, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>{subject.instructor}</Text>
                 </View>
               </View>
             ) : null}
@@ -232,8 +285,10 @@ export default function SubjectDetailsScreen({
         {/* Associated Notes Section */}
         <View style={styles.sectionHeaderRow}>
           <View>
-            <Text style={styles.sectionTitle}>Course Notes & Study Material</Text>
-            <Text style={styles.sectionSub}>
+            <Text style={[styles.sectionTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+              Course Notes & Study Material
+            </Text>
+            <Text style={[styles.sectionSub, { color: isDark ? '#94A3B8' : '#64748B' }]}>
               {notes.length} private note{notes.length === 1 ? '' : 's'} linked to {subject.code}
             </Text>
           </View>
@@ -249,10 +304,20 @@ export default function SubjectDetailsScreen({
         </View>
 
         {notes.length === 0 ? (
-          <View style={styles.emptyNotesCard}>
+          <View
+            style={[
+              styles.emptyNotesCard,
+              {
+                backgroundColor: isDark ? '#121927' : '#FFFFFF',
+                borderColor: isDark ? '#1E293B' : '#E2E8F0',
+              },
+            ]}
+          >
             <Icon name="file-text" size={36} color="#CBD5E1" />
-            <Text style={styles.emptyNotesTitle}>No notes for this subject yet</Text>
-            <Text style={styles.emptyNotesSub}>
+            <Text style={[styles.emptyNotesTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+              No notes for this subject yet
+            </Text>
+            <Text style={[styles.emptyNotesSub, { color: isDark ? '#94A3B8' : '#64748B' }]}>
               Capture formulas, lecture summaries, or exam reminders for {subject.name}.
             </Text>
             <TouchableOpacity
@@ -267,7 +332,13 @@ export default function SubjectDetailsScreen({
             {notes.map((note) => (
               <TouchableOpacity
                 key={note._id}
-                style={styles.noteItemCard}
+                style={[
+                  styles.noteItemCard,
+                  {
+                    backgroundColor: isDark ? '#121927' : '#FFFFFF',
+                    borderColor: isDark ? '#1E293B' : '#F1F5F9',
+                  },
+                ]}
                 onPress={() => onNavigateToNote && onNavigateToNote(note)}
                 activeOpacity={0.7}
               >
@@ -279,24 +350,35 @@ export default function SubjectDetailsScreen({
                     {note.isLocked ? (
                       <Icon name="lock" size={14} color="#64748B" style={{ marginRight: 6 }} />
                     ) : null}
-                    <Text style={styles.noteItemTitle} numberOfLines={1}>
+                    <Text
+                      style={[styles.noteItemTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}
+                      numberOfLines={1}
+                    >
                       {note.title}
                     </Text>
                   </View>
-                  <Text style={styles.noteItemDate}>
+                  <Text style={[styles.noteItemDate, { color: isDark ? '#64748B' : '#94A3B8' }]}>
                     {new Date(note.updatedAt || note.createdAt).toLocaleDateString()}
                   </Text>
                 </View>
 
-                <Text style={styles.noteItemDesc} numberOfLines={2}>
+                <Text
+                  style={[styles.noteItemDesc, { color: isDark ? '#94A3B8' : '#64748B' }]}
+                  numberOfLines={2}
+                >
                   {note.content || note.description || 'No additional text'}
                 </Text>
 
                 {note.tags && note.tags.length > 0 ? (
                   <View style={styles.tagsRow}>
                     {note.tags.slice(0, 3).map((tag, idx) => (
-                      <View key={idx} style={styles.tagBadge}>
-                        <Text style={styles.tagBadgeText}>#{tag}</Text>
+                      <View
+                        key={idx}
+                        style={[styles.tagBadge, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}
+                      >
+                        <Text style={[styles.tagBadgeText, { color: isDark ? '#94A3B8' : '#475569' }]}>
+                          #{tag}
+                        </Text>
                       </View>
                     ))}
                   </View>

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Icon from '../../components/common/Icon';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function CommunityPostCard({
   post,
@@ -13,9 +14,12 @@ export default function CommunityPostCard({
   isAdmin,
   onPress,
   onDelete,
-  isDark,
-  theme,
+  isDark: propIsDark,
+  theme: propTheme,
 }) {
+  const { isDark: contextIsDark, theme: contextTheme } = useTheme();
+  const isDark = propIsDark !== undefined ? propIsDark : contextIsDark;
+  const theme = propTheme || contextTheme;
   const isAuthor =
     currentUserId &&
     post.author &&

@@ -7,14 +7,17 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Icon from '../../components/common/Icon';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function EventCard({
   event,
   onPress,
   onRegisterPress,
   onCancelPress,
-  isDark,
+  isDark: propIsDark,
 }) {
+  const { isDark: contextIsDark } = useTheme();
+  const isDark = propIsDark !== undefined ? propIsDark : contextIsDark;
   const isRegistered = Boolean(event.isRegistered);
   const capacity = event.capacity || 100;
   const registeredCount = event.registeredCount || 0;
