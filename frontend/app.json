@@ -40,10 +40,6 @@
       "expo-secure-store",
       "expo-status-bar"
     ],
-    "notification": {
-      "color": "#16A36A",
-      "androidMode": "default"
-    },
     "extra": {
       "eas": {
         "projectId": "6469d2b2-94fe-48e4-bb53-a630d5980b88"
