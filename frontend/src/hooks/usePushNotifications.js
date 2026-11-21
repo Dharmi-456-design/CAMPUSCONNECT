@@ -133,11 +133,12 @@ async function registerForPushNotificationsAsync() {
 
     // Get the Expo push token safely
     try {
-      const tokenData = await Notifications.getExpoPushTokenAsync();
-      console.log('[PushNotif] Token registered:', tokenData?.data);
+      const tokenData = await Notifications.getExpoPushTokenAsync({
+        projectId: '6469d2b2-94fe-48e4-bb53-a630d5980b88',
+      });
       return tokenData?.data || null;
     } catch (tokenErr) {
-      console.warn('[PushNotif] Push token not available (Expo Go / EAS Project ID missing):', tokenErr.message);
+      // In Expo Go SDK 53+, remote push tokens are handled via development builds; silently skip
       return null;
     }
   } catch (err) {

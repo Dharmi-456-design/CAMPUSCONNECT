@@ -113,6 +113,12 @@ export default function SplitAuthScreen({ initialMode = 'welcome' }) {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
 
+  // Form input states
+  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
   // Switch mode and clear error
   const switchMode = (newMode) => {
     setAuthError('');
